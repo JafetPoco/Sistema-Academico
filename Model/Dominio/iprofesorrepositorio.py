@@ -5,17 +5,17 @@ class IProfesorRepositorio:
     def __init__(self):
         pass
 
-    def Profesor obtener(self, Guid id):
+    def obtener(self, id):
         pass
 
     def Operation1(self, ):
         pass
 
-    def void agregar(self, Profesor profesor):
+    def agregar(self, profesor):
         pass
 
-    def void actualizar(self, Profesor profesor):
+    def actualizar(self, profesor):
         pass
 
-    def void eliminar(self, Guid id):
+    def eliminar(self, id):
         pass

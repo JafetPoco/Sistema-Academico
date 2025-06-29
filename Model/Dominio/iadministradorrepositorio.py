@@ -5,14 +5,14 @@ class IAdministradorRepositorio:
     def __init__(self):
         pass
 
-    def Admin obtener(self, Guid id):
+    def obtener(self, id):
         pass
 
-    def void agregar(self, Admin admin):
+    def agregar(self, admin):
         pass
 
-    def void actualizar(self, Admin admin):
+    def actualizar(self, admin):
         pass
 
-    def void eliminar(self, Guid id):
+    def eliminar(self, id):
         pass

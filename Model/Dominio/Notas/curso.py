@@ -1,12 +1,14 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-class Padre:
+class Curso:
     def __init__(self):
-        self.padre_id = None
+        self.curso_id = None
+        self.nombre = None
+        self.Attribute1 = None
 
     def agregar_estudiante(self, estudiante):
         pass
 
-    def ver_calificaciones(self, estudiante):
+    def calcular_promedio(self, ):
         pass

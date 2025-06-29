@@ -3,11 +3,11 @@
 
 class Administrador:
     def __init__(self):
-        self.Guid administradorId = None
-        self.Guid usuarioId = None
+        self.administrador_id = None
+        self.usuario_id = None
 
-    def crearUsuario(self, Usuario usuario):
+    def crear_usuario(self, usuario):
         pass
 
-    def eliminarUsuario(self, Guid usuario):
+    def eliminar_usuario(self, usuario):
         pass

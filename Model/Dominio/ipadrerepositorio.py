@@ -5,14 +5,14 @@ class IPadreRepositorio:
     def __init__(self):
         pass
 
-    def Padre obtener(self, Guid id):
+    def obtener(self, id):
         pass
 
-    def void agregar(self, Padre padre):
+    def agregar(self, padre):
         pass
 
-    def void actualizar(self, Padre padre):
+    def actualizar(self, padre):
         pass
 
-    def void eliminar(self, Guid id):
+    def eliminar(self, id):
         pass

@@ -5,14 +5,14 @@ class ICursoRepositorio:
     def __init__(self):
         pass
 
-    def Curso obtener(self, Guid id):
+    def obtener(self, id):
         pass
 
-    def void agregar(self, Curso curso):
+    def agregar(self, curso):
         pass
 
-    def void actualizar(self, Curso curso):
+    def actualizar(self, curso):
         pass
 
-    def void eliminar(self, Guid id):
+    def eliminar(self, id):
         pass

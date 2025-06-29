@@ -3,9 +3,9 @@
 
 class Anuncio:
     def __init__(self):
-        self.Guid anuncioId = None
-        self.Guid cursoId = None
-        self.Guid profesorId = None
-        self.string titulo = None
-        self.string contenido = None
-        self.Fecha fechaCreado = None
+        self.anuncio_id = None
+        self.curso_id = None
+        self.profesor_id = None
+        self.titulo = None
+        self.contenido = None
+        self.fecha_creado = None

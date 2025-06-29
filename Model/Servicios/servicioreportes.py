@@ -5,5 +5,5 @@ class ServicioReportes:
     def __init__(self):
         pass
 
-    def ReporteCalificaciones(self, Curso curso):
+    def reporte_calificaciones(self, curso):
         pass
