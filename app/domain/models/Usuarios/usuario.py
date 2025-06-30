@@ -3,10 +3,10 @@
 
 class Usuario:
     def __init__(self):
-        self.Guid usuario_id = None
-        self.Nombre nombres = None
-        self.Email correo = None
-        self.string hash_contraseña = None
+        self.usuario_id = None
+        self.nombres = None
+        self.correo = None
+        self.hash_contraseña = None
 
-    def void cambiar_contraseña(self, string hash):
+    def cambiar_contraseña(self, hash):
         pass
