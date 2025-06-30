@@ -14,9 +14,9 @@
 - Visualización de actividades académicas y reportes.
 - Notificaciones automáticas para padres y estudiantes.
 
-<!--### Diagrama de Casos de Uso UML-->
+### Diagrama de Casos de Uso UML
 
-<!--![Diagrama de Casos de Uso](docs/diagramaUML.png)-->
+![Diagrama de Casos de Uso](docs/DiagramaCasosDeUso.png)
 
 ### Prototipo (GUI)
 
@@ -25,7 +25,7 @@ La interfaz principal incluye:
 - Barra de navegación para acceso a funcionalidades.
 - Secciones para anuncios, notas, reportes y gestión de usuarios.
 
-![Prototipo GUI](https://www.figma.com/design/mePETDXZAzFnH5TMuKuZg2/Dise%C3%B1o-Software?node-id=0-1&p=f&t=159E8ZY7anSn5hm4-0)
+[Prototipo GUI](https://www.figma.com/design/mePETDXZAzFnH5TMuKuZg2/Dise%C3%B1o-Software?node-id=0-1&p=f&t=159E8ZY7anSn5hm4-0)
 
 ---
 
@@ -49,8 +49,6 @@ La interfaz principal incluye:
 - `config`: Configuración de la aplicación.
 
 ---
-
-## Vista General de Arquitectura
 
 ![Diagrama de Clases Arquitectura](docs/diagramaUML.png)
 
