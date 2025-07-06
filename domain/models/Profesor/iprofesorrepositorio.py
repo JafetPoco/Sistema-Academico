@@ -8,9 +8,6 @@ class IProfesorRepositorio:
     def obtener(self, id):
         pass
 
-    def Operation1(self, ):
-        pass
-
     def agregar(self, profesor):
         pass
 
