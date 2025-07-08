@@ -59,3 +59,7 @@ MANIFEST
 
 poetry.lock
 Pipfile.lock
+
+.scannerwork/
+config/__pycache__/
+interfaces/controllers/__pycache__/
