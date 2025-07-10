@@ -3,7 +3,7 @@
 
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from datetime import datetime
+from datetime import datetime, timezone
 
 Base = declarative_base()
 
@@ -15,7 +15,7 @@ class Anuncio(Base):
     usuario_id = Column(Integer, ForeignKey('usuarios.usuario_id'), nullable=False)
     titulo = Column(String(255), nullable=False)
     contenido = Column(Text, nullable=False)
-    fecha_creado = Column(DateTime, default=datetime.utcnow)
+    fecha_creado = Column(DateTime, default=datetime.now(timezone.utc))
 
     def __repr__(self):
         return f"<Anuncio(id={self.anuncio_id}, titulo='{self.titulo}')>"

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Anuncios</title>
+</head>
+<body>
+    <h1>Anuncios</h1>
+    <ul>
+    {% for anuncio in anuncios %}
+        <li>ID: {{ anuncio.anuncio_id }} | {{ anuncio.titulo }} | {{ anuncio.contenido }}</li>
+    {% else %}
+        <li>No hay anuncios disponibles.</li>
+    {% endfor %}
+    </ul>
+</body>
+</html>
