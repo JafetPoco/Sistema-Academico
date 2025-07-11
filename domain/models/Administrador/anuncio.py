@@ -4,8 +4,7 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime, timezone
-
-Base = declarative_base()
+from domain.models.base import Base
 
 class Anuncio(Base):
     __tablename__ = 'anuncios'
