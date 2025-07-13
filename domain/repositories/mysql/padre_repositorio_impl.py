@@ -10,6 +10,7 @@ class padre_repositorio_impl(Base):
     __tablename__ = 'padres'
 
     padre_id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, foreign_key='users.user_id', nullable=False)
 
     # CRUD operations
     def create(self, session, padre):

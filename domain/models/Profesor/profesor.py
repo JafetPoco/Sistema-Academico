@@ -2,17 +2,18 @@
 # -*- coding: utf-8 -*-
 
 import uuid
-from models.Notas.calificacion import Calificacion
-from models.Notas.estudiante import Estudiante
-from models.Usuarios.usuario import Usuario
-from models.Notas.curso import Curso
+from sqlalchemy import Column, Integer, ForeignKey
+from sqlalchemy.orm import relationship
+
 from domain.models.base import Base
 
 
 class profesor(Base):
 
-    tablename = 'profesores'
+    __tablename__ = 'profesores'
     profesor_id = Column(Integer,ForeignKey('usuarios.usuario_id'), primary_key=True)
+
+    cursos = relationship("curso", back_populates="profesor")
 
     def crear_anuncio(self, curso, anuncio):
         pass
