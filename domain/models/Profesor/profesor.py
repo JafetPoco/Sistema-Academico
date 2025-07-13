@@ -4,12 +4,15 @@
 import uuid
 from models.Notas.calificacion import Calificacion
 from models.Notas.estudiante import Estudiante
+from models.Usuarios.usuario import Usuario
 from models.Notas.curso import Curso
+from domain.models.base import Base
 
-class Profesor:
-    def __init__(self):
-        self.profesor_id = None
-        self.usuario_id = None
+
+class profesor(Base):
+
+    tablename = 'profesores'
+    profesor_id = Column(Integer,ForeignKey('usuarios.usuario_id'), primary_key=True)
 
     def crear_anuncio(self, curso, anuncio):
         pass
