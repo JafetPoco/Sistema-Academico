@@ -6,7 +6,7 @@ from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
 
-class padre_repositorio_impl(Base):
+class padre_repositorio_impl():
 
     # CRUD operations
     def create(self, session, padre):

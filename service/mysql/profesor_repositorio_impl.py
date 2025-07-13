@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from domain.models.Profesor.iprofesorrepositorio import iprofesor_repositorio
-from domain.models.Profesor.profesor import Profesor
+from models import Profesor
 
 class profesor_repositorio_impl(iprofesor_repositorio):
     def create(self, session, profesor):

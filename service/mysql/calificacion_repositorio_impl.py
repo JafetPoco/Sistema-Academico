@@ -1,5 +1,5 @@
 from domain.models.Notas.icalificacion_repositorio import ICalificacionRepositorio
-from domain.models.Notas.Calificacion import calificacion
+from models import calificacion
 
 class CalificacionRepositorioImpl(ICalificacionRepositorio):
     def __init__(self, session):
