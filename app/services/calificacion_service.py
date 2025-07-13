@@ -1,5 +1,5 @@
 import uuid
-from domain.models.Notas.calificacion import Calificacion
+from domain.models.Notas.Calificacion import calificacion
 
 class CalificacionService:
     def __init__(self, calificacion_repo):
