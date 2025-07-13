@@ -100,19 +100,6 @@ class estudiante(Base):
         if not isinstance(padre, padre):
             raise ValueError("El objeto proporcionado no es un padre válido.")
         self.padre_id = padre.id
-
-class anuncio(Base):
-    __tablename__ = 'anuncios'
-
-    anuncio_id = Column(Integer, primary_key=True)
-    curso_id = Column(Integer, ForeignKey('cursos.curso_id'), nullable=False)
-    usuario_id = Column(Integer, ForeignKey('usuarios.usuario_id'), nullable=False)
-    titulo = Column(String(255), nullable=False)
-    contenido = Column(Text, nullable=False)
-    fecha_creado = Column(DateTime, default=datetime.now(timezone.utc))
-
-    def __repr__(self):
-        return f"<Anuncio(id={self.anuncio_id}, titulo='{self.titulo}')>"
     
 class administrador(Base):
     __tablename__ = 'administradores'
