@@ -4,7 +4,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from domain.models.base import Base
 
-class Calificacion(Base):
+class calificacion(Base):
     __tablename__ = 'calificaciones'
 
     calificacion_id = Column(String(36), primary_key=True)
