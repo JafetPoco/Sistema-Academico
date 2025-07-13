@@ -1,4 +1,4 @@
-from domain.models.Notas.icalificacion_repositorio import ICalificacionRepositorio
+from interfaces.repositorio.icalificacion_repositorio import ICalificacionRepositorio
 from models import calificacion
 
 class CalificacionRepositorioImpl(ICalificacionRepositorio):

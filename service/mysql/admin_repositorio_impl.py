@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from domain.models.Administrador.iadminrepositorio import iadmin_repositorio
-from domain.models.Administrador.administrador import Administrador
+from interfaces.repositorio.iadminrepositorio import iadmin_repositorio
+from models import Administrador
 
 class admin_repositorio_impl(iadmin_repositorio):
     def create(self, session, admin):

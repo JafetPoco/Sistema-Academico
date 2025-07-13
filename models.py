@@ -2,9 +2,11 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime, timezone
-from domain.models.base import Base
+from service.mysql.base import Base
 from sqlalchemy.orm import relationship
 import uuid
+
+Base = declarative_base()
 
 class usuario(Base):
     __tablename__ = 'usuarios'

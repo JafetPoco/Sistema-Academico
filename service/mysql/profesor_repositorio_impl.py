@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from domain.models.Profesor.iprofesorrepositorio import iprofesor_repositorio
+from interfaces.repositorio.iprofesorrepositorio import iprofesor_repositorio
 from models import Profesor
 
 class profesor_repositorio_impl(iprofesor_repositorio):

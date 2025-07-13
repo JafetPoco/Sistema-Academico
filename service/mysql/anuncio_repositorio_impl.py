@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from domain.models.Administrador.ianunciorepositorio import ianuncio_repositorio
-from domain.models.Administrador.anuncio import anuncio
+from interfaces.repositorio.ianunciorepositorio import ianuncio_repositorio
+from models import anuncio
 
 class anuncio_repositorio_impl(ianuncio_repositorio):
     def __init__(self, session):
