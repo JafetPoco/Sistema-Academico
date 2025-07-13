@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from domain.models.Administrador.ianunciorepositorio import ianuncio_repositorio
-from domain.models.Administrador.anuncio import Anuncio
+from domain.models.Administrador.anuncio import anuncio
 
 class anuncio_repositorio_impl(ianuncio_repositorio):
     def __init__(self, session):
