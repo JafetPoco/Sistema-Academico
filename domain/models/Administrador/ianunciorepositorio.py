@@ -3,19 +3,20 @@
 
 from abc import ABC, abstractmethod
 
-class IUsuarioRepositorio(ABC):
+class ianuncio_repositorio(ABC):
+
     @abstractmethod
-    def obtener(self, id):
+    def create(self, anuncio):
         pass
 
     @abstractmethod
-    def agregar(self, usuario):
+    def get(self, id):
         pass
 
     @abstractmethod
-    def actualizar(self, usuario):
+    def update(self, anuncio):
         pass
 
     @abstractmethod
-    def eliminar(self, id):
+    def delete(self, id):
         pass

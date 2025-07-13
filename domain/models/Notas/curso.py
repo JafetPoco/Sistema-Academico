@@ -1,11 +1,17 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from database.db import db
-class Curso(db.Model):
-    __tablename__ = 'cursos'
+from sqlalchemy import Column, Integer, String,ForeignKey
+from sql.alchemy.orm import relationship
+from models.base import Base
 
-    curso_id = db.Column(db.Integer, primary_key=True)
-    nombre = db.Column(db.String(100), nullable=False)
+class curso(Base):
+
+    __tablename__ = 'cursos'
+    curso_id = Column(Integer, primary_key=True)
+    nombre = Column(String(100), nullable=False)
+    profesor_id = Column(Integer, ForeignKey('profesores.profesor_id'), nullable=False)
+
+    profesor = relationship("profesor", back_populates="cursos")
     
     def agregar_estudiante(self, estudiante):
         # Aquí luego podrías manejar la relación muchos-a-muchos con estudiantes

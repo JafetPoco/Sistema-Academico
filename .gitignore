@@ -35,7 +35,7 @@ coverage.xml
 nosetests.xml
 pytest_cache/
 test-results/
-probar_env.py
+
 .vscode/
 .idea/
 *.sublime-project
