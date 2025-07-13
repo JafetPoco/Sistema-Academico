@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from models import curso
-from interfaces import ICursoRepositorio
+from interfaces.repositorio.icursorepositorio import ICursoRepositorio
 
 class CursoRepositorioImpl(ICursoRepositorio):
     def obtener(self, session, id):
