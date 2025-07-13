@@ -1,3 +1,4 @@
+config/default.py
 __pycache__/
 *.py[cod]
 *$py.class
@@ -58,3 +59,7 @@ MANIFEST
 
 poetry.lock
 Pipfile.lock
+
+.scannerwork/
+config/__pycache__/
+interfaces/controllers/__pycache__/

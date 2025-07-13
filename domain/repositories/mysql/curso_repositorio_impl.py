@@ -1,31 +1,27 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import declarative_base
+from domain.models.Notas.curso import Curso
+from domain.models.Notas.icursorepositorio import ICursoRepositorio
 
-Base = declarative_base()
+class CursoRepositorioImpl(ICursoRepositorio):
+    def obtener(self, session, id):
+        return session.query(Curso).filter_by(curso_id=id).first()
 
-class curso_repositorio_impl(Base):
-    __tablename__ = 'cursos'
-
-    curso_id = Column(Integer, primary_key=True)
-    nombre = Column(String(100))
-    Attribute1 = Column(String(100))
-
-    # CRUD operations
-    def create(self, session, curso):
+    def agregar(self, session, curso):
         session.add(curso)
         session.commit()
-        return curso
 
-    def get(self, session, curso_id):
-        return session.query(curso_repositorio_impl).filter_by(curso_id=curso_id).first()
-
-    def update(self, session, curso_id, **kwargs):
-        session.query(curso_repositorio_impl).filter_by(curso_id=curso_id).update(kwargs)
+    def actualizar(self, session, curso):
+        session.merge(curso)
         session.commit()
 
-    def delete(self, session, curso_id):
-        session.query(curso_repositorio_impl).filter_by(curso_id=curso_id).delete()
-        session.commit()
+    def eliminar(self, session, id):
+        curso = self.obtener(session, id)
+        if curso:
+            session.delete(curso)
+            session.commit()
+
+    def obtener_todos(self, session):
+        return session.query(Curso).all()
+
