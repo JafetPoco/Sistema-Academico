@@ -6,7 +6,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime, timezone
 from domain.models.base import Base
 
-class Anuncio(Base):
+class anuncio(Base):
     __tablename__ = 'anuncios'
 
     anuncio_id = Column(Integer, primary_key=True)
