@@ -1,0 +1,24 @@
+{% extends 'layout.html' %}
+{% block content %}
+<h2>Calificaciones del Estudiante</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Curso</th>
+            <th>Puntaje</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for calificacion in calificaciones %}
+        <tr>
+            <td>{{ calificacion.curso_id }}</td>
+            <td>{{ calificacion.puntaje }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="2">No hay calificaciones registradas.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
