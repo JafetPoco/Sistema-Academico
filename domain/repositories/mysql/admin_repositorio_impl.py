@@ -1,18 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+from domain.models.Administrador.iadminrepositorio import iadmin_repositorio
+from domain.models.Administrador.administrador import Administrador
 
-from sqlalchemy import Column, Integer
-from sqlalchemy.orm import declarative_base
-
-Base = declarative_base()
-
-class admin_repositorio_impl(Base):
-    __tablename__ = 'administradores'
-
-    administrador_id = Column(Integer, primary_key=True)
-    usuario_id = Column(Integer)
-
-    # CRUD operations
+class admin_repositorio_impl(iadmin_repositorio):
     def create(self, session, admin):
         session.add(admin)
         session.commit()
