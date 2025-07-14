@@ -3,7 +3,7 @@
 
 from flask import Blueprint, render_template, request
 from app.database import get_session
-from domain.repositories.mysql.calificacion_repositorio_impl import CalificacionRepositorioImpl
+from service.mysql.calificacion_repositorio_impl import CalificacionRepositorioImpl
 from app.services.calificacion_service import CalificacionService
 
 class notas_controlador:
