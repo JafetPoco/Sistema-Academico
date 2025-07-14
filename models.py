@@ -1,4 +1,3 @@
-
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime, timezone
@@ -79,6 +78,7 @@ class curso(Base):
     profesor_id = Column(Integer, ForeignKey('profesores.profesor_id'), nullable=False)
 
     profesor = relationship("profesor", back_populates="cursos")
+    calificaciones = relationship("calificacion", back_populates="curso")
     
     def agregar_estudiante(self, estudiante):
         # Aquí luego podrías manejar la relación muchos-a-muchos con estudiantes
@@ -95,7 +95,8 @@ class estudiante(Base):
     padre_id = Column(Integer, ForeignKey('padres.id'), nullable=True)
 
     padre = relationship("padre", back_populates="estudiantes")
-    
+    calificaciones = relationship("calificacion", back_populates="estudiante")
+
     def agregar_padre(self, padre):
         if not isinstance(padre, padre):
             raise ValueError("El objeto proporcionado no es un padre válido.")
@@ -131,7 +132,7 @@ class profesor(Base):
             raise ValueError("Este profesor no dicta este curso.")
 
         # Crear una calificación
-        calificacion = Calificacion(
+        calificacion = calificacion(
             calificacion_id=str(uuid.uuid4()),
             estudiante_id=estudiante.estudiante_id,
             curso_id=curso.curso_id,

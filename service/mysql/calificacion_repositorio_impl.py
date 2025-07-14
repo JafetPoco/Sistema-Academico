@@ -10,4 +10,4 @@ class CalificacionRepositorioImpl(ICalificacionRepositorio):
         self.session.commit()
 
     def obtener_por_estudiante(self, estudiante_id):
-        return self.session.query(Calificacion).filter_by(estudiante_id=estudiante_id).all()
+        return self.session.query(calificacion).filter_by(estudiante_id=estudiante_id).all()
