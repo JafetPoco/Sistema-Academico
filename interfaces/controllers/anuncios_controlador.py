@@ -1,5 +1,14 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+from flask import Blueprint, render_template
+from sqlalchemy.orm import Session
+from domain.models.Administrador.anuncio import anuncio
+from domain.repositories.mysql.anuncio_repositorio_impl import anuncio_repositorio_impl
+from app.database import get_session
 
-class anuncios_controlador:
-    pass
+anuncios_bp = Blueprint('anuncios', __name__, url_prefix='/anuncios')
+
+@anuncios_bp.route('/')
+def list_anuncios():
+    session: Session = get_session()
+    repo = anuncio_repositorio_impl(session)
+    anuncios = repo.session.query(Anuncio).all()
+    return render_template('anuncios/anuncios.html', anuncios=anuncios)

@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from sqlalchemy.exc import SQLAlchemyError
-from database.db import db
-from domain.models.Notas.curso import Curso
-from domain.repositories.mysql.curso_repositorio_impl import CursoRepositorioImpl
+from app.database import get_session
+from models import curso
+from service.mysql.curso_repositorio_impl import CursoRepositorioImpl
 
 
 
@@ -13,8 +13,9 @@ repositorio = CursoRepositorioImpl()
 
 @curso_bp.route('/cursos', methods=['GET'])
 def mostrar_cursos():
+    session = get_session()
     try:
-        cursos = repositorio.obtener_todos(db.session)
+        cursos = repositorio.obtener_todos(session)
     except SQLAlchemyError:
         flash("Ocurrió un error al cargar los cursos.", "danger")
         cursos = []
@@ -22,15 +23,16 @@ def mostrar_cursos():
 
 @curso_bp.route('/cursos', methods=['POST'])
 def crear_curso():
+    session = get_session()
     nombre = request.form.get('nombre', '').strip()
 
     if not nombre:
         flash("El nombre del curso no puede estar vacío.", "warning")
         return redirect(url_for(MOSTRAR_CURSOS))
 
-    nuevo_curso = Curso(nombre=nombre)
+    nuevo_curso = curso(nombre=nombre)
     try:
-        repositorio.agregar(db.session, nuevo_curso)
+        repositorio.agregar(session, nuevo_curso)
         flash("Curso creado exitosamente.", "success")
     except SQLAlchemyError:
         flash("Error al crear el curso. Intente más tarde.", "danger")
@@ -39,10 +41,11 @@ def crear_curso():
 
 @curso_bp.route('/cursos/eliminar/<int:curso_id>', methods=['POST'])
 def eliminar_curso(curso_id):
+    session = get_session()
     try:
-        curso = repositorio.obtener(db.session, curso_id)
+        curso = repositorio.obtener(session, curso_id)
         if curso:
-            repositorio.eliminar(db.session, curso_id)
+            repositorio.eliminar(session, curso_id)
             flash("Curso eliminado correctamente.", "success")
         else:
             flash("Curso no encontrado.", "warning")
@@ -53,7 +56,8 @@ def eliminar_curso(curso_id):
 
 @curso_bp.route('/cursos/<int:curso_id>', methods=['GET'])
 def detalle_curso(curso_id):
-    curso = repositorio.obtener(db.session, curso_id)
+    session = get_session()
+    curso = repositorio.obtener(session, curso_id)
     if not curso:
         flash("Curso no encontrado.", "warning")
         return redirect(url_for(MOSTRAR_CURSOS))

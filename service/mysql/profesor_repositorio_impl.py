@@ -1,18 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+from interfaces.repositorio.iprofesorrepositorio import iprofesor_repositorio
+from models import Profesor
 
-from sqlalchemy import Column, Integer
-from sqlalchemy.orm import declarative_base
-
-Base = declarative_base()
-
-class profesor_repositorio_impl(Base):
-    __tablename__ = 'profesores'
-
-    profesor_id = Column(Integer, primary_key=True)
-    usuario_id = Column(Integer)
-
-    # CRUD operations
+class profesor_repositorio_impl(iprofesor_repositorio):
     def create(self, session, profesor):
         session.add(profesor)
         session.commit()
