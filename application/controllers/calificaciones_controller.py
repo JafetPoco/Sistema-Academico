@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template
 from app.database import get_session
-from domain.repositories.mysql.calificacion_repositorio_impl import CalificacionRepositorioImpl
+from infrastructure import CalificacionRepositorioImpl
 from app.services.calificacion_service import CalificacionService
 
 calificaciones_bp = Blueprint('calificaciones', __name__)

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template
 from sqlalchemy.orm import Session
-from models import anuncio
+from domain.entities import anuncio
 from service.mysql import anuncio_repositorio_impl
 from app.database import get_session
 
