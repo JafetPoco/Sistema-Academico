@@ -1,14 +1,24 @@
 # infrastructure/repository/repository.py
 from infrastructure.database import db
 from infrastructure.repository.models import (
-    user_dto, announcement_dto, grade_dto,
-    parent_dto, course_dto, student_dto,
-    admin_dto, professor_dto
+    UserDTO,
+    AnnouncementDTO,
+    GradeDTO,
+    ParentDTO,
+    CourseDTO,
+    StudentDTO,
+    AdminDTO,
+    ProfessorDTO
 )
 from infrastructure.repository.mapper import (
-    user_mapper, announcement_mapper, grade_mapper,
-    parent_mapper, course_mapper, student_mapper,
-    admin_mapper, professor_mapper
+    UserMapper,
+    AnnouncementMapper,
+    GradeMapper,
+    ParentMapper,
+    CourseMapper,
+    StudentMapper,
+    AdminMapper,
+    ProfessorMapper
 )
 import logging
 from sqlalchemy.exc import SQLAlchemyError
@@ -75,34 +85,34 @@ class BaseRepository:
             return []
 
 # Repositories for each model
-class user_repository(BaseRepository):
-    dto = user_dto
-    mapper = user_mapper
+class UserRepository(BaseRepository):
+    dto = UserDTO
+    mapper = UserMapper
 
-class announcement_repository(BaseRepository):
-    dto = announcement_dto
-    mapper = announcement_mapper
+class AnnouncementRepository(BaseRepository):
+    dto = AnnouncementDTO
+    mapper = AnnouncementMapper
 
-class grade_repository(BaseRepository):
-    dto = grade_dto
-    mapper = grade_mapper
+class GradeRepository(BaseRepository):
+    dto = GradeDTO
+    mapper = GradeMapper
 
-class parent_repository(BaseRepository):
-    dto = parent_dto
-    mapper = parent_mapper
+class ParentRepository(BaseRepository):
+    dto = ParentDTO
+    mapper = ParentMapper
 
-class course_repository(BaseRepository):
-    dto = course_dto
-    mapper = course_mapper
+class CourseRepository(BaseRepository):
+    dto = CourseDTO
+    mapper = CourseMapper
 
-class student_repository(BaseRepository):
-    dto = student_dto
-    mapper = student_mapper
+class StudentRepository(BaseRepository):
+    dto = StudentDTO
+    mapper = StudentMapper
 
-class admin_repository(BaseRepository):
-    dto = admin_dto
-    mapper = admin_mapper
+class AdminRepository(BaseRepository):
+    dto = AdminDTO
+    mapper = AdminMapper
 
-class professor_repository(BaseRepository):
-    dto = professor_dto
-    mapper = professor_mapper
+class ProfessorRepository(BaseRepository):
+    dto = ProfessorDTO
+    mapper = ProfessorMapper

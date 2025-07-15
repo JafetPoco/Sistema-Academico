@@ -1,21 +1,30 @@
 # infrastructure/repository/mapper.py
 
-from domain.entities import *
+from domain.entities import (
+    User,
+    Announcement,
+    Grade,
+    Parent,
+    Course,
+    Student,
+    Admin,
+    Professor
+)
 
 from infrastructure.repository.models import (
-    user_dto,
-    announcement_dto,
-    grade_dto,
-    parent_dto,
-    course_dto,
-    student_dto,
-    admin_dto,
-    professor_dto,
+    UserDTO,
+    AnnouncementDTO,
+    GradeDTO,
+    ParentDTO,
+    CourseDTO,
+    StudentDTO,
+    AdminDTO,
+    ProfessorDTO
 )
 
 class UserMapper:
     @staticmethod
-    def to_domain(dto: user_dto) -> User:
+    def to_domain(dto: UserDTO) -> User:
         return User(
             user_id=dto.user_id,
             full_name=dto.full_name,
@@ -25,8 +34,8 @@ class UserMapper:
         )
 
     @staticmethod
-    def to_dto(domain: User) -> user_dto:
-        return user_dto(
+    def to_dto(domain: User) -> UserDTO:
+        return UserDTO(
             user_id=domain.user_id,
             full_name=domain.full_name,
             email=domain.email,
@@ -36,7 +45,7 @@ class UserMapper:
 
 class AnnouncementMapper:
     @staticmethod
-    def to_domain(dto: announcement_dto) -> Announcement:
+    def to_domain(dto: AnnouncementDTO) -> Announcement:
         return Announcement(
             announcement_id=dto.announcement_id,
             course_id=dto.course_id,
@@ -47,8 +56,8 @@ class AnnouncementMapper:
         )
 
     @staticmethod
-    def to_dto(domain: Announcement) -> announcement_dto:
-        return announcement_dto(
+    def to_dto(domain: Announcement) -> AnnouncementDTO:
+        return AnnouncementDTO(
             announcement_id=domain.announcement_id,
             course_id=domain.course_id,
             user_id=domain.user_id,
@@ -59,7 +68,7 @@ class AnnouncementMapper:
 
 class GradeMapper:
     @staticmethod
-    def to_domain(dto: grade_dto) -> Grade:
+    def to_domain(dto: GradeDTO) -> Grade:
         return Grade(
             grade_id=dto.grade_id,
             student_id=dto.student_id,
@@ -68,8 +77,8 @@ class GradeMapper:
         )
 
     @staticmethod
-    def to_dto(domain: Grade) -> grade_dto:
-        return grade_dto(
+    def to_dto(domain: Grade) -> GradeDTO:
+        return GradeDTO(
             grade_id=domain.grade_id,
             student_id=domain.student_id,
             course_id=domain.course_id,
@@ -78,16 +87,16 @@ class GradeMapper:
 
 class ParentMapper:
     @staticmethod
-    def to_domain(dto: parent_dto) -> Parent:
+    def to_domain(dto: ParentDTO) -> Parent:
         return Parent(parent_id=dto.parent_id)
 
     @staticmethod
-    def to_dto(domain: Parent) -> parent_dto:
-        return parent_dto(parent_id=domain.parent_id)
+    def to_dto(domain: Parent) -> ParentDTO:
+        return ParentDTO(parent_id=domain.parent_id)
 
 class CourseMapper:
     @staticmethod
-    def to_domain(dto: course_dto) -> Course:
+    def to_domain(dto: CourseDTO) -> Course:
         return Course(
             course_id=dto.course_id,
             name=dto.name,
@@ -95,8 +104,8 @@ class CourseMapper:
         )
 
     @staticmethod
-    def to_dto(domain: Course) -> course_dto:
-        return course_dto(
+    def to_dto(domain: Course) -> CourseDTO:
+        return CourseDTO(
             course_id=domain.course_id,
             name=domain.name,
             professor_id=domain.professor_id
@@ -104,33 +113,33 @@ class CourseMapper:
 
 class StudentMapper:
     @staticmethod
-    def to_domain(dto: student_dto) -> Student:
+    def to_domain(dto: StudentDTO) -> Student:
         return Student(
             user_id=dto.user_id,
             parent_id=dto.parent_id
         )
 
     @staticmethod
-    def to_dto(domain: Student) -> student_dto:
-        return student_dto(
+    def to_dto(domain: Student) -> StudentDTO:
+        return StudentDTO(
             user_id=domain.user_id,
             parent_id=domain.parent_id
         )
 
 class AdminMapper:
     @staticmethod
-    def to_domain(dto: admin_dto) -> Admin:
+    def to_domain(dto: AdminDTO) -> Admin:
         return Admin(admin_id=dto.admin_id)
 
     @staticmethod
-    def to_dto(domain: Admin) -> admin_dto:
-        return admin_dto(admin_id=domain.admin_id)
+    def to_dto(domain: Admin) -> AdminDTO:
+        return AdminDTO(admin_id=domain.admin_id)
 
 class ProfessorMapper:
     @staticmethod
-    def to_domain(dto: professor_dto) -> Professor:
+    def to_domain(dto: ProfessorDTO) -> Professor:
         return Professor(professor_id=dto.professor_id)
 
     @staticmethod
-    def to_dto(domain: Professor) -> professor_dto:
-        return professor_dto(professor_id=domain.professor_id)
+    def to_dto(domain: Professor) -> ProfessorDTO:
+        return ProfessorDTO(professor_id=domain.professor_id)
