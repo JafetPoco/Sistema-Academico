@@ -1,0 +1,1 @@
+from app.domain.services import anuncio

@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, render_template
-from app.database import get_session
+from app.infrastructure.database import get_session
 from infrastructure import CalificacionRepositorioImpl
 from app.services.calificacion_service import CalificacionService
 

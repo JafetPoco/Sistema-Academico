@@ -1,9 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from sqlalchemy.exc import SQLAlchemyError
-from app.database import get_session
-from models import curso
-from service.mysql.curso_repositorio_impl import CursoRepositorioImpl
-
+from app.infrastructure.database import get_session
+from domain.entities import curso
 
 
 MOSTRAR_CURSOS = 'curso.mostrar_cursos'

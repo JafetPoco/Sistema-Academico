@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from flask import Blueprint, render_template, request
-from app.database import get_session
-from service.mysql.calificacion_repositorio_impl import CalificacionRepositorioImpl
+from app.infrastructure import get_session
+#from app.infrastructure.repository.repository import 
 from app.services.calificacion_service import CalificacionService
 
 class notas_controlador:

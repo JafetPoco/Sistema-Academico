@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template
-from app.application.announcement_controller import 
+#from app.application.announcement_controller import 
 
 anuncios_bp = Blueprint('anuncios', __name__, url_prefix='/anuncios')
 
