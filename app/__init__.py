@@ -1,11 +1,11 @@
 from flask import Flask
 from app.config import Config
 
-from app.api.main_routes import main_bp
-from app.api.course_routes import curso_bp
-from app.api.announcement_routes import anuncios_bp
-from app.api.qualification_routes import calificaciones_bp
-from app.api.notas_routes import notas_bp
+from app.routes.main_routes import main_bp
+from app.routes.course_routes import curso_bp
+from app.routes.announcement_routes import anuncios_bp
+from app.routes.qualification_routes import calificaciones_bp
+from app.routes.notas_routes import notas_bp
 
 def create_app():
     app = Flask(

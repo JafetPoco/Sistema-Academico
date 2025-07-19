@@ -1,8 +1,5 @@
 from flask import Blueprint, render_template
-from sqlalchemy.orm import Session
-from domain.entities import anuncio
-from service.mysql import anuncio_repositorio_impl
-from app.database import get_session
+from app.application.announcement_controller import 
 
 anuncios_bp = Blueprint('anuncios', __name__, url_prefix='/anuncios')
 
