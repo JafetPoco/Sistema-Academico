@@ -13,10 +13,6 @@ logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 def init_db(app):
     db.init_app(app)
 
-def get_session():
-    with db.app.app_context():
-        return db.session
-
 def create_tables(app):
     with app.app_context():
         db.create_all()

@@ -7,6 +7,8 @@ from app.routes.announcement_routes import anuncios_bp
 from app.routes.qualification_routes import calificaciones_bp
 from app.routes.notas_routes import notas_bp
 
+from app.infrastructure.database import init_db, create_tables
+
 def create_app():
     app = Flask(
         __name__,
@@ -15,6 +17,9 @@ def create_app():
     )
 
     app.config.from_object(Config)
+
+    init_db(app)
+    create_tables(app)
 
     app.register_blueprint(main_bp)
     app.register_blueprint(curso_bp)
