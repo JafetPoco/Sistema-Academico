@@ -1,6 +1,6 @@
 # infrastructure/repository/repository.py
-from infrastructure.database import db
-from infrastructure.repository.models import (
+from app.infrastructure.database import db
+from app.infrastructure.repository.models import (
     UserDTO,
     AnnouncementDTO,
     GradeDTO,
@@ -10,7 +10,7 @@ from infrastructure.repository.models import (
     AdminDTO,
     ProfessorDTO
 )
-from infrastructure.repository.mapper import (
+from app.infrastructure.repository.mapper import (
     UserMapper,
     AnnouncementMapper,
     GradeMapper,

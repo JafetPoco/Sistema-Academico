@@ -1,6 +1,6 @@
 # infrastructure/repository/mapper.py
 
-from domain.entities import (
+from app.domain.entities import (
     User,
     Announcement,
     Grade,
@@ -11,7 +11,7 @@ from domain.entities import (
     Professor
 )
 
-from infrastructure.repository.models import (
+from app.infrastructure.repository.models import (
     UserDTO,
     AnnouncementDTO,
     GradeDTO,
