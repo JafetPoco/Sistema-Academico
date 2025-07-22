@@ -7,6 +7,8 @@ from app.routes.announcement_routes import anuncios_bp
 #from app.routes.qualification_routes import calificaciones_bp
 #from app.routes.notas_routes import notas_bp
 from app.routes.login_routes import auth_bp
+from app.routes.notas_routes import notas_bp
+
 from app.infrastructure.database import init_db, create_tables
 
 def create_app():
@@ -27,4 +29,5 @@ def create_app():
     #app.register_blueprint(calificaciones_bp)
     #app.register_blueprint(notas_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(notas_bp)
     return app

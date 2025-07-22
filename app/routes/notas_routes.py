@@ -1,16 +1,19 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from app.infrastructure import get_session
+
 from flask import Blueprint, render_template, request
 from app.infrastructure import get_session
 #from app.infrastructure.repository.repository import 
-from app.services.calificacion_service import CalificacionService
+from app.infrastructure.repository.repository import GradeRepository
+from app.domain.services.calificacion_service import CalificacionService
 
 class notas_controlador:
     @staticmethod
     def ver_calificaciones(estudiante_id):
         session = get_session()
-        repo = CalificacionRepositorioImpl(session)
+        repo = GradeRepository(session)
         service = CalificacionService(repo)
         calificaciones = service.obtener_calificaciones_por_estudiante(estudiante_id)
         return render_template('notas/ver_calificaciones.html', calificaciones=calificaciones)
