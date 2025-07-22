@@ -1,6 +1,6 @@
 {% extends "reporte/layout_reporte.html" %}
 
-{% block title %}Notas - Historia{% endblock %}
+{% block title %}Notas - {{ curso }}{% endblock %}
 
 {% block body %}
 <div class="hero">
@@ -14,8 +14,8 @@
         </div>
     </div>
     <div class="centered-text">
-        <h1>Historia</h1>
-        <p>Profesor Juan Perez</p>
+        <h1>{{ curso }}</h1>
+        <p>Profesor {{ profesor }}</p>
     </div>
 </div>
 
@@ -27,18 +27,13 @@
         </tr>
     </thead>
     <tbody>
+        {% for a in asignaciones %}
         <tr>
-            <td>Tarea 1 - Lectura Imperio Incaico</td>
-            <td>15</td>
+            <td>{{ a.titulo }}</td>
+            <td>{{ a.nota }}</td>
         </tr>
-        <tr>
-            <td>Tarea 2 - Virreyes del Perú</td>
-            <td>10</td>
-        </tr>
-        <tr>
-            <td>Examen Unidad 1</td>
-            <td>13</td>
-        </tr>
+        {% endfor %}
     </tbody>
 </table>
 {% endblock %}
+
