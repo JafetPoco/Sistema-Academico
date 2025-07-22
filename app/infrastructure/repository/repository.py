@@ -20,6 +20,8 @@ from app.infrastructure.repository.mapper import (
     AdminMapper,
     ProfessorMapper
 )
+
+from app.domain.entities import User, Announcement, Grade, Parent, Course, Student, Admin, Professor
 import logging
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -32,11 +34,12 @@ class BaseRepository:
         try:
             db.session.add(dto_obj)
             db.session.commit()
-            return True, None
+            return self.mapper.to_domain(dto_obj), None  # devuelves el user con ID seteado
         except Exception as e:
             db.session.rollback()
             logging.error(f"Error adding {self.dto.__tablename__}: {e}")
-            return False, str(e)
+            return None, str(e)
+
 
     def remove(self, obj_id):
         try:
@@ -88,6 +91,18 @@ class BaseRepository:
 class UserRepository(BaseRepository):
     dto = UserDTO
     mapper = UserMapper
+
+    def find_by_email(self, email: str):
+        try:
+            user_dto = self.dto.query.filter_by(email=email).first()
+            return self.mapper.to_domain(user_dto) if user_dto else None
+        except Exception as e:
+            logging.error(f"Error finding user by email: {e}")
+            return None
+
+    def create(self, user: User):
+        return self.add(user)
+
 
 class AnnouncementRepository(BaseRepository):
     dto = AnnouncementDTO

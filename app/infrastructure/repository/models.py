@@ -9,7 +9,7 @@ class UserDTO(db.Model):
     user_id = Column(Integer, primary_key=True)
     full_name = Column(String(100), nullable=False)
     email = Column(String(100), unique=True, nullable=False)
-    password_hash = Column(String(128), nullable=False)
+    password_hash = Column(String(256), nullable=False)
     role = Column(Integer, nullable=False)
 
     def __repr__(self):
