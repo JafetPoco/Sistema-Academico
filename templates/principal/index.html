@@ -12,9 +12,15 @@
                 <div class="navbar-nav ms-auto d-flex align-items-center gap-2">
                     <a class="nav-link active" aria-current="page" href="#">Home</a>
                      <a class="nav-link" href="">Cursos</a>
-                     <a href="{{ url_for('auth.login_get') }}">
-                       <button type="button" class="btn btn-dark">Iniciar Sesión</button>
-                     </a>
+
+                    {% if session.email %}
+                      <p>Hola, {{ session.name }}</p>
+                      <a href="{{ url_for('auth.logout') }}">Logout</a>
+                    {% else %}
+                      <a href="{{ url_for('auth.login_get') }}">
+                        <button type="button" class="btn btn-dark">Iniciar Sesión</button>
+                      </a>
+                    {% endif %}
                 </div>
                 </div>
             </div>

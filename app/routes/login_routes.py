@@ -1,11 +1,13 @@
 # app/routes/auth_routes.py
 
-from flask import Blueprint, request
+from flask import Blueprint, redirect, request, url_for, session
+from sqlalchemy.util import method_is_overridden
 from app.application.auth_controller import (
     do_login,
     do_register,
     show_register,
-    show_login
+    show_login,
+    do_logout
 )
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -28,3 +30,9 @@ def register_post():
 @auth_bp.route('/register', methods=['GET'])
 def register_get():
     return show_register()
+
+@auth_bp.route('/logout')
+def logout():
+    if session:
+        do_logout()
+    return redirect(url_for('main.index'))

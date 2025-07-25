@@ -18,12 +18,13 @@ def do_login(email, password):
 
     # Guardamos datos en sesión
     session['user_id'] = user.user_id
+    session['email'] = user.email
+    session['name'] = user.full_name
     session['role'] = user.role
 
     return redirect(url_for('main.index'))
 
 def do_register(request):
-    # Usamos form para HTML
     full_name = request.form.get('full_name')
     email = request.form.get('email')
     password = request.form.get('password')
@@ -46,3 +47,7 @@ def show_register():
 
 def show_login():
     return render_template(LOGIN_TEMPLATE)
+
+def do_logout():
+    session.clear()
+
