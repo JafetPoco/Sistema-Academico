@@ -10,16 +10,14 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav ms-auto d-flex align-items-center gap-2">
-                    <a class="nav-link active" aria-current="page" href="#">Home</a>
-                     <a class="nav-link" href="">Cursos</a>
+                  <a class="nav-link active" aria-current="page" href="{{ url_for('main.index') }}">Home</a>
+                     <a class="nav-link" href="#">Cursos</a>
 
                     {% if session.email %}
-                      <p>Hola, {{ session.name }}</p>
+                      <a class="nav-link disabled">Hola, {{ session.name }}</a>
                       <a href="{{ url_for('auth.logout') }}">Logout</a>
                     {% else %}
-                      <a href="{{ url_for('auth.login_get') }}">
-                        <button type="button" class="btn btn-dark">Iniciar Sesión</button>
-                      </a>
+                      <a href="{{ url_for('auth.login_get') }}" class="btn btn-dark">Iniciar Sesión</a>
                     {% endif %}
                 </div>
                 </div>
