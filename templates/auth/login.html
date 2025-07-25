@@ -3,7 +3,7 @@
 {% block extra_css %}
 <style>
   body {
-    background-image: url('{{ url_for('static', filename='img/background.jpg') }}') !important;
+    background-image: url("{{ url_for('static', filename='img/background.jpg') }}") !important;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -40,7 +40,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="form-wrapper mx-3">
+<div class="form-wrapper">
   <h2 class="card-title text-center mb-4">Iniciar Sesión</h2>
   {% if error %}
     <div class="alert alert-danger">{{ error }}</div>
