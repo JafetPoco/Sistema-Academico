@@ -7,17 +7,14 @@ auth_service = AuthService()
 REGISTER_TEMPLATE = 'auth/register.html'
 LOGIN_TEMPLATE = 'auth/login.html'
 
-def do_login(request):
-    email = request.form.get('email')
-    password = request.form.get('password')
-
+def do_login(email, password):
     if not email or not password:
-        return render_template('login.html', error="Email y contraseña son requeridos.")
+        return render_template(LOGIN_TEMPLATE, error="Email y contraseña son requeridos.")
 
     user = auth_service.authenticate(email, password)
 
     if not user:
-        return render_template('login.html', error="Credenciales inválidas.")
+        return render_template(LOGIN_TEMPLATE,error="Credenciales inválidas.")
 
     # Guardamos datos en sesión
     session['user_id'] = user.user_id

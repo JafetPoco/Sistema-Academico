@@ -16,7 +16,9 @@ def login_get():
 
 @auth_bp.route('/login', methods=['POST'])
 def login_post():
-    return do_login(request)
+    email = request.form.get('email')
+    password = request.form.get('password')
+    return do_login(email, password)
 
 
 @auth_bp.route('/register', methods=['POST'])
