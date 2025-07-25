@@ -8,8 +8,8 @@ db = SQLAlchemy()
 
 load_dotenv()
 
-logging.basicConfig()
-logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+# logging.basicConfig()
+# logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
 SessionLocal = None
 

@@ -1,6 +1,6 @@
 # domain/entities/entities.py
 
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import UUID
 
 class User:
@@ -26,7 +26,7 @@ class Announcement:
         self.user_id = user_id
         self.title = title
         self.content = content
-        self.created_at = created_at or datetime.utcnow()
+        self.created_at = created_at or datetime.now(timezone.utc)
 
     def __repr__(self):
         return f"<Announcement(id={self.announcement_id}, title={self.title})>"

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from app.infrastructure.database import db
 from datetime import datetime, timezone
@@ -23,7 +23,10 @@ class AnnouncementDTO(db.Model):
     user_id         = Column(Integer, ForeignKey('users.user_id'),      nullable=False)
     title           = Column(String(255), nullable=False)
     content         = Column(Text, nullable=False)
+    is_private      = Column(Boolean, default=False)
     created_at      = Column(DateTime, default=datetime.now(timezone.utc))
+
+    course = relationship('CourseDTO', back_populates='announcements')
 
     def __repr__(self):
         return f"<AnnouncementDTO(id={self.announcement_id}, title={self.title})>"
@@ -60,6 +63,7 @@ class CourseDTO(db.Model):
 
     professor = relationship('ProfessorDTO', back_populates='courses')
     grades    = relationship('GradeDTO',     back_populates='course')
+    announcements = relationship('AnnouncementDTO', back_populates='course')
 
     def __repr__(self):
         return f"<CourseDTO(id={self.course_id}, name={self.name})>"

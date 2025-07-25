@@ -11,8 +11,8 @@
                 <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav ms-auto d-flex align-items-center gap-2">
                   <a class="nav-link active" aria-current="page" href="{{ url_for('main.index') }}">Home</a>
-                     <a class="nav-link" href="#">Cursos</a>
-
+                    <a href="{{ url_for('anuncios.list_all') }}">Anuncios</a>
+                    <a class="nav-link" href="#">Cursos</a>
                     {% if session.email %}
                       <a class="nav-link disabled">Hola, {{ session.name }}</a>
                       <a href="{{ url_for('auth.logout') }}">Logout</a>
