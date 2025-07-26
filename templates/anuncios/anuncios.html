@@ -1,17 +1,46 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Anuncios</title>
-</head>
-<body>
-    <h1>Anuncios</h1>
-    <ul>
-    {% for anuncio in anuncios %}
-        <li>ID: {{ anuncio.anuncio_id }} | {{ anuncio.titulo }} | {{ anuncio.contenido }}</li>
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container mt-4">
+  {# Public #}
+  <h2>
+    <i class="bi bi-megaphone-fill text-primary me-2"></i>
+    Anuncios
+  </h2>
+  <ul class="list-group mb-4">
+    {% for anuncio in public_announcements %}
+      <li class="list-group-item">
+        <strong>{{ anuncio.title }}</strong> — {{ anuncio.content }}
+      </li>
     {% else %}
-        <li>No hay anuncios disponibles.</li>
+      <li class="list-group-item text-muted">
+        No public announcements available.
+      </li>
     {% endfor %}
+  </ul>
+
+  {% if private_announcements %}
+    <h2>
+      Anuncios Privados
+    </h2>
+    <ul class="list-group mb-4">
+      {% for anuncio in private_announcements %}
+        <li class="list-group-item">
+          <strong>{{ anuncio.title }}</strong> — {{ anuncio.content }}
+        </li>
+      {% endfor %}
     </ul>
-</body>
-</html>
+  {% endif %}
+
+  {% if role == 2 %}
+    <div class="mt-4">
+      <a class="btn btn-success me-2" href="{#{ url_for('anuncios.create_public') }#}">
+        <i class="bi bi-plus-circle me-1"></i>Create Public
+      </a>
+      <a class="btn btn-warning" href="{#{ url_for('anuncios.create_private') }#}">
+        <i class="bi bi-shield-lock me-1"></i>Create Private
+      </a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
