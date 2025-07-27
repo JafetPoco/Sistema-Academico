@@ -9,7 +9,7 @@ class AuthService:
     def register_user(self, full_name: str, email: str, password: str, role: int = 0):
         existing = self.user_repo.find_by_email(email)
         if existing:
-            return None, "Email already registered"
+            return None, "Ya existe un usuario con este correo."
 
         password_hash = generate_password_hash(password)
         new_user = User(
@@ -31,3 +31,10 @@ class AuthService:
         if check_password_hash(user.password_hash, password):
             return user
         return None
+
+    def validate_registration_data(self,full_name, email, password, confirm):
+        if not full_name or not email or not password or not confirm:
+            return False, "Todos los campos son obligatorios."
+        if password != confirm:
+            return False, "Las contraseñas no coinciden."
+        return True, None

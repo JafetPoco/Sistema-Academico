@@ -1,7 +1,5 @@
-from flask import request, jsonify
 from app.domain.services.auth_service import AuthService
-from flask import render_template, request, redirect, render_template, url_for, session
-from app.domain.entities import User
+from flask import render_template, redirect, render_template, url_for, session
 
 auth_service = AuthService()
 REGISTER_TEMPLATE = 'auth/register.html'
@@ -14,7 +12,10 @@ def do_login(email, password):
     user = auth_service.authenticate(email, password)
 
     if not user:
-        return render_template(LOGIN_TEMPLATE,error="Credenciales inválidas.")
+        return render_template(LOGIN_TEMPLATE,error="Email o contraseña incorrectos.")
+
+    if user.role == 0:
+        return render_template(LOGIN_TEMPLATE, error="Aun no se activo su cuenta. Contactese con el administrador del sitio si cree si se trata de un error")
 
     # Guardamos datos en sesión
     session['user_id'] = user.user_id
@@ -24,23 +25,16 @@ def do_login(email, password):
 
     return redirect(url_for('main.index'))
 
-def do_register(request):
-    full_name = request.form.get('full_name')
-    email = request.form.get('email')
-    password = request.form.get('password')
-    confirm = request.form.get('confirm_password')
+def do_register(full_name, email, password, confirm):
+    is_valid, error_message = auth_service.validate_registration_data(full_name, email, password, confirm)
+    if not is_valid:
+        return render_template(REGISTER_TEMPLATE, message={"type": "error", "text": error_message})
 
-    if not full_name or not email or not password or not confirm:
-        return render_template(REGISTER_TEMPLATE, error="Todos los campos son obligatorios.")
-
-    if password != confirm:
-        return render_template(REGISTER_TEMPLATE, error="Las contraseñas no coinciden.")
-
-    _user, err = auth_service.register_user(full_name, email, password)
+    user, err = auth_service.register_user(full_name, email, password)
     if err:
-        return render_template(REGISTER_TEMPLATE, error=err)
+        return render_template(REGISTER_TEMPLATE, message={"type": "error", "text": err})
 
-    return redirect(url_for('auth.login_post'))
+    return render_template(REGISTER_TEMPLATE, message={"type": "success", "text": "Se registraron sus datos correctamente. Su cuenta se activará en un plazo máximo de 5 días."})
 
 def show_register():
     return render_template(REGISTER_TEMPLATE)
