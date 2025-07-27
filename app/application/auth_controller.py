@@ -1,29 +1,23 @@
 from app.domain.services.auth_service import AuthService
-from flask import render_template, redirect, render_template, url_for, session
+from flask import render_template, redirect, url_for, session
 
 auth_service = AuthService()
 REGISTER_TEMPLATE = 'auth/register.html'
 LOGIN_TEMPLATE = 'auth/login.html'
 
 def do_login(email, password):
-    if not email or not password:
-        return render_template(LOGIN_TEMPLATE, error="Email y contraseña son requeridos.")
+    result = auth_service.authenticate(email, password)
 
-    user = auth_service.authenticate(email, password)
+    if result["status"] == "error":
+        return render_template(LOGIN_TEMPLATE, error=result["message"])
 
-    if not user:
-        return render_template(LOGIN_TEMPLATE,error="Email o contraseña incorrectos.")
+    user = result["user"]
+    session["user_id"] = user.user_id
+    session["email"] = user.email
+    session["name"] = user.full_name
+    session["role"] = user.role
 
-    if user.role == 0:
-        return render_template(LOGIN_TEMPLATE, error="Aun no se activo su cuenta. Contactese con el administrador del sitio si cree si se trata de un error")
-
-    # Guardamos datos en sesión
-    session['user_id'] = user.user_id
-    session['email'] = user.email
-    session['name'] = user.full_name
-    session['role'] = user.role
-
-    return redirect(url_for('main.index'))
+    return redirect(url_for("main.index"))
 
 def do_register(full_name, email, password, confirm):
     is_valid, error_message = auth_service.validate_registration_data(full_name, email, password, confirm)

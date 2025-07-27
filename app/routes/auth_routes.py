@@ -13,6 +13,8 @@ auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 @auth_bp.route('/login', methods=['GET'])
 def login_get():
+    if "user_id" in session:
+        return redirect(url_for("main.index"))
     return show_login()
 
 @auth_bp.route('/login', methods=['POST'])
