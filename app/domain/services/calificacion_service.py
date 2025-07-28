@@ -17,7 +17,7 @@ class CalificacionService:
         )
         result, error = self.calificacion_repo.add(grade)
         if error:
-            raise Exception(f"Error al guardar: {error}")
+            raise ValueError(f"Error al guardar: {error}")
         return result
 
     def ver_calificaciones(self, estudiante_id, calificacion_service):
