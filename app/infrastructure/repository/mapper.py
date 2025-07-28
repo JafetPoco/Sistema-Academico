@@ -52,6 +52,7 @@ class AnnouncementMapper:
             user_id=dto.user_id,
             title=dto.title,
             content=dto.content,
+            is_private=dto.is_private,
             created_at=dto.created_at
         )
 
@@ -63,6 +64,7 @@ class AnnouncementMapper:
             user_id=domain.user_id,
             title=domain.title,
             content=domain.content,
+            is_private=domain.is_private,
             created_at=domain.created_at
         )
 

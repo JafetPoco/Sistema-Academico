@@ -20,12 +20,13 @@ class User:
 
 class Announcement:
     def __init__(self, announcement_id, course_id, user_id,
-                 title, content, created_at):
+                 title, content, is_private, created_at):
         self.announcement_id = announcement_id
         self.course_id = course_id
         self.user_id = user_id
         self.title = title
         self.content = content
+        self.is_private = is_private
         self.created_at = created_at or datetime.now(timezone.utc)
 
     def __repr__(self):
