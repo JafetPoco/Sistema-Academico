@@ -6,7 +6,7 @@ from app.routes.main_routes import main_bp
 from app.routes.announcement_routes import anuncios_bp
 #from app.routes.qualification_routes import calificaciones_bp
 #from app.routes.notas_routes import notas_bp
-from app.routes.login_routes import auth_bp
+from app.routes.auth_routes import auth_bp
 from app.routes.notas_routes import notas_bp
 
 from app.infrastructure.database import init_db, create_tables

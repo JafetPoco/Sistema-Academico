@@ -1,4 +1,4 @@
-{% extends 'layout.html' %}
+{% extends "layout.html" %}
 {% block extra_css %}
 <style>
   body {
@@ -32,15 +32,17 @@
     text-decoration: underline;
   }
 </style>
-{% endblock %}
+{% endblock extra_css %}
 
 {% block content %}
 <div class="container d-flex justify-content-center align-items-center vh-100">
   <div class="col-md-4">
     <div class="form-wrapper">
       <h2 class="card-title text-center mb-4">Registro</h2>
-      {% if error %}
-        <div class="alert alert-danger">{{ error }}</div>
+      {% if message %}
+        <div class="alert alert-{{ 'danger' if message.type == 'error' else 'success' }}">
+          {{ message.text }}
+        </div>
       {% endif %}
       <form method="post" action="{{ url_for('auth.register_post') }}">
         <div class="mb-3">
@@ -70,4 +72,4 @@
     </div>
   </div>
 </div>
-{% endblock %}
+{% endblock content %}
