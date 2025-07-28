@@ -10,6 +10,9 @@
                 <div class="navbar-nav ms-auto d-flex align-items-center gap-2">
                   <a class="nav-link active" aria-current="page" href="{{ url_for('main.index') }}">Home</a>
                     <a href="{{ url_for('anuncios.list_all') }}">Anuncios</a>
+                    {% if session.role == 3%}
+                      <a class="nav-link" href="{{ url_for('grades_routes.parent_query_grades') }}">Calificaciones</a>
+                    {% endif %}
                     <a class="nav-link" href="#">Cursos</a>
                     {% if session.email %}
                       <a class="nav-link disabled">Hola, {{ session.name }}</a>
