@@ -12,21 +12,13 @@ class QualificationController:
         try:
             student_repository = StudentRepository()
             student_service = StudentService(student_repository)
-            students_domain = student_service.get_all_students()
+            
+            students = student_service.get_all_students_with_name()
 
-            if not students_domain:
+            if not students:
                 return render_template(QUALIFICATION_TEMPLATE, error="No hay estudiantes disponibles para calificar.", tipe_mensage="warning")
 
-            estudiantes = [
-                {
-                    'id': student.user_id,
-                    'name': student.parent_id
-                }
-                for student in students_domain
-            ]
-
-
-            return render_template(QUALIFICATION_TEMPLATE, estudiantes=estudiantes, mensaje=None, tipe_mensage=None)
+            return render_template(QUALIFICATION_TEMPLATE, estudiantes=students, mensaje=None, tipe_mensage=None)
         except Exception as e:
             error_menssage = f"Error al cargar los estudiantes: {str(e)}"
             return render_template(QUALIFICATION_TEMPLATE, error=error_menssage, tipe_mensage="danger")

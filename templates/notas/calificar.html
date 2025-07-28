@@ -156,12 +156,11 @@
   </div>
 </div>
 
+{% if estudiantes %}
 <script>
 // JavaScript solo si hay estudiantes
-{% if estudiantes %}
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('qualification-form');
-    const messageContainer = document.getElementById('message-container');
     
     form.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -203,6 +202,6 @@ function resetForm() {
     document.getElementById('qualification-form').reset();
     document.getElementById('message-container').innerHTML = '';
 }
-{% endif %}
 </script>
+{% endif %}
 {% endblock %}

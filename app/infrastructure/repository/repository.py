@@ -124,6 +124,34 @@ class StudentRepository(BaseRepository):
     dto = StudentDTO
     mapper = StudentMapper
 
+    def get_students_with_names(self):
+        try:
+            # Query con INNER JOIN
+            result = db.session.query(
+                UserDTO.full_name,    # u.full_name
+                UserDTO.user_id       # u.user_id
+            ).select_from(StudentDTO).join(   # FROM students s INNER JOIN users u
+                UserDTO, StudentDTO.user_id == UserDTO.user_id
+            ).all()
+            
+            # Convertir resultado a lista de diccionarios
+            students_data = []
+            for row in result:
+                student_info = {
+                    'id': row.user_id,
+                    'name': row.full_name
+                }
+                students_data.append(student_info)
+            
+            return students_data, None  # (result, error)
+            
+        except SQLAlchemyError as e:
+            logging.error(f"Database error getting students with names: {e}")
+            return [], f"Error de base de datos: {str(e)}"
+        except Exception as e:
+            logging.error(f"Unexpected error getting students with names: {e}")
+            return [], f"Error inesperado: {str(e)}"
+
 class AdminRepository(BaseRepository):
     dto = AdminDTO
     mapper = AdminMapper
