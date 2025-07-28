@@ -2,13 +2,6 @@
 
 {% block extra_css %}
 <style>
-  body {
-    background-image: url("{{ url_for('static', filename='img/pattern.jpg') }}") !important;
-    background-repeat: repeat;
-    background-size: 350px 350px;
-    min-height: 100vh;
-  }
-
   .form-wrapper {
     background-color: rgba(255, 255, 255, 0.95);
     padding: 2rem;
@@ -25,34 +18,20 @@
     margin-bottom: 1.5rem;
   }
 
-  .form-label {
-    font-weight: 500;
-    color: #555;
-  }
-
-  .btn-primary {
-    background: linear-gradient(45deg, #007bff, #0056b3);
-    border: none;
-    padding: 12px 30px;
-    border-radius: 8px;
-    font-weight: 500;
-  }
-
-  .btn-secondary {
-    padding: 12px 30px;
-    border-radius: 8px;
-    font-weight: 500;
-  }
-
-  .alert {
-    border-radius: 8px;
-    margin-bottom: 1.5rem;
-  }
-
-  .score-input {
-    font-size: 1.1rem;
+  .no-students-message {
     text-align: center;
-    font-weight: bold;
+    padding: 2rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin: 1rem 0;
+  }
+
+  .error-message {
+    text-align: center;
+    padding: 2rem;
+    background-color: #f8d7da;
+    border-radius: 8px;
+    margin: 1rem 0;
   }
 </style>
 {% endblock %}
@@ -64,106 +43,122 @@
       <div class="form-wrapper">
         <h2 class="card-title">📝 Calificar Estudiantes</h2>
         
-        <!-- Mostrar mensajes de éxito/error -->
-        <div id="message-container"></div>
+        <!-- Mostrar mensaje si existe -->
+        {% if mensaje %}
+          <div class="alert alert-{{ tipo_mensaje }} alert-dismissible fade show" role="alert">
+            {% if tipo_mensaje == 'warning' %}
+              ⚠️ {{ mensaje }}
+            {% elif tipo_mensaje == 'danger' %}
+              ❌ {{ mensaje }}
+            {% else %}
+              ℹ️ {{ mensaje }}
+            {% endif %}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endif %}
         
-        <form id="qualification-form" method="POST" action="{{ url_for('calificaciones.submit_qualification') }}">
+        <!-- Mostrar formulario solo si hay estudiantes -->
+        {% if estudiantes %}
+          <!-- Mostrar mensajes de éxito/error del formulario -->
+          <div id="message-container"></div>
           
-          <!-- Selección de Estudiante -->
-          <div class="mb-3">
-            <label for="student_id" class="form-label">👤 Estudiante:</label>
-            <select name="student_id" id="student_id" class="form-select" required>
-              <option value="">Seleccionar estudiante...</option>
-              {% for estudiante in estudiantes %}
-                <option value="{{ estudiante.id }}">{{ estudiante.name }}</option>
-              {% endfor %}
-            </select>
-          </div>
+          <form id="qualification-form" method="POST" action="{{ url_for('calificaciones.submit_qualification') }}">
+            
+            <!-- Selección de Estudiante -->
+            <div class="mb-3">
+              <label for="student_id" class="form-label">👤 Estudiante:</label>
+              <select name="student_id" id="student_id" class="form-select" required>
+                <option value="">Seleccionar estudiante...</option>
+                {% for estudiante in estudiantes %}
+                  <option value="{{ estudiante.id }}">{{ estudiante.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
 
-          <!-- Selección de Curso -->
-          <div class="mb-3">
-            <label for="course_id" class="form-label">📚 Curso:</label>
-            <select name="course_id" id="course_id" class="form-select" required>
-              <option value="">Seleccionar curso...</option>
-              <option value="1">Matemáticas</option>
-              <option value="2">Ciencias Naturales</option>
-              <option value="3">Historia</option>
-              <option value="4">Lenguaje</option>
-              <option value="5">Inglés</option>
-              <option value="6">Educación Física</option>
-            </select>
-          </div>
+            <!-- Selección de Curso -->
+            <div class="mb-3">
+              <label for="course_id" class="form-label">📚 Curso:</label>
+              <select name="course_id" id="course_id" class="form-select" required>
+                <option value="">Seleccionar curso...</option>
+                <option value="1">Matemáticas</option>
+                <option value="2">Ciencias Naturales</option>
+                <option value="3">Historia</option>
+                <option value="4">Lenguaje</option>
+                <option value="5">Inglés</option>
+                <option value="6">Educación Física</option>
+              </select>
+            </div>
 
-          <!-- Tipo de Evaluación -->
-          <div class="mb-3">
-            <label for="evaluation_type" class="form-label">📋 Tipo de Evaluación:</label>
-            <select name="evaluation_type" id="evaluation_type" class="form-select">
-              <option value="Examen">📝 Examen</option>
-              <option value="Práctica">🔬 Práctica</option>
-              <option value="Tarea">📖 Tarea</option>
-              <option value="Participación">🙋 Participación</option>
-              <option value="Proyecto">🎯 Proyecto</option>
-            </select>
-          </div>
+            <!-- Calificación -->
+            <div class="mb-3">
+              <label for="score" class="form-label">⭐ Calificación (0-20):</label>
+              <input 
+                type="number" 
+                name="score" 
+                id="score" 
+                class="form-control score-input" 
+                min="0" 
+                max="20" 
+                step="0.5" 
+                placeholder="Ingrese la nota..."
+                required>
+              <div class="form-text">Ingrese una nota entre 0 y 20 puntos</div>
+            </div>
 
-          <!-- Calificación -->
-          <div class="mb-3">
-            <label for="score" class="form-label">⭐ Calificación (0-20):</label>
-            <input 
-              type="number" 
-              name="score" 
-              id="score" 
-              class="form-control score-input" 
-              min="0" 
-              max="20" 
-              step="0.5" 
-              placeholder="Ingrese la nota..."
-              required>
-            <div class="form-text">Ingrese una nota entre 0 y 20 puntos</div>
-          </div>
+            <!-- Observaciones -->
+            <div class="mb-4">
+              <label for="observations" class="form-label">💬 Observaciones (opcional):</label>
+              <textarea 
+                name="observations" 
+                id="observations" 
+                class="form-control" 
+                rows="3" 
+                placeholder="Comentarios adicionales..."></textarea>
+            </div>
 
-          <!-- Observaciones -->
-          <div class="mb-4">
-            <label for="observations" class="form-label">💬 Observaciones (opcional):</label>
-            <textarea 
-              name="observations" 
-              id="observations" 
-              class="form-control" 
-              rows="3" 
-              placeholder="Comentarios adicionales sobre el desempeño del estudiante..."></textarea>
-          </div>
+            <!-- Botones -->
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+              <button type="submit" class="btn btn-primary me-md-2">
+                💾 Guardar Calificación
+              </button>
+              <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                🔄 Limpiar Formulario
+              </button>
+            </div>
+          </form>
 
-          <!-- Botones -->
-          <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-            <button type="submit" class="btn btn-primary me-md-2">
-              💾 Guardar Calificación
-            </button>
-            <button type="button" class="btn btn-secondary" onclick="resetForm()">
-              🔄 Limpiar Formulario
-            </button>
+        {% else %}
+          <!-- Mensaje cuando no hay estudiantes -->
+          <div class="no-students-message">
+            <div class="mb-3">
+              <i class="fas fa-users fa-3x text-muted"></i>
+            </div>
+            <h5 class="text-muted">No se pueden registrar calificaciones</h5>
+            <p class="text-muted mb-3">
+              {% if tipo_mensaje == 'warning' %}
+                No hay estudiantes registrados en el sistema para calificar.
+              {% else %}
+                Ocurrió un error al cargar la lista de estudiantes.
+              {% endif %}
+            </p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+              <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+                🏠 Volver al Inicio
+              </a>
+              <button onclick="location.reload()" class="btn btn-outline-primary">
+                🔄 Reintentar
+              </button>
+            </div>
           </div>
-        </form>
-
-        <!-- Lista de estudiantes disponibles -->
-        <div class="mt-4">
-          <h5 class="text-muted">👥 Estudiantes Disponibles:</h5>
-          <div class="row">
-            {% for estudiante in estudiantes %}
-              <div class="col-md-6 mb-2">
-                <div class="card card-body py-2">
-                  <small><strong>{{ estudiante.name }}</strong> - ID: {{ estudiante.id }}</small>
-                </div>
-              </div>
-            {% endfor %}
-          </div>
-        </div>
+        {% endif %}
       </div>
     </div>
   </div>
 </div>
 
 <script>
-// JavaScript para mejorar la experiencia del usuario
+// JavaScript solo si hay estudiantes
+{% if estudiantes %}
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('qualification-form');
     const messageContainer = document.getElementById('message-container');
@@ -171,13 +166,10 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        // Mostrar loading
         showMessage('⏳ Guardando calificación...', 'info');
         
-        // Preparar datos
         const formData = new FormData(form);
         
-        // Enviar request
         fetch(form.action, {
             method: 'POST',
             body: formData
@@ -195,17 +187,6 @@ document.addEventListener('DOMContentLoaded', function() {
             showMessage('❌ Error de conexión: ' + error.message, 'danger');
         });
     });
-    
-    // Validación en tiempo real de la nota
-    const scoreInput = document.getElementById('score');
-    scoreInput.addEventListener('input', function() {
-        const value = parseFloat(this.value);
-        if (value < 0 || value > 20) {
-            this.setCustomValidity('La nota debe estar entre 0 y 20');
-        } else {
-            this.setCustomValidity('');
-        }
-    });
 });
 
 function showMessage(message, type) {
@@ -216,37 +197,12 @@ function showMessage(message, type) {
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     `;
-    
-    // Auto-hide después de 5 segundos si es éxito
-    if (type === 'success') {
-        setTimeout(() => {
-            const alert = messageContainer.querySelector('.alert');
-            if (alert) {
-                alert.remove();
-            }
-        }, 5000);
-    }
 }
 
 function resetForm() {
     document.getElementById('qualification-form').reset();
     document.getElementById('message-container').innerHTML = '';
 }
-
-// Actualizar indicador visual de nota
-document.getElementById('score').addEventListener('input', function() {
-    const value = parseFloat(this.value);
-    const input = this;
-    
-    input.classList.remove('text-success', 'text-warning', 'text-danger');
-    
-    if (value >= 15) {
-        input.classList.add('text-success');
-    } else if (value >= 11) {
-        input.classList.add('text-warning');
-    } else if (value >= 0) {
-        input.classList.add('text-danger');
-    }
-});
+{% endif %}
 </script>
 {% endblock %}

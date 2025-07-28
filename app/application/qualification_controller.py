@@ -1,13 +1,35 @@
-from flask import render_template, jsonify, flash, redirect, url_for
-from app.infrastructure.repository.repository import GradeRepository
+from flask import render_template, jsonify
+from app.infrastructure.repository.repository import GradeRepository, StudentRepository
+from app.domain.services.student_service import StudentService
 from app.domain.services.calificacion_service import CalificacionService
 import uuid
+
+QUALIFICATION_TEMPLATE = 'notas/calificar.html'
 
 class QualificationController:
     @staticmethod
     def show_form():
-        estudiantes = QualificationController._get_students_mock()
-        return render_template('notas/calificar.html', estudiantes=estudiantes)
+        try:
+            student_repository = StudentRepository()
+            student_service = StudentService(student_repository)
+            students_domain = student_service.get_all_students()
+
+            if not students_domain:
+                return render_template(QUALIFICATION_TEMPLATE, error="No hay estudiantes disponibles para calificar.", tipe_mensage="warning")
+
+            estudiantes = [
+                {
+                    'id': student.user_id,
+                    'name': student.parent_id
+                }
+                for student in students_domain
+            ]
+
+
+            return render_template(QUALIFICATION_TEMPLATE, estudiantes=estudiantes, mensaje=None, tipe_mensage=None)
+        except Exception as e:
+            error_menssage = f"Error al cargar los estudiantes: {str(e)}"
+            return render_template(QUALIFICATION_TEMPLATE, error=error_menssage, tipe_mensage="danger")
     
     @staticmethod
     def create_qualification(data):
