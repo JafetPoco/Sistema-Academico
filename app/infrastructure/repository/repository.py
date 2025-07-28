@@ -111,7 +111,13 @@ class AnnouncementRepository(BaseRepository):
 class GradeRepository(BaseRepository):
     dto = GradeDTO
     mapper = GradeMapper
-
+    def get_by_student_id(self, student_id):
+        try:
+            grades_dto = self.dto.query.filter_by(student_id=student_id).all()
+            return [self.mapper.to_domain(dto) for dto in grades_dto]
+        except Exception as e:
+            logging.error(f"Error fetching grades by student_id: {e}")
+            return []
 class ParentRepository(BaseRepository):
     dto = ParentDTO
     mapper = ParentMapper
@@ -123,7 +129,13 @@ class CourseRepository(BaseRepository):
 class StudentRepository(BaseRepository):
     dto = StudentDTO
     mapper = StudentMapper
-
+    def get_by_parent_id(self, parent_id):
+        try:
+            students_dto = self.dto.query.filter_by(parent_id=parent_id).all()
+            return [self.mapper.to_domain(dto) for dto in students_dto]
+        except Exception as e:
+            logging.error(f"Error fetching students by parent_id: {e}")
+            return []
 class AdminRepository(BaseRepository):
     dto = AdminDTO
     mapper = AdminMapper
