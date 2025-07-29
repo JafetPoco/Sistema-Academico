@@ -1,4 +1,11 @@
-# Sistema-Academico
+# Sistema-Academico EDUNET
+Integrantes
+- ALEXANDER HUAYHUA PEREZ
+- JAFET POCO CHIRE
+- BERLY DUEÑAS MANDAMIENTOS
+- FERNANDO A. SUCA QUISPE
+- RONALD VENTURA VENERO
+
 
 ## Propósito
 
@@ -9,10 +16,9 @@
 ### Funcionalidades de Alto Nivel
 
 - Consulta de notas y calificaciones por estudiantes y padres.
-- Publicación de anuncios por parte de profesores y administradores.
-- Gestión de usuarios (estudiantes, padres, profesores, administradores).
+- Publicación de anuncios por parte de administradores.
+- Gestión de usuarios (padres, profesores, administradores).
 - Visualización de actividades académicas y reportes.
-- Notificaciones automáticas para padres y estudiantes.
 
 ### Diagrama de Casos de Uso UML
 
@@ -41,11 +47,12 @@ La interfaz principal incluye:
 
 #### Módulos
 
-- `domain/models`: Entidades y repositorios del dominio.
-- `domain/repositories`: Implementaciones de acceso a datos.
-- `app/services`: Lógica de negocio y servicios de aplicación.
-- `interfaces/controllers`: Controladores y endpoints web.
-- `interfaces/templates`: Plantillas HTML para la GUI.
+- `domain/entities`: Entidades y repositorios del dominio.
+- `infrastructure/repository`: Implementaciones de acceso a datos.
+- `domain/services`: Lógica de negocio y servicios de aplicación.
+- `application`: Controladores.
+- `routes`: Endpoints web.
+- `templates`: Plantillas HTML para la GUI.
 - `config`: Configuración de la aplicación.
 
 ---
@@ -54,25 +61,23 @@ La interfaz principal incluye:
 
 #### Estructura de Carpetas
 ```
-Sistema-Academico/ 
-│ ├── app/ 
-│   └── services/ 
-├── config/ 
-├── domain/ 
-│ ├── models/ 
-│ └── repositories/ 
-├── interfaces/ 
-│ ├── controllers/ 
-│ ├── static/ 
-│ └── templates/ 
-└── requirements.txt
+Sistema-Academico/
+├── app/
+│   ├── routes/
+│   ├── application/
+│   ├── domain/
+│   │   └── services/
+│   └── infrastructure/
+│       └── repository/
+├── docs/
+├── static/
+└── templates/
 ```
-- **app/services**: Servicios de aplicación (notificaciones, reportes).
-- **domain/models**: Entidades y contratos del dominio.
-- **domain/repositories**: Implementaciones de acceso a datos.
-- **interfaces/controllers**: Controladores Flask.
-- **interfaces/templates**: Vistas HTML (Jinja2).
-- **config**: Configuración global.
+- **app/domain/services**: Servicios de aplicación (notificaciones, reportes).
+- **app/domain/entities**: Entidades y contratos del dominio.
+- **infrastructure/repository**: Implementaciones de acceso a datos.
+- **app/application**: Controladores Flask.
+- **templates**: Vistas HTML (Jinja2).
 
 ---
 

@@ -1,25 +1,36 @@
-
-    <div class="container-fluid">
-        <nav class="navbar navbar-expand-lg bg-body-tertiary fixed-top">
-            <div class="container-fluid">
-                <span class="logo navbar-brand mb-0 h1">EDUNET</span>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+<!-- templates/navbar.html -->
+<div class="container-fluid">
+    <nav class="navbar navbar-expand-lg bg-body-tertiary fixed-top">
+        <div class="container-fluid">
+            <span class="logo navbar-brand mb-0 h1">EDUNET</span>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav ms-auto d-flex align-items-center gap-2">
-                  <a class="nav-link active" aria-current="page" href="{{ url_for('main.index') }}">Home</a>
                     <a href="{{ url_for('anuncios.list_all') }}">Anuncios</a>
-                    <a class="nav-link" href="#">Cursos</a>
+          
                     {% if session.email %}
-                      <a class="nav-link disabled">Hola, {{ session.name }}</a>
-                      <a href="{{ url_for('auth.logout') }}">Logout</a>
+                        <a class="nav-link" href="{{ url_for('dashboard.main') }}">
+                            Dashboard
+                        </a>
                     {% else %}
-                      <a href="{{ url_for('auth.login_get') }}" class="btn btn-dark">Iniciar Sesión</a>
+                        <a class="nav-link" href="{{ url_for('auth.login_get') }}">
+                            Dashboard
+                        </a>
+                    {% endif %}
+                    
+                    {% if session.role == 3 %}
+                        <a class="nav-link" href="{{ url_for('grades_routes.parent_query_grades') }}">Calificaciones</a>
+                    {% endif %}
+                    
+                    {% if session.email %}
+                        <a href="{{ url_for('auth.logout') }}">Logout</a>
+                    {% else %}
+                        <a href="{{ url_for('auth.login_get') }}" class="btn btn-dark">Iniciar Sesión</a>
                     {% endif %}
                 </div>
-                </div>
             </div>
-        </nav>
-    </div>
-
+        </div>
+    </nav>
+</div>

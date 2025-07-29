@@ -1,0 +1,193 @@
+{% extends 'layout.html' %}
+
+{% block extra_css %}
+<style>
+  .form-wrapper {
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .card-title {
+    font-weight: 600;
+    color: #333;
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .no-students-message {
+    text-align: center;
+    padding: 2rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin: 1rem 0;
+  }
+
+  .error-message {
+    text-align: center;
+    padding: 2rem;
+    background-color: #f8d7da;
+    border-radius: 8px;
+    margin: 1rem 0;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="form-wrapper">
+        <h2 class="card-title">📝 Calificar Estudiantes</h2>
+        
+        <!-- Mostrar mensaje si existe -->
+        {% if mensaje %}
+          <div class="alert alert-{{ tipo_mensaje }} alert-dismissible fade show" role="alert">
+            {% if tipo_mensaje == 'warning' %}
+              ⚠️ {{ mensaje }}
+            {% elif tipo_mensaje == 'danger' %}
+              ❌ {{ mensaje }}
+            {% else %}
+              ℹ️ {{ mensaje }}
+            {% endif %}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endif %}
+        
+        <!-- Mostrar formulario solo si hay estudiantes -->
+        {% if estudiantes %}
+          <!-- Mostrar mensajes de éxito/error del formulario -->
+          <div id="message-container"></div>
+          
+          <form id="qualification-form" method="POST" action="{{ url_for('calificaciones.submit_qualification') }}">
+            
+            <!-- Selección de Estudiante -->
+            <div class="mb-3">
+              <label for="student_id" class="form-label">👤 Estudiante:</label>
+              <select name="student_id" id="student_id" class="form-select" required>
+                <option value="">Seleccionar estudiante...</option>
+                {% for estudiante in estudiantes %}
+                  <option value="{{ estudiante.id }}">{{ estudiante.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Selección de Curso -->
+            <div class="mb-3">
+              <label for="course_id" class="form-label">📚 Curso:</label>
+              <select name="course_id" id="course_id" class="form-select" required>
+                <option value="">Seleccionar curso...</option>
+                {% for course in courses %}
+                  <option value="{{ course.id }}">{{ course.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Calificación -->
+            <div class="mb-3">
+              <label for="score" class="form-label">⭐ Calificación (0-20):</label>
+              <input 
+                type="number" 
+                name="score" 
+                id="score" 
+                class="form-control score-input" 
+                min="0" 
+                max="20" 
+                step="0.5" 
+                placeholder="Ingrese la nota..."
+                required>
+              <div class="form-text">Ingrese una nota entre 0 y 20 puntos</div>
+            </div>
+
+            <!-- Botones -->
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+              <button type="submit" class="btn btn-primary me-md-2">
+                💾 Guardar Calificación
+              </button>
+              <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                🔄 Limpiar Formulario
+              </button>
+            </div>
+          </form>
+
+        {% else %}
+          <!-- Mensaje cuando no hay estudiantes -->
+          <div class="no-students-message">
+            <div class="mb-3">
+              <i class="fas fa-users fa-3x text-muted"></i>
+            </div>
+            <h5 class="text-muted">No se pueden registrar calificaciones</h5>
+            <p class="text-muted mb-3">
+              {% if tipo_mensaje == 'warning' %}
+                No hay estudiantes registrados en el sistema para calificar.
+              {% else %}
+                Ocurrió un error al cargar la lista de estudiantes.
+              {% endif %}
+            </p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+              <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+                🏠 Volver al Inicio
+              </a>
+              <button onclick="location.reload()" class="btn btn-outline-primary">
+                🔄 Reintentar
+              </button>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if estudiantes %}
+<script>
+// JavaScript solo si hay estudiantes
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('qualification-form');
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        showMessage('⏳ Guardando calificación...', 'info');
+        
+        const formData = new FormData(form);
+        
+        fetch(form.action, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.mensaje) {
+                showMessage('✅ ' + data.mensaje, 'success');
+                form.reset();
+            } else if (data.error) {
+                showMessage('❌ Error: ' + data.error, 'danger');
+            }
+        })
+        .catch(error => {
+            showMessage('❌ Error de conexión: ' + error.message, 'danger');
+        });
+    });
+});
+
+function showMessage(message, type) {
+    const messageContainer = document.getElementById('message-container');
+    messageContainer.innerHTML = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+}
+
+function resetForm() {
+    document.getElementById('qualification-form').reset();
+    document.getElementById('message-container').innerHTML = '';
+}
+</script>
+{% endif %}
+{% endblock %}
