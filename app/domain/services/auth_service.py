@@ -3,6 +3,11 @@ from app.infrastructure.repository.repository import UserRepository
 from app.domain.entities import User
 
 class AuthService:
+    UNKNOWN_ROLE = 0
+    TEACHER_ROLE = 1
+    ADMIN_ROLE = 2
+    PARENT_ROLE = 3
+
     def __init__(self):
         self.user_repo = UserRepository()
 
@@ -46,3 +51,32 @@ class AuthService:
             return {"status": "error", "message": "Las contraseñas no coinciden."}
         
         return {"status": "success"}
+
+    # ✅ SIMPLIFICADO - Solo reglas de dominio esenciales
+    def get_role_display_name(self, role: int) -> str:
+        """Regla de dominio: nombre del rol para mostrar"""
+        role_names = {
+            self.UNKNOWN_ROLE: "Unknown",
+            self.TEACHER_ROLE: "Profesor",
+            self.PARENT_ROLE: "Padre",
+            self.ADMIN_ROLE: "Administrador"
+        }
+        return role_names.get(role, "Usuario")
+    
+    def can_access_qualification(self, role: int) -> bool:
+        """Regla de dominio: solo profesores pueden calificar"""
+        return role == self.TEACHER_ROLE
+    
+    def is_admin(self, role: int) -> bool:
+        """Regla de dominio: verificar si es administrador"""
+        return role == self.ADMIN_ROLE
+    
+    def get_user_permissions(self, role: int) -> list:
+        """Regla de dominio: permisos por rol"""
+        permissions_map = {
+            self.UNKNOWN_ROLE: ["view_grades", "view_profile"],
+            self.TEACHER_ROLE: ["qualify_students", "view_courses", "view_reports"],
+            self.PARENT_ROLE: ["view_children", "view_messages"],
+            self.ADMIN_ROLE: ["manage_users", "manage_courses", "view_all_reports"]
+        }
+        return permissions_map.get(role, [])

@@ -1,0 +1,38 @@
+<!-- templates/dashboards/base_dashboard.html -->
+{% extends 'layout.html' %}
+
+{% block title %}Dashboard - {{ role_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .dashboard-card {
+    transition: transform 0.2s ease;
+    border: none;
+    border-radius: 15px;
+  }
+  .dashboard-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header común -->
+    {% include 'dashboards/partials/header.html' %}
+    
+    <!-- Contenido específico por rol -->
+    {% if user_role == 0 %}
+        {% include 'dashboards/partials/unknown.html' %}
+    {% elif user_role == 1 %}
+        {% include 'dashboards/partials/teacher_content.html' %}
+    {% elif user_role == 2 %}
+        {% include 'dashboards/partials/admin_content.html' %}
+    {% elif user_role == 3 %}
+        {% include 'dashboards/partials/parent_content.html' %}
+    {% else %}
+        {% include 'dashboards/partials/default_content.html' %}
+    {% endif %}
+</div>
+{% endblock %}
