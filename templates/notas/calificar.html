@@ -75,8 +75,7 @@
               </select>
             </div>
 
-            <div>
-            <h2>Courses</h2>
+            <!-- Selección de Curso -->
             <div class="mb-3">
               <label for="course_id" class="form-label">📚 Curso:</label>
               <select name="course_id" id="course_id" class="form-select" required>
@@ -84,20 +83,6 @@
                 {% for course in courses %}
                   <option value="{{ course.id }}">{{ course.name }}</option>
                 {% endfor %}
-              </select>
-            </div>
-
-            <!-- Selección de Curso -->
-            <div class="mb-3">
-              <label for="course_id" class="form-label">📚 Curso:</label>
-              <select name="course_id" id="course_id" class="form-select" required>
-                <option value="">Seleccionar curso...</option>
-                <option value="1">Matemáticas</option>
-                <option value="2">Ciencias Naturales</option>
-                <option value="3">Historia</option>
-                <option value="4">Lenguaje</option>
-                <option value="5">Inglés</option>
-                <option value="6">Educación Física</option>
               </select>
             </div>
 

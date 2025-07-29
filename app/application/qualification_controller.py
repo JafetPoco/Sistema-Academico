@@ -48,7 +48,7 @@ class QualificationController:
             repository = GradeRepository()
             service = CalificacionService(repository)
 
-            service.calificar_alumno(grade_data)
+            service.calificate_student(grade_data)
             return jsonify({"mensaje": "Calificación registrada exitosamente"}), 201
         except Exception as e:
             return jsonify({"error": "Error interno del servidor: " + str(e)}), 500

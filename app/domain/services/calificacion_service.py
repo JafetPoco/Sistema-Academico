@@ -5,10 +5,7 @@ class CalificacionService:
     def __init__(self, calificacion_repo):
         self.calificacion_repo = calificacion_repo
 
-    def calificar_alumno(self, grade_data):
-        if not (0 <= grade_data['score'] <= 20):
-            raise ValueError("La nota debe estar entre 0 y 20")
-        
+    def calificate_student(self, grade_data):     
         grade = Grade(
             grade_id=str(uuid.uuid4()),
             student_id=grade_data['student_id'],
