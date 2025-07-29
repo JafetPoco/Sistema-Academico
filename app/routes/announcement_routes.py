@@ -16,10 +16,10 @@ def list_all():
 
 @anuncios_bp.route('/admin', methods=['GET', 'POST'])
 def admin_panel():
-    role = session.get("role")
+    role    = session.get("role")
     user_id = session.get("user_id")
 
-    if role is None or user_id is None or role != 2:
+    if role != 2 or user_id is None:
         return redirect(url_for('main.index'))
 
     controller = AnnouncementController()

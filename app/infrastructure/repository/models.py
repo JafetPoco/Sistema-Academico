@@ -19,8 +19,8 @@ class AnnouncementDTO(db.Model):
     __tablename__ = 'announcements'
 
     announcement_id = Column(Integer, primary_key=True)
-    course_id       = Column(Integer, ForeignKey('courses.course_id'),  nullable=False)
-    user_id         = Column(Integer, ForeignKey('users.user_id'),      nullable=False)
+    course_id       = Column(Integer, ForeignKey('courses.course_id'),  nullable=True)
+    user_id         = Column(Integer, ForeignKey('users.user_id'),      nullable=True)
     title           = Column(String(255), nullable=False)
     content         = Column(Text, nullable=False)
     is_private      = Column(Boolean, default=False)
