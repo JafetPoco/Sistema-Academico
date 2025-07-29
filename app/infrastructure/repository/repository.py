@@ -24,6 +24,8 @@ from app.infrastructure.repository.mapper import (
 from app.domain.entities import User, Announcement, Grade, Parent, Course, Student, Admin, Professor
 import logging
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import or_
+from typing import List
 
 class BaseRepository:
     dto = None
@@ -107,6 +109,23 @@ class UserRepository(BaseRepository):
 class AnnouncementRepository(BaseRepository):
     dto = AnnouncementDTO
     mapper = AnnouncementMapper
+
+    def find_public(self) -> List[Announcement]:
+        dtos = self.dto.query.filter_by(is_private=False).all()
+        return [self.mapper.to_domain(d) for d in dtos]
+
+    def find_private(self) -> List[Announcement]:
+        dtos = self.dto.query.filter_by(is_private=True).all()
+        return [self.mapper.to_domain(d) for d in dtos]
+
+    def find_private_for_user(self, user_id: int) -> List[Announcement]:
+        dtos = (
+            self.dto.query
+                .filter(self.dto.is_private.is_(True))
+                .filter_by(user_id=user_id)
+                .all()
+        )
+        return [self.mapper.to_domain(d) for d in dtos]
 
 class GradeRepository(BaseRepository):
     dto = GradeDTO

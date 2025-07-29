@@ -1,28 +1,16 @@
 from flask import session, render_template
 from app.domain.services.announcement_service import AnnouncementService
-from app.domain.entities import User
 
-def view_announcements():
+def get_announcements():
     service = AnnouncementService()
 
-    role = session.get('role')
-    if role is None:
-        user = None
-    else:
-        user = User(
-            user_id=session.get('user_id'),
-            email=session.get('email'),
-            full_name=session.get('name'),
-            role=role,
-            password_hash=''
-        )
+    user_id = session.get("user_id")
+    role = session.get("role", 0)
 
-    public_announcements  = service.get_public_announcements()
-    private_announcements = service.get_announcements_for_user(user) if user else []
+    public = service.get_public_announcements()
+    private = []
 
-    return render_template(
-        'anuncios/anuncios.html',
-        public_announcements=public_announcements,
-        private_announcements=private_announcements,
-        role=role
-    )
+    if user_id is not None:
+        private = service.get_private_announcements_for_user(user_id)
+
+    return public, private, role
