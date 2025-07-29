@@ -112,6 +112,20 @@ class GradeRepository(BaseRepository):
     dto = GradeDTO
     mapper = GradeMapper
 
+    def get_scores_with_student_names_by_course(self, course_id: int):
+        query = (
+            db.session.query(
+                GradeDTO.score,
+                StudentDTO.user_id,
+                UserDTO.full_name
+            )
+            .join(StudentDTO, GradeDTO.student_id == StudentDTO.user_id)
+            .join(UserDTO, StudentDTO.user_id == UserDTO.user_id)
+            .filter(GradeDTO.course_id == course_id)
+        )
+
+        return query.all()
+    
 class ParentRepository(BaseRepository):
     dto = ParentDTO
     mapper = ParentMapper
