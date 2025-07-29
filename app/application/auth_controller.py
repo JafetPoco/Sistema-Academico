@@ -20,13 +20,13 @@ def do_login(email, password):
     return redirect(url_for("main.index"))
 
 def do_register(full_name, email, password, confirm):
-    is_valid, error_message = auth_service.validate_registration_data(full_name, email, password, confirm)
-    if not is_valid:
-        return render_template(REGISTER_TEMPLATE, message={"type": "error", "text": error_message})
+    is_valid = auth_service.validate_registration_data(full_name, email, password, confirm)
+    if is_valid["status"] == "error":
+        return render_template(REGISTER_TEMPLATE, message={"type": "error", "text": is_valid["message"]})
 
-    user, err = auth_service.register_user(full_name, email, password)
-    if err:
-        return render_template(REGISTER_TEMPLATE, message={"type": "error", "text": err})
+    result = auth_service.register_user(full_name, email, password)
+    if result["status"] == "error":
+        return render_template(REGISTER_TEMPLATE, message={"type": "error", "text": result["message"]})
 
     return render_template(REGISTER_TEMPLATE, message={"type": "success", "text": "Se registraron sus datos correctamente. Su cuenta se activará en un plazo máximo de 5 días."})
 
