@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+
+{% block title %}Panel anuncios - EDUNET {% endblock title %}
+
+{% block content %}
+  {% include "navbar.html" %}
+  <div class="container mt-5" style="padding-top: 5%;">
+
+    <h2 class="mb-4">
+      <i class="bi bi-tools me-2"></i>Panel de Administración de Anuncios
+    </h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('anuncios.admin_panel') }}">
+      <div class="mb-3">
+        <label for="title" class="form-label">Título</label>
+        <input type="text" class="form-control" id="title" name="title" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="content" class="form-label">Contenido</label>
+        <textarea class="form-control" id="content" name="content" rows="4" required></textarea>
+      </div>
+
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" value="1" id="is_private" name="is_private">
+        <label class="form-check-label" for="is_private">
+          ¿Es Privado?
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-primary">
+        <i class="bi bi-send-check me-1"></i>Publicar Anuncio
+      </button>
+      <a href="{{ url_for('anuncios.list_all') }}" class="btn btn-secondary ms-2">Volver</a>
+    </form>
+  </div>
+{% endblock content %}
