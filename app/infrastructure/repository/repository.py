@@ -120,6 +120,53 @@ class CourseRepository(BaseRepository):
     dto = CourseDTO
     mapper = CourseMapper
 
+    def get_courses_by_professor(self, professor_id):
+        try:
+            result = db.session.query(
+                CourseDTO.course_id,
+                CourseDTO.name,
+                CourseDTO.professor_id
+            ).filter(
+                CourseDTO.professor_id == professor_id
+            ).all()
+            
+            courses_data = []
+            for row in result:
+                course_info = {
+                    'id': row.course_id,
+                    'name': row.name,
+                    'professor_id': row.professor_id
+                }
+                courses_data.append(course_info)
+            
+            return courses_data, None
+            
+        except Exception as e:
+            logging.error(f"Error getting courses for professor {professor_id}: {e}")
+            return [], f"Error: {str(e)}"
+    
+    def get_all_courses(self):
+        try:
+            result = db.session.query(
+                CourseDTO.course_id,
+                CourseDTO.name,
+                CourseDTO.professor_id
+            ).all()
+            
+            courses_data = []
+            for row in result:
+                course_info = {
+                    'id': row.course_id,
+                    'name': row.name,
+                    'professor_id': row.professor_id
+                }
+                courses_data.append(course_info)
+            
+            return courses_data, None
+            
+        except Exception as e:
+            return [], f"Error: {str(e)}"
+
 class StudentRepository(BaseRepository):
     dto = StudentDTO
     mapper = StudentMapper

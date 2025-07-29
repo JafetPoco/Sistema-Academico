@@ -75,6 +75,18 @@
               </select>
             </div>
 
+            <div>
+            <h2>Courses</h2>
+            <div class="mb-3">
+              <label for="course_id" class="form-label">📚 Curso:</label>
+              <select name="course_id" id="course_id" class="form-select" required>
+                <option value="">Seleccionar curso...</option>
+                {% for course in courses %}
+                  <option value="{{ course.id }}">{{ course.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
             <!-- Selección de Curso -->
             <div class="mb-3">
               <label for="course_id" class="form-label">📚 Curso:</label>
@@ -103,17 +115,6 @@
                 placeholder="Ingrese la nota..."
                 required>
               <div class="form-text">Ingrese una nota entre 0 y 20 puntos</div>
-            </div>
-
-            <!-- Observaciones -->
-            <div class="mb-4">
-              <label for="observations" class="form-label">💬 Observaciones (opcional):</label>
-              <textarea 
-                name="observations" 
-                id="observations" 
-                class="form-control" 
-                rows="3" 
-                placeholder="Comentarios adicionales..."></textarea>
             </div>
 
             <!-- Botones -->

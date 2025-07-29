@@ -1,6 +1,7 @@
 from flask import render_template, jsonify
-from app.infrastructure.repository.repository import GradeRepository, StudentRepository
+from app.infrastructure.repository.repository import GradeRepository, StudentRepository, CourseRepository
 from app.domain.services.student_service import StudentService
+from app.domain.services.course_service import CourseService
 from app.domain.services.calificacion_service import CalificacionService
 import uuid
 
@@ -12,13 +13,21 @@ class QualificationController:
         try:
             student_repository = StudentRepository()
             student_service = StudentService(student_repository)
-            
             students = student_service.get_all_students_with_name()
+
+            course_repository = CourseRepository()
+            course_service = CourseService(course_repository)
+
+            user_role = '1' #Temporal, en producción se obtiene del contexto de sesión
+
+            if user_role == '1':
+                professor_id = 3 # Temporal, en producción se obtiene del contexto de sesión
+                courses = course_service.get_courses_by_professor(professor_id)
 
             if not students:
                 return render_template(QUALIFICATION_TEMPLATE, error="No hay estudiantes disponibles para calificar.", tipe_mensage="warning")
 
-            return render_template(QUALIFICATION_TEMPLATE, estudiantes=students, mensaje=None, tipe_mensage=None)
+            return render_template(QUALIFICATION_TEMPLATE, estudiantes=students, courses=courses, mensaje=None, tipe_mensage=None)
         except Exception as e:
             error_menssage = f"Error al cargar los estudiantes: {str(e)}"
             return render_template(QUALIFICATION_TEMPLATE, error=error_menssage, tipe_mensage="danger")
