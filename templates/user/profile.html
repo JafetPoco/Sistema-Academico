@@ -4,8 +4,9 @@
 Perfil de Usuario
 {% endblock title %}
 
+{% include "navbar.html" %}
 {% block content %}
-<div class="container-fluid mt-4">
+<div class="container-fluid mt-4 p-5">
     <h2 class="mb-4">Mi Perfil</h2>
 
     <div class="card p-4">
@@ -23,8 +24,8 @@ Perfil de Usuario
     </div>
 
     <div class="mt-4">
-        <a href="{{ url_for('auth.do_logout') }}" class="btn btn-danger">Cerrar sesión</a>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-danger">Cerrar sesión</a>
     </div>
 </div>
-{% endblock %}
+{% endblock content %}
 

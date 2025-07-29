@@ -1,5 +1,6 @@
 {% extends './layout.html' %}
 
+{% block title %}Inicio - EDUNET{% endblock title %}
 {% block content %}
 {% include "navbar.html" %}
     <div class="container pt-5">
@@ -7,7 +8,7 @@
         <p class="long-text">Tu espacio escolar digital.<br>Consulta tus notas, recibe anuncios importantes, mantente al día con tus actividades académicas y mucho más, todo desde un solo lugar. Pensado para estudiantes, padres y docentes, EDUNET conecta a toda la comunidad educativa de forma simple, rápida y segura</p>
     </div>
     <div class="container-fluid p-0 mt-5 mb-5">
-        <img class="main-img" src="{{ url_for('static', filename='img/img2.jpg') }}">
+        <img class="main-img" src="{{ url_for('static', filename='img/img2.jpg') }}" alt="EDUNET">
     </div>
 
     <div class="container">
