@@ -2,6 +2,8 @@
 
 {% block title %}Anuncios - EDUNET{% endblock title %}
 
+{% block title %}Anuncios - EDUNET{% endblock title %}
+
 {% block content %}
 {% include "navbar.html" %}
 <div class="container mt-4" style="padding-top: 5%;">
@@ -37,11 +39,8 @@
 
   {% if role == 2 %}
     <div class="mt-4">
-      <a class="btn btn-success me-2" href="{#{ url_for('anuncios.create_public') }#}">
-        <i class="bi bi-plus-circle me-1"></i>Create Public
-      </a>
-      <a class="btn btn-warning" href="{#{ url_for('anuncios.create_private') }#}">
-        <i class="bi bi-shield-lock me-1"></i>Create Private
+      <a class="btn btn-success me-2" href="{{ url_for('anuncios.admin_panel') }}">
+        <i class="bi bi-plus-circle me-1"></i>Crear anuncio publico/privado
       </a>
     </div>
   {% endif %}
