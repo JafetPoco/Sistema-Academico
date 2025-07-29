@@ -33,6 +33,9 @@ class AuthService:
         if not user:
             return {"status": "error", "message": "Usuario no registrado"}
 
+        if user.role == 0:
+            return {"status": "error", "message": "Aun no se activo su cuenta, contáctese con un administrador si cree que esto se trata de un error."}
+
         if not check_password_hash(user.password_hash, password):
             return {"status": "error", "message": "Contraseña incorrecta"}
 
