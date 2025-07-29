@@ -126,6 +126,53 @@ class CourseRepository(BaseRepository):
     dto = CourseDTO
     mapper = CourseMapper
 
+    def get_courses_by_professor(self, professor_id):
+        try:
+            result = db.session.query(
+                CourseDTO.course_id,
+                CourseDTO.name,
+                CourseDTO.professor_id
+            ).filter(
+                CourseDTO.professor_id == professor_id
+            ).all()
+            
+            courses_data = []
+            for row in result:
+                course_info = {
+                    'id': row.course_id,
+                    'name': row.name,
+                    'professor_id': row.professor_id
+                }
+                courses_data.append(course_info)
+            
+            return courses_data, None
+            
+        except Exception as e:
+            logging.error(f"Error getting courses for professor {professor_id}: {e}")
+            return [], f"Error: {str(e)}"
+    
+    def get_all_courses(self):
+        try:
+            result = db.session.query(
+                CourseDTO.course_id,
+                CourseDTO.name,
+                CourseDTO.professor_id
+            ).all()
+            
+            courses_data = []
+            for row in result:
+                course_info = {
+                    'id': row.course_id,
+                    'name': row.name,
+                    'professor_id': row.professor_id
+                }
+                courses_data.append(course_info)
+            
+            return courses_data, None
+            
+        except Exception as e:
+            return [], f"Error: {str(e)}"
+
 class StudentRepository(BaseRepository):
     dto = StudentDTO
     mapper = StudentMapper
@@ -136,6 +183,34 @@ class StudentRepository(BaseRepository):
         except Exception as e:
             logging.error(f"Error fetching students by parent_id: {e}")
             return []
+    def get_students_with_names(self):
+        try:
+            # Query con INNER JOIN
+            result = db.session.query(
+                UserDTO.full_name,    # u.full_name
+                UserDTO.user_id       # u.user_id
+            ).select_from(StudentDTO).join(   # FROM students s INNER JOIN users u
+                UserDTO, StudentDTO.user_id == UserDTO.user_id
+            ).all()
+            
+            # Convertir resultado a lista de diccionarios
+            students_data = []
+            for row in result:
+                student_info = {
+                    'id': row.user_id,
+                    'name': row.full_name
+                }
+                students_data.append(student_info)
+            
+            return students_data, None  # (result, error)
+            
+        except SQLAlchemyError as e:
+            logging.error(f"Database error getting students with names: {e}")
+            return [], f"Error de base de datos: {str(e)}"
+        except Exception as e:
+            logging.error(f"Unexpected error getting students with names: {e}")
+            return [], f"Error inesperado: {str(e)}"
+
 class AdminRepository(BaseRepository):
     dto = AdminDTO
     mapper = AdminMapper

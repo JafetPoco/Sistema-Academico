@@ -1,23 +1,21 @@
-from flask import Blueprint, request, jsonify, render_template
-from app.infrastructure.database import get_session
-from infrastructure import CalificacionRepositorioImpl
-from app.services.calificacion_service import CalificacionService
+from flask import Blueprint, request
+from app.application.qualification_controller import QualificationController
+from app.infrastructure.web.decorators import professor_only
+
 
 calificaciones_bp = Blueprint('calificaciones', __name__)
 
 @calificaciones_bp.route('/calificar', methods=['GET'])
-def calificar_form():
-    return render_template('calificar.html')
+@professor_only
+def show_qualification_form():
+    return QualificationController.show_form()
 
 @calificaciones_bp.route('/calificar', methods=['POST'])
-def calificar():
-    data = request.json
-    session = get_session()
-    repo = CalificacionRepositorioImpl(session)
-    service = CalificacionService(repo)
-    calificacion = service.calificar_alumno(
-        estudiante_id=data['estudiante_id'],
-        curso_id=data['curso_id'],
-        puntaje=data['puntaje']
-    )
-    return jsonify({"calificacion_id": calificacion.calificacion_id}), 201
+@professor_only
+def submit_qualification():
+    data = {
+        'student_id': request.form.get('student_id'),
+        'course_id': request.form.get('course_id'),
+        'score': request.form.get('score')
+    }
+    return QualificationController.create_qualification(data)
