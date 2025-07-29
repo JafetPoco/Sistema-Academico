@@ -52,9 +52,7 @@ class AuthService:
         
         return {"status": "success"}
 
-    # ✅ SIMPLIFICADO - Solo reglas de dominio esenciales
     def get_role_display_name(self, role: int) -> str:
-        """Regla de dominio: nombre del rol para mostrar"""
         role_names = {
             self.UNKNOWN_ROLE: "Unknown",
             self.TEACHER_ROLE: "Profesor",
@@ -64,15 +62,12 @@ class AuthService:
         return role_names.get(role, "Usuario")
     
     def can_access_qualification(self, role: int) -> bool:
-        """Regla de dominio: solo profesores pueden calificar"""
         return role == self.TEACHER_ROLE
     
     def is_admin(self, role: int) -> bool:
-        """Regla de dominio: verificar si es administrador"""
         return role == self.ADMIN_ROLE
     
     def get_user_permissions(self, role: int) -> list:
-        """Regla de dominio: permisos por rol"""
         permissions_map = {
             self.UNKNOWN_ROLE: ["view_grades", "view_profile"],
             self.TEACHER_ROLE: ["qualify_students", "view_courses", "view_reports"],

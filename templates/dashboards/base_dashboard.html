@@ -5,23 +5,39 @@
 
 {% block extra_css %}
 <style>
+  .dashboard-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid #dee2e6;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 20px 0;
+    margin-bottom: 30px;
+  }
+  
   .dashboard-card {
     transition: transform 0.2s ease;
     border: none;
     border-radius: 15px;
   }
+  
   .dashboard-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+  
+  .role-badge {
+    font-size: 0.9rem;
+    padding: 8px 16px;
+    border-radius: 20px;
   }
 </style>
 {% endblock %}
 
 {% block content %}
+<!-- Header de ancho completo -->
+{% include 'dashboards/partials/header.html' %}
+
+<!-- Contenido principal -->
 <div class="container mt-4">
-    <!-- Header común -->
-    {% include 'dashboards/partials/header.html' %}
-    
     <!-- Contenido específico por rol -->
     {% if user_role == 0 %}
         {% include 'dashboards/partials/unknown.html' %}
