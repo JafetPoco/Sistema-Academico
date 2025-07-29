@@ -1,0 +1,1 @@
+from .decorators import login_required, role_required, professor_only

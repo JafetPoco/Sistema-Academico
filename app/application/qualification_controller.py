@@ -1,9 +1,8 @@
-from flask import render_template, jsonify
+from flask import render_template, jsonify, session
 from app.infrastructure.repository.repository import GradeRepository, StudentRepository, CourseRepository
 from app.domain.services.student_service import StudentService
 from app.domain.services.course_service import CourseService
 from app.domain.services.calificacion_service import CalificacionService
-import uuid
 
 QUALIFICATION_TEMPLATE = 'notas/calificar.html'
 
@@ -11,18 +10,15 @@ class QualificationController:
     @staticmethod
     def show_form():
         try:
+            user_id = session.get('user_id')
+
             student_repository = StudentRepository()
             student_service = StudentService(student_repository)
             students = student_service.get_all_students_with_name()
 
             course_repository = CourseRepository()
             course_service = CourseService(course_repository)
-
-            user_role = '1' #Temporal, en producción se obtiene del contexto de sesión
-
-            if user_role == '1':
-                professor_id = 3 # Temporal, en producción se obtiene del contexto de sesión
-                courses = course_service.get_courses_by_professor(professor_id)
+            courses = course_service.get_courses_by_professor(user_id)
 
             if not students:
                 return render_template(QUALIFICATION_TEMPLATE, error="No hay estudiantes disponibles para calificar.", tipe_mensage="warning")
