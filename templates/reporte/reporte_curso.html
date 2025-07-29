@@ -1,0 +1,31 @@
+{% extends "reporte/layout_reporte.html" %}
+
+{% block title %}Notas - {{ curso }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/reports.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="reporte-simple">
+  <h1 class="titulo-reporte">Reporte de Notas</h1>
+
+  <table class="tabla-simple">
+    <thead>
+      <tr>
+        <th>Estudiante</th>
+        <th>Nota</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in grades %}
+      <tr>
+        <td>{{ item.student_name }}</td>
+        <td>{{ item.score }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+</div>
+{% endblock %}
