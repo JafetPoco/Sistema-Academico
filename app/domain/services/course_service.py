@@ -11,7 +11,7 @@ class CourseService:
             courses_data, error = self.course_repository.get_courses_by_professor(professor_id)
             
             if error:
-                raise Exception(error)
+                raise RuntimeError(error)
             
             # Aplicar validaciones de dominio
             valid_courses = [
@@ -24,16 +24,16 @@ class CourseService:
         except ValueError as e:
             raise e
         except Exception as e:
-            raise Exception(f"Error obteniendo cursos del profesor: {str(e)}")
+            raise RuntimeError(f"Error obteniendo cursos del profesor: {str(e)}")
     
     def get_all_courses(self):
         try:
             courses_data, error = self.course_repository.get_all_courses()
             
             if error:
-                raise Exception(error)
+                raise RuntimeError(error)
             
             return courses_data
             
         except Exception as e:
-            raise Exception(f"Error obteniendo cursos: {str(e)}")
+            raise RuntimeError(f"Error obteniendo cursos: {str(e)}")
