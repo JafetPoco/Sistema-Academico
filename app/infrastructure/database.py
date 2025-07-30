@@ -8,9 +8,6 @@ db = SQLAlchemy()
 
 load_dotenv()
 
-# logging.basicConfig()
-# logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
-
 SessionLocal = None
 
 def init_db(app):
