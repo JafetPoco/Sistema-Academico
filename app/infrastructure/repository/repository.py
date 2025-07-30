@@ -106,6 +106,14 @@ class UserRepository(BaseRepository):
 
     def create(self, user: User):
         return self.add(user)
+    
+    def list_by_role(self, role: int):
+        try:
+            dtos = self.dto.query.filter_by(role=role).all()
+            return [self.mapper.to_domain(d) for d in dtos]
+        except Exception as e:
+            logging.error(f"Error listing users by role {role}: {e}")
+            return []
 
 
 class AnnouncementRepository(BaseRepository):

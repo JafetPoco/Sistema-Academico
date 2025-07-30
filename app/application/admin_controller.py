@@ -12,3 +12,16 @@ class AdminController:
     def handle_get_users(self):
         users = self.service.get_users()
         return users
+    
+    def handle_create_course(self, course_data):
+        if self.service.create_course(course_data):
+            return "success", "Curso creado correctamente."
+        return "danger", "Error al crear el curso."
+
+    def handle_get_courses(self):
+        courses = self.service.get_courses()
+        return courses
+    
+    def handle_get_professors(self):
+        professors = self.service.get_professors()
+        return professors

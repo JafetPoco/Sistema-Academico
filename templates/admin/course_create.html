@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+
+{% block title %}Crear Curso - EDUNET{% endblock title %}
+
+{% block content %}
+{% include "navbar.html" %}
+<div class="container mt-5 pt-5">
+  <h1 class="mb-4"><i class="bi bi-book-fill me-2"></i>Crear Curso</h1>
+  {% if error %}
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ error }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+  </div>
+  {% endif %}
+  <form method="POST" action="{{ url_for('admin.create_course') }}">
+    <div class="mb-3">
+      <label for="name" class="form-label">Nombre del Curso</label>
+      <input type="text" class="form-control" id="name" name="name" required>
+    </div>
+    <div class="mb-3">
+      <label for="professor" class="form-label">Profesor</label>
+      <select class="form-select" id="professor" name="professor_id" required>
+        <option value="">Seleccionar Profesor</option>
+        {% for professor in professors %}
+        <option value="{{ professor.user_id }}">{{ professor.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Crear Curso</button>
+  </form>
+</div>
+
+{% endblock content %}
