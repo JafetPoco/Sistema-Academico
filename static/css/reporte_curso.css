@@ -1,3 +1,14 @@
+/* Fondo con imagen */
+body {
+  background-image: url("../../static/img/pattern.png") !important;
+  background-repeat: repeat;
+  background-size: 500px 500px;
+  min-height: 100vh;
+  padding: 2rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Contenedor del reporte */
 .reporte-container {
   max-width: 800px;
   margin: 40px auto;
@@ -7,6 +18,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+/* Título del reporte */
 .titulo-reporte {
   text-align: center;
   margin-bottom: 30px;
@@ -15,12 +27,12 @@
   color: #343a40;
 }
 
+/* Tabla básica */
 .tabla-simple {
   width: 100%;
   border-collapse: collapse;
   font-size: 16px;
 }
-
 
 .tabla-simple th,
 .tabla-simple td {
@@ -33,15 +45,16 @@
   background-color: #f8f9fa;
 }
 
+/* Scroll en la tabla */
 .tabla-scroll {
-  max-height: 300px;           /* Altura máxima visible */
-  overflow-y: auto;            /* Scroll vertical si es necesario */
-  overflow-x: auto;            /* Scroll horizontal opcional */
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: auto;
   border: 1px solid #dee2e6;
   border-radius: 8px;
 }
 
-/* Mantener el encabezado fijo al hacer scroll */
+/* Encabezado fijo */
 .tabla-simple thead {
   position: sticky;
   top: 0;
