@@ -127,11 +127,11 @@ pip install -r requirements.txt
 ## Codificacion limpia (Clean Code)
 Aplicamos un conjunto de principios y prácticas de Clean Code para desarrollar este proyecto. Nuestro objetivo es que el código sea fácil de leer, entender, mantener y extender a lo largo del tiempo.
 
-### Nombres significativos
+### Variables
 Utilizamos nombres claros y descriptivos para variables, funciones, clases y archivos, de modo que reflejen su propósito real dentro del sistema.
 #### Ejemplo:
 En **app/infrastructure/repository/repository.py**, se define con nombres claros y descriptivos para las varibles:
-```bash
+```python
 class CourseRepository(BaseRepository):
     dto = CourseDTO
     mapper = CourseMapper
@@ -142,11 +142,12 @@ class CourseRepository(BaseRepository):
 **CourseRepository** indica claramente que se trata de un repositorio para manejar cursos.
 **get_courses_by_professor** describe con precisión qué hace el método: obtener los cursos dictados por un profesor.
 **professor_id** como parámetro deja claro que se espera un identificador de profesor, no de otra entidad.
-### Funciones con responsabilidad unica
+
+### Funciones
 Cada clase o función se enfoca en hacer una sola cosa. Esto facilita las pruebas, el mantenimiento y la comprensión del sistema.
 #### Ejemplo:
 En **app/application/services/auth_service.py**, la clase AuthService tiene responsabilidades claras y bien separadas:
-```bash
+```python
 class AuthService:
     def register_user(self, user_data): ...
     def authenticate(self, email, password): ...
@@ -161,13 +162,180 @@ class AuthService:
 **authenticate**: Verifica las credenciales de acceso.
 **validate_registration_data**: Realiza validaciones sobre los datos de entrada antes del registro.
 **get_role_display_name, can_access_qualification, is_admin, get_user_permissions**: Gestionan aspectos específicos del rol del usuario.
-### Evitar código duplicado
-Evitamos repetir lógica innecesaria en distintas partes del sistema. Cuando detectamos que varias clases o funciones hacen lo mismo, extraemos esa lógica en una función o clase reutilizable.
-Esto sigue el principio **DRY (Don’t Repeat Yourself)**, que ayuda a mantener el código limpio, fácil de modificar y menos propenso a errores.
+
+### Clases
+Modelamos las clases para encapsular datos y comportamientos relacionados, asegurándome de que cada clase tuviera una única responsabilidad siempre que fue posible.
+#### Ejemplo de clase con responsabilidad definida:
+En **app/infrastructure/repository/repository.py**
+```python
+class CourseRepository:
+     # Responsabilidad: Gestionar el acceso y manipulación de datos de cursos
+     def get_courses_by_professor(self, professor_id):
+         ...
+     def get_all_courses(self):
+         ...
+```
+
+#### I. Single Responsibility Principle (SRP)
+Principio de Responsabilidad Única
+##### Ejemplo:
+En **app/domain/services/course_service.py**
+```python
+class CourseService:
+    # Única responsabilidad: Lógica de negocio relacionada con los cursos
+     def get_courses_by_professor(self, professor_id: int):
+        # Lógica para obtener cursos por profesor y aplicar validaciones de dominio.
+        ...
+```
+En **app/application/announcement_controller.py**
+```python
+class AnnouncementController:
+     # Única responsabilidad: Manejar las solicitudes HTTP relacionadas con los anuncios.
+     def get_all_announcements(self):
+         # Delega la lógica de negocio a AnnouncementService.
+         ...
+```
+#### II. Open/Closed Principle (OCP)
+Principio Abierto/Cerrado, abiertas para extensión, pero cerradas para modificación.
+##### Ejemplo:
+En app/infrastructure/repository/repository.py
+```python
+class BaseRepository:
+    # Métodos CRUD genéricos
+    def add(self, entity):
+        ...
+    def get_by_id(self, entity_id):
+        ...
+
+class UserRepository(BaseRepository):
+    # Se extiende BaseRepository sin modificarla
+    def get_user_by_email(self, email):
+        # Lógica específica para usuarios
+        ...
+
+class CourseRepository(BaseRepository):
+    # Se extiende BaseRepository sin modificarla
+    def get_courses_by_professor(self, professor_id):
+        # Lógica específica para cursos
+        ...
+```
+#### III. Liskov Substitution Principle (LSP)
+Principio de Sustitución de Liskov
+
+##### Ejemplo:
+En app/infrastructure/repository/repository.py
+```python
+class BaseRepository:
+    def __init__(self, db_session):
+        self.db_session = db_session
+
+    def add(self, entity):
+        # Lógica común para añadir una entidad
+        self.db_session.add(entity)
+        self.db_session.commit()
+        return entity
+
+    def get_by_id(self, model, entity_id):
+        # Lógica común para obtener por ID
+        return self.db_session.query(model).get(entity_id)
+
+class UserRepository(BaseRepository):
+    def __init__(self, db_session):
+        super().__init__(db_session)
+        self.model = User # Asumiendo que User es el modelo para UserRepository
+
+    # Puede añadir métodos específicos o sobrescribir si es necesario,
+    # pero debe mantener la coherencia con BaseRepository
+    def get_user_by_email(self, email: str):
+        return self.db_session.query(self.model).filter_by(email=email).first()
+
+class CourseRepository(BaseRepository):
+    def __init__(self, db_session):
+        super().__init__(db_session)
+        self.model = Course # Asumiendo que Course es el modelo para CourseRepository
+
+    # Puede añadir métodos específicos o sobrescribir
+    def get_courses_by_professor(self, professor_id: int):
+        # Lógica específica para cursos por profesor
+        return self.db_session.query(self.model).filter_by(professor_id=professor_id).all()
+```
+La existencia de una clase base BaseRepository de la que heredan repositorios 
+
+#### IV. Interface Segregation Principle (ISP)
+Principio de Segregación de Interfaces
+##### Ejemplo:
+En app/infrastructure/repository/repository.py, Los repositorios se comportan como interfaces segregadas para sus respectivos clientes.
+```python
+class UserRepository:
+    def __init__(self, db_session):
+        self.db_session = db_session
+        # ... métodos específicos de usuario ...
+    def get_user_by_email(self, email: str):
+        # ...
+        pass
+    def save_user(self, user):
+        # ...
+        pass
+
+class CourseRepository:
+    def __init__(self, db_session):
+        self.db_session = db_session
+        # ... métodos específicos de curso ...
+    def get_all_courses(self):
+        # ...
+        pass
+    def get_courses_by_professor(self, professor_id: int):
+        # ...
+        pass
+```
+En app/domain/services/auth_service.py, (un "cliente" del UserRepository).
+```python
+class AuthService:
+    def __init__(self, user_repository: UserRepository):
+        self.user_repository = user_repository
+    def register_user(self, username, email, password, role_id):
+        # AuthService solo interactúa con UserRepository, no con CourseRepository
+        user = self.user_repository.save_user(User(username=username, email=email, password=password, role_id=role_id))
+        return user
+```
+En app/domain/services/course_service.py (un "cliente" del CourseRepository)
+```python
+class CourseService:
+    def __init__(self, course_repository: CourseRepository):
+        self.course_repository = course_repository
+    def get_courses_for_professor(self, professor_id: int):
+        # CourseService solo interactúa con CourseRepository, no con UserRepository
+        return self.course_repository.get_courses_by_professor(professor_id)
+```
+
+#### V. Dependency Inversion Principle (DIP)
+Principio de Inversión de Dependencias
+##### Ejemplo:
+En app/application/admin_controller.py se observa claramente,AdminService es una abstracción para el controlador 
+```python
+from app.domain.services.admin_service import AdminService
+
+class AdminController:
+    def __init__(self, admin_service: AdminService):
+        self.admin_service = admin_service
+```
+ 
+En app/domain/services/admin_service.py tambien exite una abstraccion, UserRepository es una abstracción para el servicio
+```python
+from app.infrastructure.repository.repository import UserRepository
+
+class AdminService:
+    def __init__(self, user_repository: UserRepository):
+        self.user_repository = user_repository
+        ...
+```
+
+### Don't Repeat Yourself (DRY)
+Evitamos repetir lógica innecesaria en distintas partes del sistema.
 
 #### Ejemplo:
 En **app/infrastructure/repository/repository.py**, se definió una clase base llamada BaseRepository que centraliza las operaciones comunes como agregar, eliminar, actualizar y obtener registros desde la base de datos:
-```bash
+```python
 class BaseRepository:
     def add(self, domain_obj): ...
     def remove(self, obj_id): ...
@@ -177,11 +345,12 @@ class BaseRepository:
 
 ```
 Luego, los repositorios específicos como UserRepository, CourseRepository, GradeRepository, etc., heredan esta clase y **evitan duplicar** la misma lógica en cada uno.
+
 ### Comentarios útiles y mínimos
 En el proyecto evitamos comentarios innecesarios que solo repiten lo que el código ya expresa. En su lugar, agregamos comentarios solo cuando es necesario explicar el por qué de una decisión, el propósito de una operación compleja o una validación importante.
 ### Ejemplo:
 En **app/infrastructure/repository/repository.py**, los métodos del EnrollmentRepository usan comentarios breves y precisos antes de funciones específicas para dejar claro qué hacen sin redundar:
-```bash
+```python
 def enroll_user(self, user_id: int, course_id: int):
     """Matricular un usuario en un curso"""
     try:
