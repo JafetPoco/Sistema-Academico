@@ -163,9 +163,56 @@ class GradeRepository(BaseRepository):
             logging.error(f"Error fetching grades by student_id: {e}")
             return []
         
+    def get_grades_by_student(self, student_id: int):
+        try:
+            grades_dto = self.dto.query.filter_by(student_id=student_id).all()
+            grades = []
+            for dto in grades_dto:
+                try:
+                    grade = self.mapper.to_domain(dto)
+                    grades.append(grade)
+                except Exception as e:
+                    grades.append({
+                        'score': dto.score,
+                        'student_id': dto.student_id,
+                        'course_id': dto.course_id
+                    })
+
+            return grades, None
+
+        except Exception as e:
+            return [], f"Error: {str(e)}"
+
+        
 class ParentRepository(BaseRepository):
     dto = ParentDTO
     mapper = ParentMapper
+
+    def get_children_by_parent(self, parent_id: int):
+        try:
+            children_query = db.session.query(
+                UserDTO.user_id,
+                UserDTO.full_name,
+                UserDTO.email
+            ).join(
+                StudentDTO, StudentDTO.user_id == UserDTO.user_id
+            ).filter(
+                StudentDTO.parent_id == parent_id,
+                UserDTO.role == 0
+            ).all()
+            
+            children = []
+            for row in children_query:
+                children.append({
+                    'id': row.user_id,
+                    'name': row.full_name,
+                    'email': row.email,
+                    'relationship': 'Hijo/a'
+                })
+            return children, None
+
+        except Exception as e:
+            return [], f"Error: {str(e)}"
 
 class CourseRepository(BaseRepository):
     dto = CourseDTO
