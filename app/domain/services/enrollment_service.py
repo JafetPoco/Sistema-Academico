@@ -51,3 +51,27 @@ class EnrollmentService:
             
         except Exception as e:
             return False, f"Error validando acceso: {str(e)}"
+        
+    def get_count_students_enrollment(self, course_id: int):
+        count_students = self.enrollment_repo.count_students_by_course(course_id)
+        return count_students
+    
+    def get_professor_courses_with_student_counts(self, professor_id: int):
+        try:
+            courses, error = self.get_professor_courses(professor_id)
+            if error:
+                return [], error
+            
+            course_with_counts = []
+            for course in courses:
+                count = self.get_count_students_enrollment(course['id'])
+                course_with_counts.append({
+                    'id': course['id'],
+                    'nombre': course['name'],
+                    'student_count': count
+                })
+            
+            return course_with_counts, None
+        
+        except Exception as e:
+            return [], f"Error al obtener cursos con conteo de estudiantes: {str(e)}"
