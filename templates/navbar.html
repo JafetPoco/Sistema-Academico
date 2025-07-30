@@ -13,7 +13,7 @@
                     {% if session.role == 3 %}
                       <a class="nav-link active" href="{{ url_for('grades_routes.parent_query_grades') }}">Calificaciones</a>
                     {% endif %}
-                    <a class="nav-link active" href="#">Cursos</a>
+                    <a class="nav-link active" href="{{ url_for('courses.dashboard')}}">Cursos</a>
                     {% if session.email %}
                     <a class="nav-link active" href="{{ url_for('user.profile') }}">Mi perfil</a>
                       <a href="{{ url_for('auth.logout') }}" class="btn btn-dark">Logout</a>
