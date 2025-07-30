@@ -99,9 +99,6 @@ class Professor:
         self.professor_id = professor_id
         self.courses = []  # List[Course]
 
-    def create_announcement(self, announcement):
-        pass
-
     def grade_student(self, student, course, score: int):
         if course not in self.courses:
             raise ValueError("This professor does not teach the course.")
