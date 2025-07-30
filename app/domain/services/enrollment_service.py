@@ -1,11 +1,12 @@
 # app/domain/services/enrollment_service.py
-from app.infrastructure.repository.repository import EnrollmentRepository, UserRepository, CourseRepository
+from app.infrastructure.repository.repository import EnrollmentRepository, UserRepository, CourseRepository, GradeRepository
 
 class EnrollmentService:
     def __init__(self):
         self.enrollment_repo = EnrollmentRepository()
         self.user_repo = UserRepository()
         self.course_repo = CourseRepository()
+        self.grade_repo = GradeRepository()
 
     def get_students_enrolled_in_course(self, course_id: int):
         try:
@@ -65,13 +66,19 @@ class EnrollmentService:
             course_with_counts = []
             for course in courses:
                 count = self.get_count_students_enrollment(course['id'])
+
+                # Obtener el promedio de calificaciones del curso
+                average = self.grade_repo.get_average_by_course_id(course['id'])
+
                 course_with_counts.append({
                     'id': course['id'],
-                    'nombre': course['name'],
-                    'student_count': count
+                    'nombre': course['name'],  # o 'course['nombre']' si ya está así en tu base
+                    'student_count': count,
+                    'average_score': average  # se añade el promedio
                 })
             
             return course_with_counts, None
         
         except Exception as e:
             return [], f"Error al obtener cursos con conteo de estudiantes: {str(e)}"
+
