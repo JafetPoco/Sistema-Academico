@@ -12,7 +12,7 @@ courses_bp = Blueprint('courses', __name__, url_prefix='/cursos')
 @courses_bp.route('/dashboard', methods=['GET'])
 def dashboard():
 
-    return render_template('cursos/dashboard_courses.html')
+    return render_template('cursos/dashboard_cursos.html')
 
 """
 
