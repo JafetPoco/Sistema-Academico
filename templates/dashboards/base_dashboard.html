@@ -4,33 +4,8 @@
 {% block title %}Dashboard - {{ role_name }}{% endblock %}
 
 {% block extra_css %}
-<style>
-  .dashboard-header {
-    background-color: #ffffff;
-    border-bottom: 1px solid #dee2e6;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    padding: 20px 0;
-    margin-bottom: 30px;
-  }
-  
-  .dashboard-card {
-    transition: transform 0.2s ease;
-    border: none;
-    border-radius: 15px;
-  }
-  
-  .dashboard-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  }
-  
-  .role-badge {
-    font-size: 0.9rem;
-    padding: 8px 16px;
-    border-radius: 20px;
-  }
-</style>
-{% endblock %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/base_dashboard.css') }}">
+{% endblock extra_css %}
 
 {% block content %}
 <!-- Header de ancho completo -->
