@@ -96,3 +96,21 @@ class ProfessorDTO(db.Model):
 
     def __repr__(self):
         return f"<ProfessorDTO(id={self.professor_id})>"
+    
+
+class EnrollmentDTO(db.Model):
+    __tablename__ = 'enrollments'
+
+    enrollment_id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.user_id'), nullable=False)
+    course_id = Column(Integer, ForeignKey('courses.course_id'), nullable=False)
+
+    user = relationship('UserDTO', backref='enrollments')
+    course = relationship('CourseDTO', backref='enrollments')
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'course_id', name='unique_user_course'),
+    )
+
+    def __repr__(self):
+        return f"<EnrollmentDTO(id={self.enrollment_id}, user_id={self.user_id}, course_id={self.course_id})>"

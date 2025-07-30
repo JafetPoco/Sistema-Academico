@@ -112,3 +112,12 @@ class Professor:
 
     def __repr__(self):
         return f"<Professor(id={self.professor_id})>"
+    
+class Enrollment:
+    def __init__(self, enrollment_id, user_id, course_id):
+        self.enrollment_id = enrollment_id
+        self.user_id = user_id
+        self.course_id = course_id
+
+    def __repr__(self):
+        return f"<Enrollment(id={self.enrollment_id}, user_id={self.user_id}, course_id={self.course_id})>"

@@ -8,7 +8,8 @@ from app.infrastructure.repository.models import (
     CourseDTO,
     StudentDTO,
     AdminDTO,
-    ProfessorDTO
+    ProfessorDTO,
+    EnrollmentDTO
 )
 from app.infrastructure.repository.mapper import (
     UserMapper,
@@ -18,10 +19,11 @@ from app.infrastructure.repository.mapper import (
     CourseMapper,
     StudentMapper,
     AdminMapper,
-    ProfessorMapper
+    ProfessorMapper,
+    EnrollmentMapper
 )
 
-from app.domain.entities import User, Announcement, Grade, Parent, Course, Student, Admin, Professor
+from app.domain.entities import User, Announcement, Grade, Parent, Course, Student, Admin, Professor, Enrollment
 import logging
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import or_
@@ -237,3 +239,109 @@ class AdminRepository(BaseRepository):
 class ProfessorRepository(BaseRepository):
     dto = ProfessorDTO
     mapper = ProfessorMapper
+
+class EnrollmentRepository(BaseRepository):
+    dto = EnrollmentDTO
+    mapper = EnrollmentMapper
+
+    def get_by_user_id(self, user_id: int):
+        """Obtener todas las matrículas de un usuario"""
+        try:
+            enrollments_dto = self.dto.query.filter_by(user_id=user_id).all()
+            return [self.mapper.to_domain(dto) for dto in enrollments_dto]
+        except Exception as e:
+            logging.error(f"Error fetching enrollments by user_id: {e}")
+            return []
+
+    def get_by_course_id(self, course_id: int):
+        """Obtener todas las matrículas de un curso"""
+        try:
+            enrollments_dto = self.dto.query.filter_by(course_id=course_id).all()
+            return [self.mapper.to_domain(dto) for dto in enrollments_dto]
+        except Exception as e:
+            logging.error(f"Error fetching enrollments by course_id: {e}")
+            return []
+
+    def get_user_courses_with_names(self, user_id: int):
+        """Obtener cursos de un usuario con nombres"""
+        try:
+            result = db.session.query(
+                CourseDTO.course_id,
+                CourseDTO.name
+            ).select_from(EnrollmentDTO).join(
+                CourseDTO, EnrollmentDTO.course_id == CourseDTO.course_id
+            ).filter(
+                EnrollmentDTO.user_id == user_id
+            ).all()
+            
+            courses_data = []
+            for row in result:
+                course_info = {
+                    'id': row.course_id,
+                    'name': row.name
+                }
+                courses_data.append(course_info)
+            
+            return courses_data, None
+            
+        except Exception as e:
+            logging.error(f"Error getting user courses with names: {e}")
+            return [], f"Error: {str(e)}"
+
+    def get_course_students_with_names(self, course_id: int):
+        """Obtener estudiantes de un curso con nombres"""
+        try:
+            result = db.session.query(
+                UserDTO.user_id,
+                UserDTO.full_name
+            ).select_from(EnrollmentDTO).join(
+                UserDTO, EnrollmentDTO.user_id == UserDTO.user_id
+            ).filter(
+                EnrollmentDTO.course_id == course_id
+            ).all()
+            
+            students_data = []
+            for row in result:
+                student_info = {
+                    'id': row.user_id,
+                    'name': row.full_name
+                }
+                students_data.append(student_info)
+            
+            return students_data, None
+            
+        except Exception as e:
+            logging.error(f"Error getting course students with names: {e}")
+            return [], f"Error: {str(e)}"
+
+    def is_user_enrolled(self, user_id: int, course_id: int):
+        """Verificar si un usuario está matriculado en un curso"""
+        try:
+            enrollment = self.dto.query.filter_by(
+                user_id=user_id,
+                course_id=course_id
+            ).first()
+            return enrollment is not None
+        except Exception as e:
+            logging.error(f"Error checking enrollment: {e}")
+            return False
+
+    def enroll_user(self, user_id: int, course_id: int):
+        """Matricular un usuario en un curso"""
+        try:
+            # Verificar si ya existe
+            if self.is_user_enrolled(user_id, course_id):
+                return None, "El usuario ya está matriculado en este curso"
+            
+            # Crear nueva matrícula
+            enrollment = Enrollment(
+                enrollment_id=None,
+                user_id=user_id,
+                course_id=course_id
+            )
+            
+            return self.add(enrollment)
+            
+        except Exception as e:
+            logging.error(f"Error enrolling user: {e}")
+            return None, f"Error: {str(e)}"

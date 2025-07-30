@@ -8,7 +8,8 @@ from app.domain.entities import (
     Course,
     Student,
     Admin,
-    Professor
+    Professor,
+    Enrollment
 )
 
 from app.infrastructure.repository.models import (
@@ -19,7 +20,8 @@ from app.infrastructure.repository.models import (
     CourseDTO,
     StudentDTO,
     AdminDTO,
-    ProfessorDTO
+    ProfessorDTO,
+    EnrollmentDTO
 )
 
 class UserMapper:
@@ -145,3 +147,20 @@ class ProfessorMapper:
     @staticmethod
     def to_dto(domain: Professor) -> ProfessorDTO:
         return ProfessorDTO(professor_id=domain.professor_id)
+
+class EnrollmentMapper:
+    @staticmethod
+    def to_domain(dto: EnrollmentDTO) -> Enrollment:
+        return Enrollment(
+            enrollment_id=dto.enrollment_id,
+            user_id=dto.user_id,
+            course_id=dto.course_id
+        )
+
+    @staticmethod
+    def to_dto(domain: Enrollment) -> EnrollmentDTO:
+        return EnrollmentDTO(
+            enrollment_id=domain.enrollment_id,
+            user_id=domain.user_id,
+            course_id=domain.course_id
+        )
