@@ -182,6 +182,26 @@ class GradeRepository(BaseRepository):
 
         except Exception as e:
             return [], f"Error: {str(e)}"
+        
+    def get_average_by_course_id(self, course_id: int):
+        try:
+            scores = (
+                db.session.query(GradeDTO.score)
+                .filter(GradeDTO.course_id == course_id)
+                .all()
+            )
+
+            score_list = [score for (score,) in scores]
+
+            if not score_list:
+                return 0.0
+
+            average = sum(score_list) / len(score_list)
+            return round(average, 2)
+        except Exception as e:
+            logging.error(f"Error al calcular promedio sin func para curso {course_id}: {e}")
+            return 0.0
+
 
         
 class ParentRepository(BaseRepository):
@@ -421,3 +441,12 @@ class EnrollmentRepository(BaseRepository):
         except Exception as e:
             logging.error(f"Error enrolling user: {e}")
             return None, f"Error: {str(e)}"
+        
+    def count_students_by_course(self, course_id: int):
+        """Contar cuántos estudiantes están matriculados en un curso"""
+        try:
+            count_students = db.session.query(EnrollmentDTO).filter_by(course_id=course_id).count()
+            return count_students
+        except Exception as e:
+            logging.error(f"Error counting students in course {course_id}: {e}")
+            return 0
