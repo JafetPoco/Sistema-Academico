@@ -1,14 +1,54 @@
 {% extends "reporte/layout_reporte.html" %}
 
-{% block title %}Notas - {{ curso }}{% endblock %}
+{% block title %}Notas - {{ course_name }}{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/reports.css') }}">
+
+<style>
+  .reporte-container {
+    max-width: 800px;
+    margin: 40px auto;
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .titulo-reporte {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #343a40;
+  }
+
+  .tabla-simple {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+  }
+
+  .tabla-simple thead {
+    background-color: #007bff;
+    color: white;
+  }
+
+  .tabla-simple th,
+  .tabla-simple td {
+    padding: 12px 15px;
+    border: 1px solid #dee2e6;
+    text-align: center;
+  }
+
+  .tabla-simple tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+  }
+</style>
 {% endblock %}
 
 {% block body %}
-<div class="reporte-simple">
-  <h1 class="titulo-reporte">Reporte de Notas</h1>
+<div class="reporte-container">
+  <h1 class="titulo-reporte">Reporte de Notas del curso {{ course_name }}</h1>
 
   <table class="tabla-simple">
     <thead>
@@ -26,6 +66,5 @@
       {% endfor %}
     </tbody>
   </table>
-
 </div>
 {% endblock %}

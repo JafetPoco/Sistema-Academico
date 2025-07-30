@@ -1,0 +1,55 @@
+
+
+{% extends 'layout.html' %}
+
+{% block extra_css %}
+<style>
+  .form-wrapper {
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .card-title {
+    font-weight: 600;
+    color: #333;
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="form-wrapper">
+        <h2 class="card-title">📊 Reporte por Curso</h2>
+
+        <form method="GET" action="{{ url_for('reportes.course_report') }}">
+          <!-- Selección de Curso -->
+          <div class="mb-3">
+            <label for="course_id" class="form-label">📚 Selecciona un curso:</label>
+            <select name="course_id" id="course_id" class="form-select" required>
+              <option value="">Seleccionar curso...</option>
+              {% for course in courses %}
+                <option value="{{ course.id }}">{{ course.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Botón -->
+          <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+            <button type="submit" class="btn btn-info">
+              📄 Mostrar Reporte
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
