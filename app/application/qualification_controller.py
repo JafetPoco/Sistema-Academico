@@ -1,7 +1,7 @@
-from flask import render_template, jsonify, session
-from app.infrastructure.repository.repository import GradeRepository, StudentRepository, CourseRepository
-from app.domain.services.student_service import StudentService
-from app.domain.services.course_service import CourseService
+# app/application/qualification_controller.py
+from flask import render_template, jsonify, session, request
+from app.infrastructure.repository.repository import GradeRepository
+from app.domain.services.enrollment_service import EnrollmentService
 from app.domain.services.calificacion_service import CalificacionService
 
 QUALIFICATION_TEMPLATE = 'notas/calificar.html'
@@ -10,24 +10,69 @@ class QualificationController:
     @staticmethod
     def show_form():
         try:
-            user_id = session.get('user_id')
+            professor_id = session.get('user_id')
+            if not professor_id:
+                return render_template(QUALIFICATION_TEMPLATE, 
+                                     mensaje="Error de sesión. Inicia sesión nuevamente.", 
+                                     tipo_mensaje="danger")
 
-            student_repository = StudentRepository()
-            student_service = StudentService(student_repository)
-            students = student_service.get_all_students_with_name()
+            enrollment_service = EnrollmentService()
+            
+            # Obtener cursos del profesor
+            courses, error = enrollment_service.get_professor_courses(professor_id)
+            if error:
+                return render_template(QUALIFICATION_TEMPLATE, 
+                                     mensaje=f"Error obteniendo cursos: {error}", 
+                                     tipo_mensaje="danger")
 
-            course_repository = CourseRepository()
-            course_service = CourseService(course_repository)
-            courses = course_service.get_courses_by_professor(user_id)
+            if not courses:
+                return render_template(QUALIFICATION_TEMPLATE, 
+                                     mensaje="No tienes cursos asignados para calificar.", 
+                                     tipo_mensaje="warning")
+
+            # Solo mostrar cursos, los estudiantes se cargarán dinámicamente
+            return render_template(QUALIFICATION_TEMPLATE, 
+                                 courses=courses, 
+                                 estudiantes=None,
+                                 mensaje=None, 
+                                 tipo_mensaje=None)
+
+        except Exception as e:
+            return render_template(QUALIFICATION_TEMPLATE, 
+                                 mensaje=f"Error interno: {str(e)}", 
+                                 tipo_mensaje="danger")
+
+    @staticmethod
+    def get_students_by_course():
+        try:
+            course_id = request.args.get('course_id')
+            professor_id = session.get('user_id')
+            
+            if not course_id or not professor_id:
+                return jsonify({"error": "Parámetros faltantes"}), 400
+
+            enrollment_service = EnrollmentService()
+            
+            has_access, error = enrollment_service.validate_professor_course_access(
+                professor_id, int(course_id)
+            )
+            
+            if not has_access:
+                return jsonify({"error": error or "No tienes acceso a este curso"}), 403
+
+            students, error = enrollment_service.get_students_enrolled_in_course(int(course_id))
+            
+            if error:
+                return jsonify({"error": error}), 500
 
             if not students:
-                return render_template(QUALIFICATION_TEMPLATE, error="No hay estudiantes disponibles para calificar.", tipe_mensage="warning")
+                return jsonify({"message": "No hay estudiantes matriculados en este curso"}), 200
 
-            return render_template(QUALIFICATION_TEMPLATE, estudiantes=students, courses=courses, mensaje=None, tipe_mensage=None)
+            return jsonify({"students": students}), 200
+
         except Exception as e:
-            error_menssage = f"Error al cargar los estudiantes: {str(e)}"
-            return render_template(QUALIFICATION_TEMPLATE, error=error_menssage, tipe_mensage="danger")
-    
+            return jsonify({"error": f"Error interno: {str(e)}"}), 500
+
     @staticmethod
     def create_qualification(data):
         validation_error = QualificationController._validate_input(data)
@@ -35,9 +80,26 @@ class QualificationController:
             return jsonify({"error": validation_error}), 400
         
         try:
+            professor_id = session.get('user_id')
+            course_id = int(data['course_id'])
+            
+            enrollment_service = EnrollmentService()
+            has_access, error = enrollment_service.validate_professor_course_access(
+                professor_id, course_id
+            )
+            
+            if not has_access:
+                return jsonify({"error": error or "No tienes permisos para calificar en este curso"}), 403
+
+            student_id = int(data['student_id'])
+            is_enrolled = enrollment_service.enrollment_repo.is_user_enrolled(student_id, course_id)
+            
+            if not is_enrolled:
+                return jsonify({"error": "El estudiante no está matriculado en este curso"}), 400
+
             grade_data = {
-                'student_id': int(data['student_id']),
-                'course_id': int(data['course_id']),
+                'student_id': student_id,
+                'course_id': course_id,
                 'score': float(data['score'])
             }
 
@@ -46,33 +108,31 @@ class QualificationController:
 
             service.calificate_student(grade_data)
             return jsonify({"mensaje": "Calificación registrada exitosamente"}), 201
+
+        except ValueError as ve:
+            return jsonify({"error": str(ve)}), 400
         except Exception as e:
-            return jsonify({"error": "Error interno del servidor: " + str(e)}), 500
+            return jsonify({"error": f"Error interno del servidor: {str(e)}"}), 500
     
     @staticmethod
     def _validate_input(data):
         required_fields = ['student_id', 'course_id', 'score']
         for field in required_fields:
             if not data.get(field):
-                return f"Campo '{field}' es obligatorio"        
+                return f"Campo '{field}' es obligatorio"
+        
         try:
             score = float(data['score'])
         except ValueError:
-            return "El campo 'score' debe ser un número."
+            return "El campo 'score' debe ser un número válido"
         
         if not (0 <= score <= 20):
-            return "La calificación debe estar entre 0 y 20."
+            return "La calificación debe estar entre 0 y 20"
         
-        return None  # Sin errores
-    
-    @staticmethod
-    def _get_students_mock():
-        """Obtener lista de estudiantes (mock temporal)"""
-        # En producción, esto vendría de un servicio o repositorio
-        return [
-            {'id': 1, 'name': 'Juan Pérez'},
-            {'id': 2, 'name': 'María García'},
-            {'id': 3, 'name': 'Carlos López'}
-        ]
-
-
+        try:
+            int(data['student_id'])
+            int(data['course_id'])
+        except ValueError:
+            return "Los IDs deben ser números válidos"
+        
+        return None
