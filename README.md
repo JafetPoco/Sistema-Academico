@@ -1,5 +1,27 @@
 # Sistema-Academico EDUNET
-Integrantes
+
+## Índice
+
+- [Sistema-Academico EDUNET](#sistema-academico-edunet)
+  - [Índice](#índice)
+  - [Integrantes](#integrantes)
+  - [Propósito](#propósito)
+    - [Funcionalidades de Alto Nivel](#funcionalidades-de-alto-nivel)
+    - [Diagrama de Casos de Uso UML](#diagrama-de-casos-de-uso-uml)
+    - [Prototipo (GUI)](#prototipo-gui)
+  - [Modelo de Dominio Clean Architecture](#modelo-de-dominio-clean-architecture)
+    - [Estructura de Carpetas](#estructura-de-carpetas)
+    - [Principales Entidades](#principales-entidades)
+    - [Módulos](#módulos)
+  - [Requisitos](#requisitos)
+- [Practicas de desarrollo de software](#practicas-de-desarrollo-de-software)
+  - [Reporte SonarLint](#reporte-sonarlint)
+  - [Convenciones de codificacion PEP8 para python](#convenciones-de-codificacion-pep8-para-python)
+  - [Codificacion limpia (Clean Code)](#codificacion-limpia-clean-code)
+  - [Principios SOLID](#principios-solid)
+
+
+## Integrantes
 - ALEXANDER HUAYHUA PEREZ
 - JAFET POCO CHIRE
 - BERLY DUEÑAS MANDAMIENTOS
@@ -9,7 +31,7 @@ Integrantes
 
 ## Propósito
 
-**EDUNET** es un sistema académico digital diseñado para conectar a estudiantes, padres y docentes en una sola plataforma. Permite la gestión de notas, anuncios, actividades académicas y comunicación eficiente dentro de la comunidad educativa, facilitando el acceso seguro y centralizado a la información escolar.
+**EDUNET** es un sistema académico digital diseñado para conectar a estudiantes, padres y docentes en una sola plataforma. Permite la gestión de notas, anuncios y comunicación eficiente dentro de la comunidad educativa, facilitando el acceso seguro y centralizado a la información escolar.
 
 ---
 
@@ -35,31 +57,9 @@ La interfaz principal incluye:
 
 ---
 
-## Modelo de Dominio
+## Modelo de Dominio Clean Architecture
 
-#### Principales Entidades
-
-- **Usuario**: Base para Estudiante, Profesor, Padre, Administrador.
-- **Curso**: Relaciona estudiantes y profesores.
-- **Anuncio**: Publicado por profesores/administradores.
-- **Calificación**: Asociada a estudiantes y cursos.
-- **Asistencia**: Registro de asistencia por curso y estudiante.
-
-#### Módulos
-
-- `domain/entities`: Entidades y repositorios del dominio.
-- `infrastructure/repository`: Implementaciones de acceso a datos.
-- `domain/services`: Lógica de negocio y servicios de aplicación.
-- `application`: Controladores.
-- `routes`: Endpoints web.
-- `templates`: Plantillas HTML para la GUI.
-- `config`: Configuración de la aplicación.
-
----
-
-![Diagrama de Clases Arquitectura](docs/diagramaUML.png)
-
-#### Estructura de Carpetas
+### Estructura de Carpetas
 ```
 Sistema-Academico/
 ├── app/
@@ -73,6 +73,29 @@ Sistema-Academico/
 ├── static/
 └── templates/
 ```
+
+### Principales Entidades
+
+- **Usuario**: Base para Estudiante, Profesor, Padre, Administrador.
+- **Curso**: Relaciona estudiantes y profesores.
+- **Anuncio**: Publicado por profesores/administradores.
+- **Calificación**: Asociada a estudiantes y cursos.
+- **Asistencia**: Registro de asistencia por curso y estudiante.
+
+### Módulos
+
+- `domain/entities`: Entidades y repositorios del dominio.
+- `infrastructure/repository`: Implementaciones de acceso a datos.
+- `domain/services`: Lógica de negocio y servicios de aplicación.
+- `application`: Controladores.
+- `routes`: Endpoints web.
+- `templates`: Plantillas HTML para la GUI.
+- `config`: Configuración de la aplicación.
+
+---
+
+![Diagrama de Clases Arquitectura](docs/diagramaUML.png)
+
 - **app/domain/services**: Servicios de aplicación (notificaciones, reportes).
 - **app/domain/entities**: Entidades y contratos del dominio.
 - **infrastructure/repository**: Implementaciones de acceso a datos.
@@ -87,8 +110,20 @@ Sistema-Academico/
 - Flask
 - SQLAlchemy
 - MySQL Connector
+- dotenv
+- Base de datos relacional MySQL
 
 Instalar dependencias:
 ```bash
 pip install -r requirements.txt
 ```
+
+# Practicas de desarrollo de software
+
+## Reporte SonarLint
+
+## Convenciones de codificacion PEP8 para python
+
+## Codificacion limpia (Clean Code)
+
+## Principios SOLID
