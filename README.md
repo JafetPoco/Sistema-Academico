@@ -21,16 +21,26 @@
     - [3. MySQL database passwords should not be disclosed (secrets:S6697)](#3-mysql-database-passwords-should-not-be-disclosed-secretss6697)
     - [4. Unused local variables should be removed (python:S1481)](#4-unused-local-variables-should-be-removed-pythons1481)
   - [Convenciones de codificacion PEP8 para python](#convenciones-de-codificacion-pep8-para-python)
-  - [Codificacion limpia (Clean Code)](#codificacion-limpia-clean-code)
-    - [Nombres significativos](#nombres-significativos)
-      - [Ejemplo:](#ejemplo)
-    - [Funciones con responsabilidad unica](#funciones-con-responsabilidad-unica)
-      - [Ejemplo:](#ejemplo-1)
-    - [Evitar código duplicado](#evitar-código-duplicado)
-      - [Ejemplo:](#ejemplo-2)
+    - [Clases (PascalCase)](#clases-pascalcase)
+    - [Funciones y Métodos (snake_case)](#funciones-y-métodos-snake_case)
+    - [Variables (snake_case)](#variables-snake_case)
+    - [Constantes (UPPER_SNAKE_CASE)](#constantes-upper_snake_case)
+  - [Codificación limpia (Clean Code) y Principios SOLID](#codificacion-limpia-clean-code-y-principios-solid)
+    - [Variables](#variables)
+      - [Ejemplo](#ejemplo)
+    - [Funciones](#funciones)
+      - [Ejemplo](#ejemplo-1)
+    - [Clases](#clases)
+      - [Ejemplo de clase con responsabilidad definida](#ejemplo-de-clase-con-responsabilidad-definida)
+      - [I. Single Responsibility Principle (SRP)](#i-single-responsibility-principle-srp)
+      - [II. Open/Closed Principle (OCP)](#ii-openclosed-principle-ocp)
+      - [III. Liskov Substitution Principle (LSP)](#iii-liskov-substitution-principle-lsp)
+      - [IV. Interface Segregation Principle (ISP)](#iv-interface-segregation-principle-isp)
+      - [V. Dependency Inversion Principle (DIP)](#v-dependency-inversion-principle-dip)
+    - [Don't Repeat Yourself (DRY)](#dont-repeat-yourself-dry)
+      - [Ejemplo](#ejemplo-2)
     - [Comentarios útiles y mínimos](#comentarios-útiles-y-mínimos)
-    - [Ejemplo:](#ejemplo-3)
-  - [Principios SOLID](#principios-solid)
+      - [Ejemplo](#ejemplo-3)
 
 
 ## Integrantes
@@ -230,8 +240,23 @@ Utilizar `_` para indicar que la variable no se usará, o eliminarla si no es ne
 
 
 ## Convenciones de codificacion PEP8 para python
+El proyecto "Sistema-Academico EDUNET" se adhiere a las directrices de estilo PEP 8, el estándar de facto para el código Python. Esto asegura la legibilidad, coherencia y mantenibilidad del código a lo largo de todo el proyecto.
+### Clases (PascalCase)
+**BaseRepository, UserRepository, AuthService, AnnouncementController.**
+### Funciones y Métodos (snake_case)
+Ejemplo:
+**register_user, authenticate, get_all_courses, get_courses_by_professor**
+### Variables (snake_case)
+Ejemplo:
+**professor_id, db_session, user_repository**
+### Constantes (UPPER_SNAKE_CASE)
+Ejemplo:
+**UNKNOWN_ROLE = 0**
+**TEACHER_ROLE = 1**
+**ADMIN_ROLE = 2**
+**PARENT_ROLE = 3**
 
-## Codificacion limpia (Clean Code)
+## Codificacion limpia (Clean Code) y Principios SOLID
 Aplicamos un conjunto de principios y prácticas de Clean Code para desarrollar este proyecto. Nuestro objetivo es que el código sea fácil de leer, entender, mantener y extender a lo largo del tiempo.
 
 ### Variables
@@ -465,5 +490,3 @@ def enroll_user(self, user_id: int, course_id: int):
         if self.is_user_enrolled(user_id, course_id):
             return None, "El usuario ya está matriculado en este curso"
 ```
-
-## Principios SOLID
