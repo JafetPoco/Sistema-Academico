@@ -16,8 +16,10 @@ def do_login(email, password):
     session["email"] = user.email
     session["name"] = user.full_name
     session["role"] = user.role
+    session["role_display"] = auth_service.get_role_display_name(user.role)
+    session["permissions"] = auth_service.get_user_permissions(user.role)
 
-    return redirect(url_for("main.index"))
+    return redirect(url_for("dashboard.main"))
 
 def do_register(full_name, email, password, confirm):
     is_valid = auth_service.validate_registration_data(full_name, email, password, confirm)
@@ -38,4 +40,5 @@ def show_login():
 
 def do_logout():
     session.clear()
+    return redirect(url_for("auth.login_get"))
 
