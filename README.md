@@ -16,11 +16,6 @@
     - [Módulos](#módulos)
   - [Requisitos](#requisitos)
 - [Practicas de desarrollo de software](#practicas-de-desarrollo-de-software)
-  - [Reporte SonarLint](#reporte-sonarlint)
-    - [1. Literales de Cadena Duplicadas](#1-literales-de-cadena-duplicadas)
-    - [2. Clase/Funcion/Metodo no cumple la convención de nombres (python:S101)](#2-clasefuncionmetodo-no-cumple-la-convención-de-nombres-pythons101)
-    - [3. MySQL database passwords should not be disclosed (secrets:S6697)](#3-mysql-database-passwords-should-not-be-disclosed-secretss6697)
-    - [4. Unused local variables should be removed (python:S1481)](#4-unused-local-variables-should-be-removed-pythons1481)
   - [Convenciones de codificacion PEP8 para python](#convenciones-de-codificacion-pep8-para-python)
     - [Clases (PascalCase)](#clases-pascalcase)
     - [Funciones y Métodos (snake\_case)](#funciones-y-métodos-snake_case)
@@ -179,101 +174,6 @@ pip install -r requirements.txt
 ```
 
 # Practicas de desarrollo de software
-
-## Reporte SonarLint
-
-### 1. Literales de Cadena Duplicadas  
-**Regla:** `python:S1192`  
-**Descripción:** String literals should not be duplicated  
-**Ubicación:** Múltiples archivos (por ejemplo, `repository.py`, `controller.py`)  
-**Tipo:** Code Smell
-
-Se encontraron múltiples ocurrencias de literales como `'courses.course_id'` y `'users.user_id'`.  
-Esto puede dificultar el mantenimiento y la refactorización del código.
-
-**Solución:**
-
-Definir constantes con nombres descriptivos:
-```
-COURSE_ID = 'courses.course_id'
-USER_ID = 'users.user_id'
-```
-
-### 2. Clase/Funcion/Metodo no cumple la convención de nombres (python:S101)
-
-**Regla:** `python:S101`  
-**Descripción:** Los nombres de las clases deben coincidir con una expresión regular configurada (por defecto: `^_?([A-Z_][a-zA-Z0-9]*|[a-z_][a-z0-9_]*)$`).  
-**Ubicación:** Clase `Anuncio_rep`  
-**Tipo:** Code Smell
-
-El nombre `Anuncio_rep` no coincide con la convención recomendada (CapWords o snake_case para clases utilizadas como callables).  
-
-**Solución:**
-
-Renombrar la clase respetando “PascalCase”, por ejemplo:
-
-```python
-class AnnouncementRepository:
-    ...
-```
-
-De la misma forma usando snake_case para las funciones:
-
-```python
-def get_announcement_by_id(self, announcement_id):
-    ...
-```
-
-### 3. MySQL database passwords should not be disclosed (secrets:S6697)
-
-**Regla:** `secrets:S6697`  
-**Descripción:** Si una contraseña de base de datos MySQL aparece en el código fuente, puede ser divulgada accidentalmente y comprometer la seguridad del sistema.  
-**Ubicación:** Literales visibles de contraseñas en archivos de código o configuración.  
-**Tipo:** Vulnerabilidad (Security Hotspot)
-
-La presencia de contraseñas en texto plano facilita su exposición, ya sea por inspección del código, logs o análisis.
-
-**Solución recomendada:**
-
-- Mover la contraseña a un archivo de configuración externo que no forme parte del control de versiones  usando el paquete dotenv y un archivo `.env`:
-- Asegurarse de que esa ubicación tenga permisos restringidos.
-- Cargar la contraseña en tiempo de ejecución desde variables de entorno o archivos seguros, evitando integrarla en el código.
-
-```ini
-# .env
-MYSQL_PASSWORD=mi_password_segura
-```
-
-### 4. Unused local variables should be removed (python:S1481)
-
-**Regla:** `python:S1481`  
-**Descripción:** Las variables locales declaradas pero no utilizadas deben eliminarse. Mantener variables no usadas degrada la legibilidad y puede indicar código innecesario o errores potenciales ([Sonar](https://rules.sonarsource.com/python/RSPEC-1481)) :contentReference[oaicite:0]{index=0}
-
-Ejemplo no conforme:
-
-```python
-def handle_create(self, form_data: dict, user_id: int):
-    title = form_data.get('title', '').strip()
-    content = form_data.get('content', '').strip()
-    is_private = bool(form_data.get('is_private'))
-    course_id = form_data.get('course_id') or None  # Optional
-
-    if not title or not content:
-        return "danger", "Título y contenido son obligatorios."
-
-    created, err = self.service.create()
-
-    if err:
-        return "danger", f"Error al crear el anuncio: {err}"
-
-    return "success", "Anuncio creado correctamente."
-```
-
-En este ejemplo, la variable `created` se define pero no se utiliza en el resto de la función, lo que genera una advertencia de SonarLint.
-
-**Solución:**
-Utilizar `_` para indicar que la variable no se usará, o eliminarla si no es necesaria:
-
 
 ## Convenciones de codificacion PEP8 para python
 El proyecto "Sistema-Academico EDUNET" se adhiere a las directrices de estilo PEP 8, el estándar de facto para el código Python. Esto asegura la legibilidad, coherencia y mantenibilidad del código a lo largo de todo el proyecto.
@@ -525,5 +425,4 @@ def enroll_user(self, user_id: int, course_id: int):
         # Verificar si ya existe
         if self.is_user_enrolled(user_id, course_id):
             return None, "El usuario ya está matriculado en este curso"
->>>>>>> dev
 ```
