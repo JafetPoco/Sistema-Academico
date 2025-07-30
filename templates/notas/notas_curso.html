@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ curso }} – Notas</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/notas_style.css') }}">
+</head>
+<body>
+  <!-- HEADER / HERO -->
+  <header class="hero">
+    <nav class="navbar">
+      <a href="#" class="logo">Cuenta Padre</a>
+      <ul class="nav-links">
+        <li><a href="#">Anuncios</a></li>
+        <li><a href="#">Notas</a></li>
+      </ul>
+    </nav>
+    <div class="hero-content">
+      <h1>{{ curso }}</h1>
+      <p class="profesor">{{ profesor }}</p>
+    </div>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="container">
+    <table class="grades-table">
+      <thead>
+        <tr>
+          <th>Asignación</th>
+          <th>Nota</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for nota in notas %}
+          <tr class="{{ loop.cycle('odd','even') }}">
+            <td>{{ nota.asignacion }}</td>
+            <td>{{ nota.nota }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </main>
+</body>
+</html>

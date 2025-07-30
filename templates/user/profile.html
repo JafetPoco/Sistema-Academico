@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+{% block title %}
+    Perfil de Usuario
+{% endblock title %}
+{% block content %}
+    {% include "navbar.html" %}
+    <div class="container mt-5 mb-5 pt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-lg p-4">
+                    <div class="row g-0 align-items-center">
+                        <div class="col-md-4 text-center mb-3 mb-md-0">
+                            <div class="bg-secondary rounded-circle d-flex justify-content-center align-items-center"
+                                 style="width: 120px;
+                                        height: 120px;
+                                        margin: auto">
+                                <i class="bi bi-person-fill text-light" style="font-size: 4rem;"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <h3 class="mb-3">Hola, {{ session.name }}</h3>
+                            <p class="mb-1">
+                                <strong>Email:</strong> {{ session.email }}
+                            </p>
+                            <p class="mb-1">
+                                {% if session.role == 1 %}
+                                    Profesor
+                                {% elif session.role == 2 %}
+                                    Administrativo
+                                {% else %}
+                                    Padre
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    <hr class="my-4">
+                    <div class="text-end">
+                        <a href="{{ url_for("auth.logout") }}" class="btn btn-danger">
+                            <i class="bi bi-box-arrow-right me-1"></i>Cerrar sesión
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

@@ -1,0 +1,39 @@
+{% extends "reporte/layout_reporte.html" %}
+
+{% block title %}Notas - {{ course_name }}{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/reporte_curso.css') }}">
+{% endblock %}
+
+
+{% block body %}
+<div class="reporte-container">
+  <h1 class="titulo-reporte">Reporte de Notas del curso {{ course_name }}</h1>
+
+  <div class="tabla-scroll">
+  <table class="tabla-simple">
+    <thead>
+      <tr>
+        <th>Estudiante</th>
+        <th>Nota</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in grades %}
+      <tr>
+        <td>{{ item.student_name }}</td>
+        <td>{{ item.score }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+  <!-- Botones de navegación -->
+  <div style="margin-top: 30px; text-align: center;">
+    <button onclick="window.history.back()" class="btn btn-secondary">⬅️ Volver</button>
+    <a href="{{ url_for('dashboard.main') }}" class="btn btn-primary">🏠 Ir al Dashboard</a>
+  </div>
+</div>
+{% endblock %}

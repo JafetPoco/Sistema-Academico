@@ -1,0 +1,73 @@
+{% extends "layout.html" %}
+
+{% block title %}Login - EDUNET{% endblock title %}
+
+{% block extra_css %}
+<style>
+  body {
+    background-image: url("{{ url_for('static', filename='img/background.jpg') }}") !important;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .form-wrapper {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(4px);
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .card-title {
+    font-weight: 600;
+    color: #333;
+  }
+
+  a {
+    text-decoration: none;
+    color: #0d6efd;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid form-wrapper" style="max-width: 400px; margin-top: 50px;">
+  <h2 class="text-center mb-4">Iniciar Sesión</h2>
+
+  {% if error %}
+  <div class="alert alert-danger" role="alert">
+    {{ error }}
+  </div>
+  {% endif %}
+
+  <form method="post" action="{{ url_for('auth.login_post') }}">
+    <div class="mb-3">
+      <label for="email" class="form-label">Correo electrónico</label>
+      <input type="email" id="email" name="email" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="password" class="form-label">Contraseña</label>
+      <input type="password" id="password" name="password" class="form-control" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Iniciar sesión</button>
+  </form>
+  <p class="mt-3 text-center">
+    ¿No tienes cuenta?
+    <a href="{{ url_for('auth.register_get') }}">Registrate</a>
+  </p>
+</div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "layout.html" %}
+
+{% block title %}Anuncios - EDUNET{% endblock title %}
+
+{% block content %}
+{% include "navbar.html" %}
+<div class="container mt-5" style="padding-top: 5%;">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">
+      <i class="bi bi-megaphone-fill text-primary me-2"></i>
+      Anuncios
+    </h2>
+    {% if role == 2 %}
+      <a class="btn btn-outline-primary" href="{{ url_for('anuncios.admin_panel') }}">
+        <i class="bi bi-plus-circle me-1"></i> Crear nuevo anuncio
+      </a>
+    {% endif %}
+  </div>
+
+  <div class="card mb-5 shadow-sm">
+    <div class="card-header bg-primary text-white">
+      <i class="bi bi-globe-americas me-2"></i> Anuncios Públicos
+    </div>
+    <ul class="list-group list-group-flush">
+      {% for anuncio in public_announcements %}
+        <li class="list-group-item">
+          <strong>{{ anuncio.title }}</strong><br>
+          <small class="text-muted">{{ anuncio.content }}</small>
+        </li>
+      {% else %}
+        <li class="list-group-item text-muted text-center">
+          No hay anuncios públicos disponibles.
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  {% if private_announcements %}
+    <div class="card shadow-sm">
+      <div class="card-header bg-dark text-white">
+        <i class="bi bi-shield-lock me-2"></i> Anuncios Privados
+      </div>
+      <ul class="list-group list-group-flush">
+        {% for anuncio in private_announcements %}
+          <li class="list-group-item">
+            <strong>{{ anuncio.title }}</strong><br>
+            <small class="text-muted">{{ anuncio.content }}</small>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

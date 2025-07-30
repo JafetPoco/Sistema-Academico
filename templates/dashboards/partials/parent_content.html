@@ -1,0 +1,243 @@
+<!-- templates/dashboards/partials/parent_content.html -->
+<!-- Cards de acciones principales -->
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card dashboard-card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-chart-line fa-3x text-success"></i>
+                </div>
+                <h5 class="card-title">Ver Calificaciones</h5>
+                <p class="card-text">Ve todas las notas y calificaciones por curso</p>
+                <a href="{{ url_for('grades_routes.parent_query_grades') }}" class="btn btn-success">Ver Notas</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card dashboard-card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-users fa-3x text-primary"></i>
+                </div>
+                <h5 class="card-title">Mis Hijos</h5>
+                <p class="card-text">Ve el progreso académico de tus hijos</p>
+                <button class="btn btn-primary" onclick="showChildrenModal()">Ver Progreso</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card dashboard-card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-user fa-3x text-info"></i>
+                </div>
+                <h5 class="card-title">Mi Perfil</h5>
+                <p class="card-text">Actualiza tu información personal</p>
+                <a href="#" class="btn btn-info">Ver Perfil</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if dashboard_data and dashboard_data.status == 'success' %}
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">📊 Resumen General - Todos los Hijos</h5>
+                <small class="text-success">
+                    <i class="fas fa-users"></i> {{ dashboard_data.total_children }} hijo(s)
+                </small>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="stat-item">
+                            <h4 class="text-primary">{{ dashboard_data.total_summary.total_courses }}</h4>
+                            <p class="text-muted">Cursos Totales</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-item">
+                            <h4 class="text-success">{{ dashboard_data.total_summary.overall_average }}</h4>
+                            <p class="text-muted">Promedio General</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-item">
+                            <h4 class="text-warning">{{ dashboard_data.total_summary.total_grades }}</h4>
+                            <p class="text-muted">Total Calificaciones</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-item">
+                            <h4 class="text-info">{{ dashboard_data.total_summary.total_passed }}</h4>
+                            <p class="text-muted">Cursos Aprobados</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas individuales por hijo -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">👶 Progreso Individual por Hijo</h5>
+            </div>
+            <div class="card-body">
+                {% for child in dashboard_data.children_stats %}
+                <div class="child-stats-card mb-4 p-3 border rounded bg-light">
+                    <div class="row align-items-center mb-3">
+                        <div class="col-md-8">
+                            <h6 class="mb-1">
+                                <i class="fas fa-child text-primary"></i> 
+                                <strong>{{ child.child_name }}</strong>
+                            </h6>
+                            <small class="text-muted">ID: {{ child.child_id }}</small>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            {% if child.average_grade >= 15 %}
+                                <span class="badge bg-success">Excelente</span>
+                            {% elif child.average_grade >= 11 %}
+                                <span class="badge bg-warning">Aprobado</span>
+                            {% elif child.average_grade > 0 %}
+                                <span class="badge bg-danger">Necesita Apoyo</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Sin Calificaciones</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row text-center">
+                        <div class="col-6 col-md-3">
+                            <div class="mini-stat">
+                                <h6 class="text-primary mb-1">{{ child.courses_enrolled }}</h6>
+                                <small class="text-muted">Cursos</small>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="mini-stat">
+                                <h6 class="text-success mb-1">{{ child.average_grade }}</h6>
+                                <small class="text-muted">Promedio</small>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="mini-stat">
+                                <h6 class="text-warning mb-1">{{ child.total_grades }}</h6>
+                                <small class="text-muted">Calificaciones</small>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="mini-stat">
+                                <h6 class="text-info mb-1">{{ child.courses_passed }}</h6>
+                                <small class="text-muted">Aprobados</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if child.total_grades > 0 %}
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <small class="text-success">
+                                <i class="fas fa-arrow-up"></i> 
+                                Nota más alta: {{ child.highest_grade }}
+                            </small>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-danger">
+                                <i class="fas fa-arrow-down"></i> 
+                                Nota más baja: {{ child.lowest_grade }}
+                            </small>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% elif dashboard_data and dashboard_data.status == 'no_children' %}
+<!-- Estado sin hijos -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="alert alert-info text-center">
+            <i class="fas fa-users fa-3x mb-3"></i>
+            <h5>No tienes hijos registrados</h5>
+            <p>Contacta al administrador para registrar a tus hijos en el sistema.</p>
+        </div>
+    </div>
+</div>
+
+{% elif dashboard_data and dashboard_data.status == 'error' %}
+<!-- Estado de error -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="alert alert-danger text-center">
+            <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+            <h5>Error cargando información</h5>
+            <p>{{ dashboard_data.message }}</p>
+            <button class="btn btn-outline-danger" onclick="location.reload()">
+                <i class="fas fa-sync-alt"></i> Intentar de nuevo
+            </button>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<!-- Estado de carga -->
+<div class="row mt-5">
+    <div class="col-12 text-center">
+        <output class="spinner-border text-primary">
+            <span class="visually-hidden">Cargando...</span>
+        </output>
+        <p class="mt-2">Cargando información de tus hijos...</p>
+    </div>
+</div>
+{% endif %}
+
+<!-- CSS adicional -->
+<style>
+.stat-item {
+    padding: 1rem;
+}
+
+.stat-item h4 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.mini-stat h6 {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.child-stats-card {
+    border-left: 4px solid #007bff !important;
+    transition: all 0.3s ease;
+}
+
+.child-stats-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.alert {
+    border-radius: 15px;
+}
+</style>
+
+<script>
+function showChildrenModal() {
+    // Modal para mostrar información detallada de los hijos
+    alert("Funcionalidad de modal detallado por implementar");
+}
+</script>
