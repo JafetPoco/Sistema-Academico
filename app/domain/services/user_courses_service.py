@@ -2,7 +2,7 @@ from app.infrastructure.repository.repository import UserRepository
 from app.infrastructure.repository.repository import CourseRepository
 from app.infrastructure.repository.repository import StudentRepository
 from app.infrastructure.repository.repository import GradeRepository
-from app.domain.entities import UserDTO
+from app.domain.entities import User
 
 class UserCoursesService:
     def __init__(self):
@@ -21,5 +21,4 @@ class UserCoursesService:
             full_name = user.full_name if user else "Nombre no disponible"
             
     def get_courses_by_student_id(self, student_id):
-        courses= self.
         pass

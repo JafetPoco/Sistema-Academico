@@ -2,7 +2,7 @@
 
 from flask import Blueprint, render_template, redirect, url_for, flash, session
 from sqlalchemy.exc import SQLAlchemyError
-from app.application.user_courses_controller import coursesController
+from app.application.user_courses_controller import CoursesController
 
 
 courses_bp = Blueprint('courses', __name__, url_prefix='/cursos')
