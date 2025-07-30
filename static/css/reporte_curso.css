@@ -21,10 +21,6 @@
   font-size: 16px;
 }
 
-.tabla-simple thead {
-  background-color: #007bff;
-  color: white;
-}
 
 .tabla-simple th,
 .tabla-simple td {
@@ -35,4 +31,21 @@
 
 .tabla-simple tbody tr:nth-child(even) {
   background-color: #f8f9fa;
+}
+
+.tabla-scroll {
+  max-height: 300px;           /* Altura máxima visible */
+  overflow-y: auto;            /* Scroll vertical si es necesario */
+  overflow-x: auto;            /* Scroll horizontal opcional */
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+}
+
+/* Mantener el encabezado fijo al hacer scroll */
+.tabla-simple thead {
+  position: sticky;
+  top: 0;
+  background-color: #007bff;
+  color: white;
+  z-index: 2;
 }
