@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mis Cursos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .curso-card {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="p-4">
+
+<div class="container">
+    <h1 class="mb-4 text-center">Mis Cursos</h1>
+
+    {% if cursos %}
+        <div class="row">
+            {% for curso in cursos %}
+                <div class="col-md-4 mb-4">
+                    <div class="card curso-card shadow-sm text-center d-flex flex-column justify-content-center align-items-center p-3">
+                        <div>{{ curso.nombre }}</div>
+                        <div class="text-muted" style="font-size: 0.9rem;">
+                            {{ curso.student_count }} estudiante{{ curso.student_count != 1 and 's' or '' }}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center">No hay cursos registrados.</div>
+    {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
