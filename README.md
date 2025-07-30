@@ -16,8 +16,20 @@
   - [Requisitos](#requisitos)
 - [Practicas de desarrollo de software](#practicas-de-desarrollo-de-software)
   - [Reporte SonarLint](#reporte-sonarlint)
+    - [1. Literales de Cadena Duplicadas](#1-literales-de-cadena-duplicadas)
+    - [2. Clase/Funcion/Metodo no cumple la convención de nombres (python:S101)](#2-clasefuncionmetodo-no-cumple-la-convención-de-nombres-pythons101)
+    - [3. MySQL database passwords should not be disclosed (secrets:S6697)](#3-mysql-database-passwords-should-not-be-disclosed-secretss6697)
+    - [4. Unused local variables should be removed (python:S1481)](#4-unused-local-variables-should-be-removed-pythons1481)
   - [Convenciones de codificacion PEP8 para python](#convenciones-de-codificacion-pep8-para-python)
   - [Codificacion limpia (Clean Code)](#codificacion-limpia-clean-code)
+    - [Nombres significativos](#nombres-significativos)
+      - [Ejemplo:](#ejemplo)
+    - [Funciones con responsabilidad unica](#funciones-con-responsabilidad-unica)
+      - [Ejemplo:](#ejemplo-1)
+    - [Evitar código duplicado](#evitar-código-duplicado)
+      - [Ejemplo:](#ejemplo-2)
+    - [Comentarios útiles y mínimos](#comentarios-útiles-y-mínimos)
+    - [Ejemplo:](#ejemplo-3)
   - [Principios SOLID](#principios-solid)
 
 
@@ -54,6 +66,8 @@ La interfaz principal incluye:
 - Secciones para anuncios, notas, reportes y gestión de usuarios.
 
 [Prototipo GUI](https://www.figma.com/design/mePETDXZAzFnH5TMuKuZg2/Dise%C3%B1o-Software?node-id=0-1&p=f&t=159E8ZY7anSn5hm4-0)
+
+![Prototipo](docs/gui_prototipo.png)
 
 ---
 
@@ -121,6 +135,99 @@ pip install -r requirements.txt
 # Practicas de desarrollo de software
 
 ## Reporte SonarLint
+
+### 1. Literales de Cadena Duplicadas  
+**Regla:** `python:S1192`  
+**Descripción:** String literals should not be duplicated  
+**Ubicación:** Múltiples archivos (por ejemplo, `repository.py`, `controller.py`)  
+**Tipo:** Code Smell
+
+Se encontraron múltiples ocurrencias de literales como `'courses.course_id'` y `'users.user_id'`.  
+Esto puede dificultar el mantenimiento y la refactorización del código.
+
+**Solución:**
+
+Definir constantes con nombres descriptivos:
+```
+COURSE_ID = 'courses.course_id'
+USER_ID = 'users.user_id'
+```
+
+### 2. Clase/Funcion/Metodo no cumple la convención de nombres (python:S101)
+
+**Regla:** `python:S101`  
+**Descripción:** Los nombres de las clases deben coincidir con una expresión regular configurada (por defecto: `^_?([A-Z_][a-zA-Z0-9]*|[a-z_][a-z0-9_]*)$`).  
+**Ubicación:** Clase `Anuncio_rep`  
+**Tipo:** Code Smell
+
+El nombre `Anuncio_rep` no coincide con la convención recomendada (CapWords o snake_case para clases utilizadas como callables).  
+
+**Solución:**
+
+Renombrar la clase respetando “PascalCase”, por ejemplo:
+
+```python
+class AnnouncementRepository:
+    ...
+```
+
+De la misma forma usando snake_case para las funciones:
+
+```python
+def get_announcement_by_id(self, announcement_id):
+    ...
+```
+
+### 3. MySQL database passwords should not be disclosed (secrets:S6697)
+
+**Regla:** `secrets:S6697`  
+**Descripción:** Si una contraseña de base de datos MySQL aparece en el código fuente, puede ser divulgada accidentalmente y comprometer la seguridad del sistema.  
+**Ubicación:** Literales visibles de contraseñas en archivos de código o configuración.  
+**Tipo:** Vulnerabilidad (Security Hotspot)
+
+La presencia de contraseñas en texto plano facilita su exposición, ya sea por inspección del código, logs o análisis.
+
+**Solución recomendada:**
+
+- Mover la contraseña a un archivo de configuración externo que no forme parte del control de versiones  usando el paquete dotenv y un archivo `.env`:
+- Asegurarse de que esa ubicación tenga permisos restringidos.
+- Cargar la contraseña en tiempo de ejecución desde variables de entorno o archivos seguros, evitando integrarla en el código.
+
+```ini
+# .env
+MYSQL_PASSWORD=mi_password_segura
+```
+
+### 4. Unused local variables should be removed (python:S1481)
+
+**Regla:** `python:S1481`  
+**Descripción:** Las variables locales declaradas pero no utilizadas deben eliminarse. Mantener variables no usadas degrada la legibilidad y puede indicar código innecesario o errores potenciales ([Sonar](https://rules.sonarsource.com/python/RSPEC-1481)) :contentReference[oaicite:0]{index=0}
+
+Ejemplo no conforme:
+
+```python
+def handle_create(self, form_data: dict, user_id: int):
+    title = form_data.get('title', '').strip()
+    content = form_data.get('content', '').strip()
+    is_private = bool(form_data.get('is_private'))
+    course_id = form_data.get('course_id') or None  # Optional
+
+    if not title or not content:
+        return "danger", "Título y contenido son obligatorios."
+
+    created, err = self.service.create()
+
+    if err:
+        return "danger", f"Error al crear el anuncio: {err}"
+
+    return "success", "Anuncio creado correctamente."
+```
+
+En este ejemplo, la variable `created` se define pero no se utiliza en el resto de la función, lo que genera una advertencia de SonarLint.
+
+**Solución:**
+Utilizar `_` para indicar que la variable no se usará, o eliminarla si no es necesaria:
+
 
 ## Convenciones de codificacion PEP8 para python
 
