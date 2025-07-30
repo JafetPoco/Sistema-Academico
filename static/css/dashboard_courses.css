@@ -1,0 +1,51 @@
+.course-card {
+  display: flex;
+  flex-direction: column;
+  width: 480px;            /* ancho fijo */
+  height: 320px;           /* altura total aumentada */
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0 auto;          /* centrar dentro de su columna */
+}
+
+/* Imagen ocupa 60% de 320px = 192px */
+.course-card-img-wrapper {
+  height: 192px;           /* altura fija */
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Ajuste de la imagen */
+.course-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Cuerpo de la tarjeta ocupa el 40% restante = 128px */
+.course-card-body {
+  height: 128px;           /* altura fija */
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Título separado del botón */
+.course-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+/* Botón pegado abajo a la derecha */
+.course-btn {
+  margin-top: auto;
+}
+
+/* Columnas centradas */
+.course-col {
+  display: flex;
+  justify-content: center;
+}

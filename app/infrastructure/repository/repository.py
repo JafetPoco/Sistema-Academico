@@ -27,6 +27,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import or_
 from typing import List
 
+
+
 class BaseRepository:
     dto = None
     mapper = None
@@ -101,6 +103,14 @@ class UserRepository(BaseRepository):
         except Exception as e:
             logging.error(f"Error finding user by email: {e}")
             return None
+    def get_by_id(self, id: int):
+        try:
+            user_dto = self.dto.query.filter_by(user_id=id).first()
+            return self.mapper.to_domain(user_dto) if user_dto else None
+        except Exception as e:
+            logging.error(f"Error finding user by id: {e}")
+            return None
+
 
     def create(self, user: User):
         return self.add(user)
@@ -191,7 +201,30 @@ class CourseRepository(BaseRepository):
             
         except Exception as e:
             return [], f"Error: {str(e)}"
+        
+    def get_names_by_ids(self, course_ids):
 
+        # Asegurarnos de que siempre tengamos una lista
+        if isinstance(course_ids, int):
+            course_ids = [course_ids]
+        if not course_ids:
+            return {}
+
+        try:
+            # Filtrar usando el nombre real de la columna PK en tu DTO:
+            # aquí suponemos `course_id` es la columna primaria
+            cursos = (
+                self.dto.query
+                    .filter(self.dto.course_id.in_(course_ids))
+                    .all()
+            )
+            # Suponemos que el campo de nombre en la tabla es `course_name`
+            return { c.course_id: c.name for c in cursos }
+
+        except SQLAlchemyError as e:
+            logging.error(f"Error fetching course names for ids {course_ids}: {e}")
+            return {}
+            
 class StudentRepository(BaseRepository):
     dto = StudentDTO
     mapper = StudentMapper

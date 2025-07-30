@@ -3,6 +3,8 @@ from sqlalchemy.orm import relationship
 from app.infrastructure.database import db
 from datetime import datetime, timezone
 
+USER_ID='users.user_id'
+
 class UserDTO(db.Model):
     __tablename__ = 'users'
 
@@ -20,7 +22,7 @@ class AnnouncementDTO(db.Model):
 
     announcement_id = Column(Integer, primary_key=True)
     course_id       = Column(Integer, ForeignKey('courses.course_id'),  nullable=True)
-    user_id         = Column(Integer, ForeignKey('users.user_id'),      nullable=True)
+    user_id         = Column(Integer, ForeignKey(USER_ID),      nullable=True)
     title           = Column(String(255), nullable=False)
     content         = Column(Text, nullable=False)
     is_private      = Column(Boolean, default=False)
@@ -48,7 +50,7 @@ class GradeDTO(db.Model):
 class ParentDTO(db.Model):
     __tablename__ = 'parents'
 
-    parent_id = Column(Integer, ForeignKey('users.user_id'), primary_key=True)
+    parent_id = Column(Integer, ForeignKey(USER_ID), primary_key=True)
     students  = relationship('StudentDTO', back_populates='parent')
 
     def __repr__(self):
@@ -71,7 +73,7 @@ class CourseDTO(db.Model):
 class StudentDTO(db.Model):
     __tablename__ = 'students'
 
-    user_id   = Column(Integer, ForeignKey('users.user_id'), primary_key=True)
+    user_id   = Column(Integer, ForeignKey(USER_ID), primary_key=True)
     parent_id = Column(Integer, ForeignKey('parents.parent_id'), nullable=True)
 
     parent = relationship('ParentDTO', back_populates='students')
@@ -83,7 +85,7 @@ class StudentDTO(db.Model):
 class AdminDTO(db.Model):
     __tablename__ = 'administrators'
 
-    admin_id = Column(Integer, ForeignKey('users.user_id'), primary_key=True)
+    admin_id = Column(Integer, ForeignKey(USER_ID), primary_key=True)
 
     def __repr__(self):
         return f"<AdminDTO(id={self.admin_id})>"
@@ -91,7 +93,7 @@ class AdminDTO(db.Model):
 class ProfessorDTO(db.Model):
     __tablename__ = 'professors'
 
-    professor_id = Column(Integer, ForeignKey('users.user_id'), primary_key=True)
+    professor_id = Column(Integer, ForeignKey(USER_ID), primary_key=True)
     courses      = relationship('CourseDTO', back_populates='professor')
 
     def __repr__(self):
