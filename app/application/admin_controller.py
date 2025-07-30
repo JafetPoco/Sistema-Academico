@@ -14,9 +14,10 @@ class AdminController:
         return users
     
     def handle_create_course(self, course_data):
-        if self.service.create_course(course_data):
-            return "success", "Curso creado correctamente."
-        return "danger", "Error al crear el curso."
+        _, err = self.service.create_course(course_data)
+        if err:
+            return "danger", f"Error al crear el curso. {err}"
+        return "success", "Curso creado correctamente."
 
     def handle_get_courses(self):
         courses = self.service.get_courses()

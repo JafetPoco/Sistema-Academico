@@ -19,8 +19,13 @@ class AdminService:
         return self.user_repository.list_all()
     
     def create_course(self, course_data):
-        return self.course_repository.add(course_data)
-    
+        course = Course(
+            course_id=None,
+            name=course_data['name'],
+            professor_id=course_data['professor_id']
+        )
+        return self.course_repository.add(course)
+
     def get_courses(self):
         return self.course_repository.list_all()
 

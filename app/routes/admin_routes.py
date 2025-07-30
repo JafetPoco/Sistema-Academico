@@ -32,6 +32,8 @@ def courses():
 @admin_bp.route('/courses/create', methods=['GET'])
 def create_course_form():
     professors = controller.handle_get_professors()
+    for professor in professors:
+        print(professor)
     if session.get("role") != 2:
         return redirect(url_for(MAIN_INDEX))
     return render_template('admin/course_create.html', professors=professors)
@@ -41,6 +43,7 @@ def create_course():
     if session.get("role") != 2:
         return redirect(url_for(MAIN_INDEX))
     course_data = request.form.to_dict()
-    if controller.handle_create_course(course_data):
+    result, error = controller.handle_create_course(course_data)
+    if result == "success":
         return redirect(url_for('admin.courses'))
-    return render_template('admin/course_create.html', error="Error al crear el curso.")
+    return render_template('admin/course_list.html', error=error)

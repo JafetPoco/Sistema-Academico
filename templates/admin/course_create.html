@@ -22,7 +22,7 @@
       <select class="form-select" id="professor" name="professor_id" required>
         <option value="">Seleccionar Profesor</option>
         {% for professor in professors %}
-        <option value="{{ professor.user_id }}">{{ professor.name }}</option>
+        <option value="{{ professor.user_id }}">{{ professor.full_name }}</option>
         {% endfor %}
       </select>
     </div>

@@ -15,6 +15,7 @@ class UserDTO(db.Model):
     password_hash = Column(String(256), nullable=False)
     role = Column(Integer, nullable=False)
 
+    courses = relationship('CourseDTO', back_populates='users')
     def __repr__(self):
         return f"<UserDTO(id={self.user_id}, email={self.email})>"
 
@@ -62,10 +63,10 @@ class CourseDTO(db.Model):
 
     course_id    = Column(Integer, primary_key=True)
     name         = Column(String(100), nullable=False)
-    professor_id = Column(Integer, ForeignKey('professors.professor_id'), nullable=False)
+    professor_id = Column(Integer, ForeignKey(USER_ID), nullable=False)
 
-    professor = relationship('ProfessorDTO', back_populates='courses')
-    grades    = relationship('GradeDTO',     back_populates='course')
+    users = relationship('UserDTO', back_populates='courses')
+    grades = relationship('GradeDTO', back_populates='course')
     announcements = relationship('AnnouncementDTO', back_populates='course')
 
     def __repr__(self):
@@ -96,7 +97,6 @@ class ProfessorDTO(db.Model):
     __tablename__ = 'professors'
 
     professor_id = Column(Integer, ForeignKey(USER_ID), primary_key=True)
-    courses      = relationship('CourseDTO', back_populates='professor')
 
     def __repr__(self):
         return f"<ProfessorDTO(id={self.professor_id})>"
