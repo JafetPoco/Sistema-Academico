@@ -19,12 +19,17 @@
     - [1. Literales de Cadena Duplicadas](#1-literales-de-cadena-duplicadas)
     - [2. Clase/Funcion/Metodo no cumple la convención de nombres (python:S101)](#2-clasefuncionmetodo-no-cumple-la-convención-de-nombres-pythons101)
     - [3. MySQL database passwords should not be disclosed (secrets:S6697)](#3-mysql-database-passwords-should-not-be-disclosed-secretss6697)
-    - [Funciones con responsabilidad unica](#funciones-con-responsabilidad-unica)
+    - [4. Unused local variables should be removed (python:S1481)](#4-unused-local-variables-should-be-removed-pythons1481)
+  - [Convenciones de codificacion PEP8 para python](#convenciones-de-codificacion-pep8-para-python)
+  - [Codificacion limpia (Clean Code)](#codificacion-limpia-clean-code)
+    - [Nombres significativos](#nombres-significativos)
       - [Ejemplo:](#ejemplo)
-    - [Evitar código duplicado](#evitar-código-duplicado)
+    - [Funciones con responsabilidad unica](#funciones-con-responsabilidad-unica)
       - [Ejemplo:](#ejemplo-1)
+    - [Evitar código duplicado](#evitar-código-duplicado)
+      - [Ejemplo:](#ejemplo-2)
     - [Comentarios útiles y mínimos](#comentarios-útiles-y-mínimos)
-    - [Ejemplo:](#ejemplo-2)
+    - [Ejemplo:](#ejemplo-3)
   - [Principios SOLID](#principios-solid)
 
 
@@ -184,13 +189,44 @@ La presencia de contraseñas en texto plano facilita su exposición, ya sea por 
 
 **Solución recomendada:**
 
-- Mover la contraseña a un archivo de configuración externo que no forme parte del control de versiones (por ejemplo: `config/.env` o `~/.my.cnf`).
+- Mover la contraseña a un archivo de configuración externo que no forme parte del control de versiones  usando el paquete dotenv y un archivo `.env`:
 - Asegurarse de que esa ubicación tenga permisos restringidos.
 - Cargar la contraseña en tiempo de ejecución desde variables de entorno o archivos seguros, evitando integrarla en el código.
 
 ```ini
 # .env
 MYSQL_PASSWORD=mi_password_segura
+```
+
+### 4. Unused local variables should be removed (python:S1481)
+
+**Regla:** `python:S1481`  
+**Descripción:** Las variables locales declaradas pero no utilizadas deben eliminarse. Mantener variables no usadas degrada la legibilidad y puede indicar código innecesario o errores potenciales ([Sonar](https://rules.sonarsource.com/python/RSPEC-1481)) :contentReference[oaicite:0]{index=0}
+
+Ejemplo no conforme:
+
+```python
+def handle_create(self, form_data: dict, user_id: int):
+    title = form_data.get('title', '').strip()
+    content = form_data.get('content', '').strip()
+    is_private = bool(form_data.get('is_private'))
+    course_id = form_data.get('course_id') or None  # Optional
+
+    if not title or not content:
+        return "danger", "Título y contenido son obligatorios."
+
+    created, err = self.service.create()
+
+    if err:
+        return "danger", f"Error al crear el anuncio: {err}"
+
+    return "success", "Anuncio creado correctamente."
+```
+
+En este ejemplo, la variable `created` se define pero no se utiliza en el resto de la función, lo que genera una advertencia de SonarLint.
+
+**Solución:**
+Utilizar `_` para indicar que la variable no se usará, o eliminarla si no es necesaria:
 
 
 ## Convenciones de codificacion PEP8 para python
