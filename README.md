@@ -9,8 +9,9 @@
     - [Funcionalidades de Alto Nivel](#funcionalidades-de-alto-nivel)
     - [Diagrama de Casos de Uso UML](#diagrama-de-casos-de-uso-uml)
     - [Prototipo (GUI)](#prototipo-gui)
-  - [Modelo de Dominio Clean Architecture](#modelo-de-dominio-clean-architecture)
-    - [Estructura de Carpetas](#estructura-de-carpetas)
+    - [Arquitectura: DDD + Clean Architecture](#arquitectura-ddd--clean-architecture)
+      - [Estructura de Carpetas](#estructura-de-carpetas)
+      - [Principios aplicados](#principios-aplicados)
     - [Principales Entidades](#principales-entidades)
     - [Módulos](#módulos)
   - [Requisitos](#requisitos)
@@ -22,25 +23,30 @@
     - [4. Unused local variables should be removed (python:S1481)](#4-unused-local-variables-should-be-removed-pythons1481)
   - [Convenciones de codificacion PEP8 para python](#convenciones-de-codificacion-pep8-para-python)
     - [Clases (PascalCase)](#clases-pascalcase)
-    - [Funciones y Métodos (snake_case)](#funciones-y-métodos-snake_case)
-    - [Variables (snake_case)](#variables-snake_case)
-    - [Constantes (UPPER_SNAKE_CASE)](#constantes-upper_snake_case)
-  - [Codificación limpia (Clean Code) y Principios SOLID](#codificacion-limpia-clean-code-y-principios-solid)
+    - [Funciones y Métodos (snake\_case)](#funciones-y-métodos-snake_case)
+    - [Variables (snake\_case)](#variables-snake_case)
+    - [Constantes (UPPER\_SNAKE\_CASE)](#constantes-upper_snake_case)
+  - [Codificacion limpia (Clean Code) y Principios SOLID](#codificacion-limpia-clean-code-y-principios-solid)
     - [Variables](#variables)
-      - [Ejemplo](#ejemplo)
+      - [Ejemplo:](#ejemplo)
     - [Funciones](#funciones)
-      - [Ejemplo](#ejemplo-1)
+      - [Ejemplo:](#ejemplo-1)
     - [Clases](#clases)
-      - [Ejemplo de clase con responsabilidad definida](#ejemplo-de-clase-con-responsabilidad-definida)
+      - [Ejemplo de clase con responsabilidad definida:](#ejemplo-de-clase-con-responsabilidad-definida)
       - [I. Single Responsibility Principle (SRP)](#i-single-responsibility-principle-srp)
+        - [Ejemplo:](#ejemplo-2)
       - [II. Open/Closed Principle (OCP)](#ii-openclosed-principle-ocp)
+        - [Ejemplo:](#ejemplo-3)
       - [III. Liskov Substitution Principle (LSP)](#iii-liskov-substitution-principle-lsp)
+        - [Ejemplo:](#ejemplo-4)
       - [IV. Interface Segregation Principle (ISP)](#iv-interface-segregation-principle-isp)
+        - [Ejemplo:](#ejemplo-5)
       - [V. Dependency Inversion Principle (DIP)](#v-dependency-inversion-principle-dip)
+        - [Ejemplo:](#ejemplo-6)
     - [Don't Repeat Yourself (DRY)](#dont-repeat-yourself-dry)
-      - [Ejemplo](#ejemplo-2)
+      - [Ejemplo:](#ejemplo-7)
     - [Comentarios útiles y mínimos](#comentarios-útiles-y-mínimos)
-      - [Ejemplo](#ejemplo-3)
+    - [Ejemplo:](#ejemplo-8)
 
 
 ## Integrantes
@@ -81,22 +87,52 @@ La interfaz principal incluye:
 
 ---
 
-## Modelo de Dominio Clean Architecture
+### Arquitectura: DDD + Clean Architecture
 
-### Estructura de Carpetas
+#### Estructura de Carpetas
 ```
-Sistema-Academico/
-├── app/
-│   ├── routes/
-│   ├── application/
-│   ├── domain/
-│   │   └── services/
-│   └── infrastructure/
-│       └── repository/
-├── docs/
-├── static/
-└── templates/
+app/
+│
+├── routes/
+│   ├── admin\_routes.py
+│   ├── announcement\_routes.py
+│   ├── auth\_routes.py
+│   └── … (otros endpoints)
+│
+├── application/
+│   ├── admin\_controller.py
+│   ├── announcement\_controller.py
+│   ├── auth\_controller.py
+│   └── … (otros controllers)
+│
+├── domain/
+│   ├── entities.py
+│   └── services/
+│       ├── auth\_service.py
+│       ├── announcement\_service.py
+│       ├── course\_service.py
+│       └── … (otros servicios)
+│
+└── infrastructure/
+├── database.py
+└── repository/
+├── models.py
+├── mapper.py
+└── repository.py
 ```
+
+#### Principios aplicados
+
+- **Domain‑Driven Design (DDD)**  
+  ­ ­­– Entidades y Value Objects en `domain/entities.py`.  
+  ­ ­­– Servicios de Dominio en `domain/services/` encapsulan reglas de negocio.  
+  ­ ­­– Repositorios (interfaces) definidos en el dominio e implementados en `infrastructure/repository`.
+
+- **Clean Architecture**  
+  ­ ­­– Las dependencias apuntan hacia adentro:  
+  ­ ­­ ­ ­ • `html` <--> `routes` <--> `application` <--> `domain` <--> `infrastructure` <--> `MySQL`  
+  ­ ­­– Capa de presentación (Flask) separada de la lógica, que reside en controllers y servicios.  
+  ­ ­­– Infraestructura (ORM, base de datos) aislada tras repositorios y mapeadores.
 
 ### Principales Entidades
 
