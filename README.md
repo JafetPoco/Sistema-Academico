@@ -274,7 +274,156 @@ En este ejemplo, la variable `created` se define pero no se utiliza en el resto 
 **Solución:**
 Utilizar `_` para indicar que la variable no se usará, o eliminarla si no es necesaria:
 
+## Estilos de programacion
+### cookbook
+Reutilización de las "recetas" del Cookbook
+En app/infrastructure/repository/repository.py
+```python
+class UserRepository(BaseRepository):
+    def __init__(self, db_session):
+        super().__init__(db_session)
+        self.model = User # Asumiendo que User es el modelo
 
+    def save_user(self, user):
+        # Reutiliza la "receta" add de BaseRepository
+        return self.add(user)
+
+class CourseRepository(BaseRepository):
+    def __init__(self, db_session):
+        super().__init__(db_session)
+        self.model = Course # Asumiendo que Course es el modelo
+
+    def save_course(self, course):
+        # Reutiliza la "receta" add de BaseRepository
+        return self.add(course)
+```
+### Error/Exception Handling (Manejo de Errores/Excepciones)
+Ejemplo de Manejo de Excepciones (tomado del ejemplo de código previamente inferido)
+En app/infrastructure/repository/repository.py (hipotético en un método de un repositorio)
+```python
+class EnrollmentRepository:
+    def enroll_user(self, user_id: int, course_id: int):
+        """Matricular un usuario en un curso"""
+        try:
+            # Verificar si ya existe
+            if self.is_user_enrolled(user_id, course_id):
+                return None, "El usuario ya está matriculado en este curso"
+            # Lógica para crear la matrícula
+            new_enrollment = Enrollment(user_id=user_id, course_id=course_id)
+            self.db_session.add(new_enrollment)
+            self.db_session.commit()
+            return new_enrollment, None
+        except Exception as e:
+            self.db_session.rollback() # Rollback en caso de error en la BD
+            return None, f"Error al matricular el usuario: {str(e)}"
+```
+En app/domain/services/auth_service.py (para validaciones y posibles errores de base de datos)
+```python
+class AuthService:
+    def register_user(self, username, email, password, role_id):
+        try:
+            # ... validaciones ...
+            user = self.user_repository.save_user(User(...))
+            return user, None
+        except IntegrityError: # Específico para errores de unicidad de la BD
+            return None, "El usuario o correo electrónico ya existe."
+        except Exception as e:
+            return None, f"Error inesperado durante el registro: {str(e)}"
+```
+### Persistent-Tables (Tablas Persistentes)
+Ejemplo de Persistent-Tables
+En app/infrastructure/repository/repository.py
+```python
+class BaseRepository:
+    def __init__(self, db_session):
+        self.db_session = db_session
+
+    def add(self, entity):
+        # Mapea un objeto (entity) a una fila en una tabla persistente
+        self.db_session.add(entity)
+        self.db_session.commit()
+        return entity
+
+    def get_by_id(self, model, entity_id):
+        # Recupera una fila de una tabla y la mapea a un objeto
+        return self.db_session.query(model).get(entity_id)
+
+class UserRepository(BaseRepository):
+    # Interactúa específicamente con la tabla de usuarios
+    def __init__(self, db_session):
+        super().__init__(db_session)
+        self.model = User # 'User' es el modelo/entidad que mapea a una tabla
+
+    def get_user_by_email(self, email: str):
+        # Consulta específica sobre la tabla de usuarios
+        return self.db_session.query(self.model).filter_by(email=email).first()
+```
+###  RESTful (RESTful APIs)
+Ejemplo de Estilo RESTful (Inferido de la descripción del controlador)
+En app/application/announcement_controller.py
+```python
+ @app.route('/announcements', methods=['GET'])
+def get_all_announcements():
+    # Un endpoint GET para obtener una colección de recursos (anuncios)
+    announcements = announcement_service.get_all_announcements()
+    return jsonify([announcement.to_dict() for announcement in announcements])
+ @app.route('/announcements', methods=['POST'])
+def create_announcement():
+    # Un endpoint POST para crear un nuevo recurso (anuncio)
+    data = request.json
+    new_announcement = announcement_service.create_announcement(data)
+    return jsonify(new_announcement.to_dict()), 201
+ En app/application/admin_controller.py
+@app.route('/admin/users', methods=['POST'])
+def create_user():
+    # Otro endpoint POST para crear un recurso de usuario
+    # ...
+```
+### Pipeline (Tubería de Procesamiento)
+Ejemplo de Pipeline de procesamiento
+1. Capa de Aplicación (Controller) - Recibe la Solicitud HTTP
+En app/application/admin_controller.py
+```python
+class AdminController:
+    def __init__(self, admin_service: AdminService):
+        self.admin_service = admin_service
+#     def create_user_endpoint(self, user_data_from_request):
+        # Validaciones iniciales, parseo de datos de la solicitud
+        # Pasa la solicitud procesada a la Capa de Dominio (Service)
+        user_result, error = self.admin_service.create_user(user_data_from_request)
+        if error:
+            return {"error": error}, 400
+       return {"status": "success", "user_id": user_result.id}, 201
+```
+2. Capa de Dominio (Service) - Aplica Lógica de Negocio
+En app/domain/services/admin_service.py
+```python
+class AdminService:
+    def __init__(self, user_repository: UserRepository):
+        self.user_repository = user_repository
+    def create_user(self, user_data):
+       # Aplica reglas de negocio, validaciones de dominio
+       # Pasa el objeto de dominio a la Capa de Infraestructura (Repository)
+       new_user = User(**user_data) # Crea objeto de dominio
+       saved_user, error = self.user_repository.save_user(new_user)
+        return saved_user, error
+
+```
+3. Capa de Infraestructura (Repository) - Persistencia de Datos
+En app/infrastructure/repository/repository.py
+```python
+class UserRepository(BaseRepository):
+   def save_user(self, user_entity):
+        # Se encarga de la interacción con la base de datos
+        # Persiste el objeto de dominio
+        try:
+            self.db_session.add(user_entity)
+            self.db_session.commit()
+            return user_entity, None
+        except Exception as e:
+            self.db_session.rollback()
+            return None, str(e)
+```
 ## Convenciones de codificacion PEP8 para python
 El proyecto "Sistema-Academico EDUNET" se adhiere a las directrices de estilo PEP 8, el estándar de facto para el código Python. Esto asegura la legibilidad, coherencia y mantenibilidad del código a lo largo de todo el proyecto.
 ### Clases (PascalCase)
