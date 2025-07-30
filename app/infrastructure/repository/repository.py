@@ -207,6 +207,11 @@ class CourseRepository(BaseRepository):
             
         except Exception as e:
             return [], f"Error: {str(e)}"
+        
+    def get_course_name_by_id(self, course_id):
+        course = CourseDTO.query.get(course_id)
+        return course.name if course else None
+
 
 class StudentRepository(BaseRepository):
     dto = StudentDTO
