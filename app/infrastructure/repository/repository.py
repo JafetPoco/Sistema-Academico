@@ -132,6 +132,21 @@ class AnnouncementRepository(BaseRepository):
 class GradeRepository(BaseRepository):
     dto = GradeDTO
     mapper = GradeMapper
+
+    def get_scores_with_student_names_by_course(self, course_id: int):
+        query = (
+            db.session.query(
+                GradeDTO.score,
+                StudentDTO.user_id,
+                UserDTO.full_name
+            )
+            .join(StudentDTO, GradeDTO.student_id == StudentDTO.user_id)
+            .join(UserDTO, StudentDTO.user_id == UserDTO.user_id)
+            .filter(GradeDTO.course_id == course_id)
+        )
+
+        return query.all()
+    
     def get_by_student_id(self, student_id):
         try:
             grades_dto = self.dto.query.filter_by(student_id=student_id).all()
@@ -139,6 +154,7 @@ class GradeRepository(BaseRepository):
         except Exception as e:
             logging.error(f"Error fetching grades by student_id: {e}")
             return []
+        
 class ParentRepository(BaseRepository):
     dto = ParentDTO
     mapper = ParentMapper
@@ -193,6 +209,11 @@ class CourseRepository(BaseRepository):
             
         except Exception as e:
             return [], f"Error: {str(e)}"
+        
+    def get_course_name_by_id(self, course_id):
+        course = CourseDTO.query.get(course_id)
+        return course.name if course else None
+
 
 class StudentRepository(BaseRepository):
     dto = StudentDTO

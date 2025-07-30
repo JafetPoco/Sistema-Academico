@@ -1,10 +1,20 @@
-from domain.services.reports_implementation import ReportsImplementation
+from app.infrastructure.repository.repository import GradeRepository
 
 class ReportService:
     def __init__(self):
-        self.reports_implementation = ReportsImplementation()
+        self.grade_repo = GradeRepository()
 
-    def get_course_grades_report(self, course_identifier: int):
-        """Returns a report with students' grades for the given course."""
-        return self.reports_implementation.get_course_grades_report(course_identifier)
+    def get_course_grades(self, course_id: int):
+        grades_with_students = self.grade_repo.get_scores_with_student_names_by_course(course_id)
+        
+        report_data = []
+        for score, student_id, full_name in grades_with_students:
+            report_data.append({
+                'student_name': full_name,
+                'student_id': student_id,
+                'score': score
+            })
+            
+        return report_data, None
 
+    

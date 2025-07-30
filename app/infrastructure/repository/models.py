@@ -76,6 +76,7 @@ class StudentDTO(db.Model):
 
     parent = relationship('ParentDTO', back_populates='students')
     grades = relationship('GradeDTO',   back_populates='student')
+    user   = relationship('UserDTO') 
 
     def __repr__(self):
         return f"<StudentDTO(id={self.user_id})>"

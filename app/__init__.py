@@ -10,6 +10,7 @@ from app.routes.grades_routes import grades_routes
 from app.routes.user_route import user_bp
 from app.routes.dashboard_routes import dashboard_bp
 from app.routes.admin_routes import admin_bp
+from app.routes.report_routes import report_bp
 
 from app.infrastructure.database import init_db, create_tables
 
@@ -35,4 +36,5 @@ def create_app():
     app.register_blueprint(user_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(report_bp)
     return app
