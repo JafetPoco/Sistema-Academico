@@ -7,16 +7,15 @@ enrollment_service = EnrollmentService()
 
 def show_courses():
     professor_id = session.get('user_id')
-    print("Profesor ID:", professor_id)
     try:
-        cursos, error = enrollment_service.get_professor_courses_with_student_counts(professor_id)
+        info_courses, error = enrollment_service.get_professor_courses_with_student_counts(professor_id)
         if error:
             flash(error, "danger")
-            cursos = []
+            info_courses = []
     except SQLAlchemyError:
         flash("Ocurrió un error al cargar los cursos.", "danger")
-        cursos = []
+        info_courses = []
     
-    return render_template('cursos/cursos_profesor.html', cursos=cursos)
+    return render_template('cursos/cursos_profesor.html', cursos=info_courses)
 
 
