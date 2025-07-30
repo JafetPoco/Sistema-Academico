@@ -1,140 +1,123 @@
+<!-- templates/notas/calificar.html -->
 {% extends 'layout.html' %}
 
 {% block extra_css %}
-<style>
-  .form-wrapper {
-    background-color: rgba(255, 255, 255, 0.95);
-    padding: 2rem;
-    border-radius: 1rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    max-width: 600px;
-    margin: 0 auto;
-  }
-
-  .card-title {
-    font-weight: 600;
-    color: #333;
-    text-align: center;
-    margin-bottom: 1.5rem;
-  }
-
-  .no-students-message {
-    text-align: center;
-    padding: 2rem;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    margin: 1rem 0;
-  }
-
-  .error-message {
-    text-align: center;
-    padding: 2rem;
-    background-color: #f8d7da;
-    border-radius: 8px;
-    margin: 1rem 0;
-  }
-</style>
-{% endblock %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/calificar.css') }}">
+{% endblock extra_css %}
 
 {% block content %}
 <div class="container mt-4">
   <div class="row justify-content-center">
-    <div class="col-md-8">
+    <div class="col-md-10">
       <div class="form-wrapper">
-        <h2 class="card-title">📝 Calificar Estudiantes</h2>
+        <h2 class="card-title">📝 Calificar Estudiantes por Curso</h2>
         
-        <!-- Mostrar mensaje si existe -->
+        <!-- Mensajes -->
         {% if mensaje %}
           <div class="alert alert-{{ tipo_mensaje }} alert-dismissible fade show" role="alert">
-            {% if tipo_mensaje == 'warning' %}
-              ⚠️ {{ mensaje }}
-            {% elif tipo_mensaje == 'danger' %}
-              ❌ {{ mensaje }}
-            {% else %}
-              ℹ️ {{ mensaje }}
-            {% endif %}
+            {% if tipo_mensaje == 'warning' %}⚠️{% elif tipo_mensaje == 'danger' %}❌{% else %}ℹ️{% endif %}
+            {{ mensaje }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
           </div>
         {% endif %}
         
-        <!-- Mostrar formulario solo si hay estudiantes -->
-        {% if estudiantes %}
-          <!-- Mostrar mensajes de éxito/error del formulario -->
+        <!-- Formulario principal -->
+        {% if courses %}
           <div id="message-container"></div>
           
-          <form id="qualification-form" method="POST" action="{{ url_for('calificaciones.submit_qualification') }}">
-            
-            <!-- Selección de Estudiante -->
-            <div class="mb-3">
-              <label for="student_id" class="form-label">👤 Estudiante:</label>
-              <select name="student_id" id="student_id" class="form-select" required>
-                <option value="">Seleccionar estudiante...</option>
-                {% for estudiante in estudiantes %}
-                  <option value="{{ estudiante.id }}">{{ estudiante.name }}</option>
-                {% endfor %}
-              </select>
-            </div>
+          <!-- Paso 1: Seleccionar curso -->
+          <div class="mb-4">
+            <label for="course_select" class="form-label fw-bold">Selecciona el curso</label>
+            <select id="course_select" class="form-select" required>
+              <option value="">Seleccionar curso...</option>
+              {% for course in courses %}
+                <option value="{{ course.id }}">{{ course.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
 
-            <!-- Selección de Curso -->
-            <div class="mb-3">
-              <label for="course_id" class="form-label">📚 Curso:</label>
-              <select name="course_id" id="course_id" class="form-select" required>
-                <option value="">Seleccionar curso...</option>
-                {% for course in courses %}
-                  <option value="{{ course.id }}">{{ course.name }}</option>
-                {% endfor %}
-              </select>
+          <!-- Spinner de carga -->
+          <div id="loading-spinner" class="loading-spinner">
+            <div class="spinner-border text-primary">
+              <output class="visually-hidden">Cargando estudiantes...</output>
             </div>
+            <p class="mt-2 text-muted">Cargando estudiantes del curso...</p>
+          </div>
 
-            <!-- Calificación -->
-            <div class="mb-3">
-              <label for="score" class="form-label">⭐ Calificación (0-20):</label>
-              <input 
-                type="number" 
-                name="score" 
-                id="score" 
-                class="form-control score-input" 
-                min="0" 
-                max="20" 
-                step="0.5" 
-                placeholder="Ingrese la nota..."
-                required>
-              <div class="form-text">Ingrese una nota entre 0 y 20 puntos</div>
-            </div>
+          <!-- Información del curso seleccionado -->
+          <div id="course-info" class="student-info" style="display: none;">
+            <h5><i class="fas fa-info-circle"></i> Información del curso</h5>
+            <p id="course-details" class="mb-0"></p>
+          </div>
 
-            <!-- Botones -->
-            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-              <button type="submit" class="btn btn-primary me-md-2">
-                💾 Guardar Calificación
-              </button>
-              <button type="button" class="btn btn-secondary" onclick="resetForm()">
-                🔄 Limpiar Formulario
-              </button>
-            </div>
-          </form>
+          <!-- Paso 2: Formulario de calificación -->
+          <div id="qualification-section" style="display: none;">
+            <form id="qualification-form" method="POST" action="{{ url_for('calificaciones.submit_qualification') }}">
+              <input type="hidden" id="selected_course_id" name="course_id" value="">
+              
+              <!-- Lista de estudiantes -->
+              <div class="mb-3">
+                <label for="student_id" class="form-label fw-bold">Selecciona el estudiante</label>
+                <select name="student_id" id="student_id" class="form-select" required>
+                  <option value="">Primero selecciona un curso...</option>
+                </select>
+                <div class="form-text">
+                  <i class="fas fa-users"></i> 
+                  <span id="student-count">0</span> estudiantes matriculados
+                </div>
+              </div>
+
+              <!-- Calificación -->
+              <div class="mb-3">
+                <label for="score" class="form-label fw-bold">Ingresa la calificación</label>
+                <div class="input-group">
+                  <input 
+                    type="number" 
+                    name="score" 
+                    id="score" 
+                    class="form-control" 
+                    min="0" 
+                    max="20" 
+                    step="0.5" 
+                    placeholder="0.0"
+                    required>
+                  <span class="input-group-text">/20</span>
+                </div>
+                <div class="form-text">
+                  <i class="fas fa-info-circle"></i> 
+                  Calificación del 0 al 20 (puedes usar decimales como 15.5)
+                </div>
+              </div>
+
+              <!-- Botones -->
+              <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <button type="submit" class="btn btn-success me-md-2" id="submit-btn" disabled>
+                  <i class="fas fa-save"></i> Guardar Calificación
+                </button>
+                <button type="button" class="btn btn-outline-secondary" onclick="resetForm()">
+                  <i class="fas fa-redo"></i> Reiniciar
+                </button>
+                <a href="{{ url_for('dashboard.main') }}" class="btn btn-primary">
+                  <i class="fas fa-arrow-left"></i> Volver al Dashboard
+                </a>
+              </div>
+            </form>
+          </div>
 
         {% else %}
-          <!-- Mensaje cuando no hay estudiantes -->
-          <div class="no-students-message">
+          <!-- Sin cursos asignados -->
+          <div class="no-data-message">
             <div class="mb-3">
-              <i class="fas fa-users fa-3x text-muted"></i>
+              <i class="fas fa-chalkboard fa-3x text-muted"></i>
             </div>
-            <h5 class="text-muted">No se pueden registrar calificaciones</h5>
+            <h5 class="text-muted">No tienes cursos asignados</h5>
             <p class="text-muted mb-3">
-              {% if tipo_mensaje == 'warning' %}
-                No hay estudiantes registrados en el sistema para calificar.
-              {% else %}
-                Ocurrió un error al cargar la lista de estudiantes.
-              {% endif %}
+              No se encontraron cursos asignados a tu cuenta de profesor.
+              Contacta al administrador para que te asigne cursos.
             </p>
-            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-              <a href="{{ url_for('main.index') }}" class="btn btn-primary">
-                🏠 Volver al Inicio
-              </a>
-              <button onclick="location.reload()" class="btn btn-outline-primary">
-                🔄 Reintentar
-              </button>
-            </div>
+            <a href="{{ url_for('dashboard.main') }}" class="btn btn-primary">
+              <i class="fas fa-arrow-left"></i> Volver al Dashboard
+            </a>
           </div>
         {% endif %}
       </div>
@@ -142,19 +125,127 @@
   </div>
 </div>
 
-{% if estudiantes %}
+{% if courses %}
 <script>
-// JavaScript solo si hay estudiantes
 document.addEventListener('DOMContentLoaded', function() {
+    const courseSelect = document.getElementById('course_select');
+    const studentSelect = document.getElementById('student_id');
+    const qualificationSection = document.getElementById('qualification-section');
+    const courseInfo = document.getElementById('course-info');
+    const courseDetails = document.getElementById('course-details');
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const studentCount = document.getElementById('student-count');
+    const submitBtn = document.getElementById('submit-btn');
+    const selectedCourseInput = document.getElementById('selected_course_id');
     const form = document.getElementById('qualification-form');
-    
+
+    // Evento: cambio de curso
+    courseSelect.addEventListener('change', function() {
+        const courseId = this.value;
+        
+        if (!courseId) {
+            hideQualificationSection();
+            return;
+        }
+
+        loadStudentsByCourse(courseId);
+    });
+
+    // Evento: envío del formulario
     form.addEventListener('submit', function(e) {
         e.preventDefault();
+        submitQualification();
+    });
+
+    // Evento: validación en tiempo real
+    document.getElementById('score').addEventListener('input', validateForm);
+    studentSelect.addEventListener('change', validateForm);
+
+    function loadStudentsByCourse(courseId) {
+        showLoading();
+        hideQualificationSection();
+
+        fetch(`{{ url_for('calificaciones.get_students_by_course') }}?course_id=${courseId}`)
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                
+                if (data.error) {
+                    showMessage('❌ Error: ' + data.error, 'danger');
+                    return;
+                }
+
+                if (data.message) {
+                    showMessage('ℹ️ ' + data.message, 'info');
+                    populateStudents([]);
+                    return;
+                }
+
+                populateStudents(data.students || []);
+                showCourseInfo(courseId);
+                showQualificationSection();
+            })
+            .catch(error => {
+                hideLoading();
+                showMessage('❌ Error de conexión: ' + error.message, 'danger');
+            });
+    }
+
+    function populateStudents(students) {
+        studentSelect.innerHTML = '<option value="">Seleccionar estudiante...</option>';
         
+        students.forEach(student => {
+            const option = document.createElement('option');
+            option.value = student.id;
+            option.textContent = student.name;
+            studentSelect.appendChild(option);
+        });
+
+        studentCount.textContent = students.length;
+        selectedCourseInput.value = courseSelect.value;
+        validateForm();
+    }
+
+    function showCourseInfo(courseId) {
+        const courseName = courseSelect.options[courseSelect.selectedIndex].text;
+        courseDetails.innerHTML = `
+            <strong>Curso:</strong> ${courseName}<br>
+            <strong>ID:</strong> ${courseId}
+        `;
+        courseInfo.style.display = 'block';
+    }
+
+    function showQualificationSection() {
+        qualificationSection.style.display = 'block';
+    }
+
+    function hideQualificationSection() {
+        qualificationSection.style.display = 'none';
+        courseInfo.style.display = 'none';
+    }
+
+    function showLoading() {
+        loadingSpinner.style.display = 'block';
+    }
+
+    function hideLoading() {
+        loadingSpinner.style.display = 'none';
+    }
+
+    function validateForm() {
+        const hasStudent = studentSelect.value !== '';
+        const hasScore = document.getElementById('score').value !== '';
+        const hasCourse = courseSelect.value !== '';
+        
+        submitBtn.disabled = !(hasStudent && hasScore && hasCourse);
+    }
+
+    function submitQualification() {
         showMessage('⏳ Guardando calificación...', 'info');
-        
+        submitBtn.disabled = true;
+
         const formData = new FormData(form);
-        
+
         fetch(form.action, {
             method: 'POST',
             body: formData
@@ -163,31 +254,37 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.mensaje) {
                 showMessage('✅ ' + data.mensaje, 'success');
-                form.reset();
+                document.getElementById('score').value = '';
+                studentSelect.value = '';
             } else if (data.error) {
                 showMessage('❌ Error: ' + data.error, 'danger');
             }
         })
         .catch(error => {
             showMessage('❌ Error de conexión: ' + error.message, 'danger');
+        })
+        .finally(() => {
+            validateForm();
         });
-    });
+    }
+
+    function showMessage(message, type) {
+        const messageContainer = document.getElementById('message-container');
+        messageContainer.innerHTML = `
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+    }
+
+    window.resetForm = function() {
+        form.reset();
+        courseSelect.value = '';
+        hideQualificationSection();
+        document.getElementById('message-container').innerHTML = '';
+    };
 });
-
-function showMessage(message, type) {
-    const messageContainer = document.getElementById('message-container');
-    messageContainer.innerHTML = `
-        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    `;
-}
-
-function resetForm() {
-    document.getElementById('qualification-form').reset();
-    document.getElementById('message-container').innerHTML = '';
-}
 </script>
 {% endif %}
 {% endblock %}
