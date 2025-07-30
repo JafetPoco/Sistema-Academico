@@ -155,6 +155,27 @@ class GradeRepository(BaseRepository):
             logging.error(f"Error fetching grades by student_id: {e}")
             return []
         
+    def get_average_by_course_id(self, course_id: int):
+        try:
+            scores = (
+                db.session.query(GradeDTO.score)
+                .filter(GradeDTO.course_id == course_id)
+                .all()
+            )
+
+            score_list = [score for (score,) in scores]
+
+            if not score_list:
+                return 0.0
+
+            average = sum(score_list) / len(score_list)
+            return round(average, 2)
+        except Exception as e:
+            logging.error(f"Error al calcular promedio sin func para curso {course_id}: {e}")
+            return 0.0
+
+
+        
 class ParentRepository(BaseRepository):
     dto = ParentDTO
     mapper = ParentMapper
