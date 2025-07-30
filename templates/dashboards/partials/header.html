@@ -29,9 +29,7 @@
             </div>
             
             <div class="header-controls">  
-                <button type="button" class="nav-chip" onclick="history.back()" style="border:none;">
-                    <i class="fas fa-arrow-left"></i> Regresar
-                </button>   
+                <a href="{{ url_for('main.index') }}" class="nav-chip"><i class="fas fa-arrow-left"></i>Volver al Inicio</a>
                 <a class="nav-chip" href="{{ url_for('auth.logout') }}">
                     <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
                 </a>             
