@@ -1,14 +1,23 @@
+from typing import Optional
+
 from app.infrastructure.repository.repository import (
     ParentRepository, EnrollmentRepository, GradeRepository, UserRepository
 )
 import logging
 
 class ParentDashboardService:  
-    def __init__(self):
-        self.parent_repo = ParentRepository()
-        self.enrollment_repo = EnrollmentRepository()
-        self.grade_repo = GradeRepository()
-        self.user_repo = UserRepository()
+    def __init__(
+        self,
+        parent_repo: Optional[ParentRepository] = None,
+        enrollment_repo: Optional[EnrollmentRepository] = None,
+        grade_repo: Optional[GradeRepository] = None,
+        user_repo: Optional[UserRepository] = None,
+    ):
+        # Allow injecting repositories so the service can be tested with mocks
+        self.parent_repo = parent_repo or ParentRepository()
+        self.enrollment_repo = enrollment_repo or EnrollmentRepository()
+        self.grade_repo = grade_repo or GradeRepository()
+        self.user_repo = user_repo or UserRepository()
     
     def get_parent_dashboard_data(self, parent_id: int) -> dict:
         try:
