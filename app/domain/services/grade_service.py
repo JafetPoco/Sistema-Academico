@@ -1,14 +1,22 @@
 # app/domain/services/grade_service.py
+from typing import Optional
+
 from app.infrastructure.repository.repository import GradeRepository
 from app.infrastructure.repository.repository import CourseRepository
 from app.infrastructure.repository.repository import StudentRepository
 from app.infrastructure.repository.models import UserDTO  # Asegura que tengas acceso directo al modelo
 
 class GradeService:
-    def __init__(self):
-        self.grade_repository = GradeRepository()
-        self.course_repository = CourseRepository()
-        self.student_repository = StudentRepository()
+    def __init__(
+        self,
+        grade_repository: Optional[GradeRepository] = None,
+        course_repository: Optional[CourseRepository] = None,
+        student_repository: Optional[StudentRepository] = None,
+    ):
+        # Allow dependency injection to simplify testing without touching the DB
+        self.grade_repository = grade_repository or GradeRepository()
+        self.course_repository = course_repository or CourseRepository()
+        self.student_repository = student_repository or StudentRepository()
 
     def get_grades_by_parent_id(self, parent_id):
         students = self.student_repository.get_by_parent_id(parent_id)

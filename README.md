@@ -14,6 +14,7 @@
       - [Principios aplicados](#principios-aplicados)
     - [Principales Entidades](#principales-entidades)
     - [Módulos](#módulos)
+  - [DTOs](#dtos)
   - [Requisitos](#requisitos)
 - [Practicas de desarrollo de software](#practicas-de-desarrollo-de-software)
   - [Reporte SonarLint](#reporte-sonarlint)
@@ -156,6 +157,39 @@ app/
 - `routes`: Endpoints web.
 - `templates`: Plantillas HTML para la GUI.
 - `config`: Configuración de la aplicación.
+
+## DTOs 
+```python
+class UserDTO(db.Model):
+    user_id = Column(Integer, primary_key=True)
+    email   = Column(String, unique=True)
+    role    = Column(Integer)
+
+class User:
+    def __init__(self, user_id, email, role):
+        self.user_id = user_id
+        self.email   = email
+        self.role    = role
+
+class UserMapper:
+    @staticmethod
+    def to_domain(dto: UserDTO) -> User:
+        return User(dto.user_id, dto.email, dto.role)
+
+    @staticmethod
+    def to_dto(domain: User) -> UserDTO:
+        return UserDTO(user_id=domain.user_id, email=domain.email, role=domain.role)
+
+class BaseRepository:
+    dto: Type
+    mapper: Type
+    def add(self, domain_obj): ...
+    def get(self, id): ...
+
+class UserRepository(BaseRepository):
+    dto    = UserDTO
+    mapper = UserMapper
+```
 
 ---
 
