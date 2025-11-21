@@ -5,7 +5,7 @@ from app.domain.entities import Grade
 from app.domain.services.grade_service import GradeService
 
 
-def test_get_grades_by_parent_id_aggregates_student_info():
+def test_parent_grades_aggregate():
     grade_repo = Mock()
     course_repo = Mock()
     student_repo = Mock()
@@ -44,7 +44,7 @@ def test_get_grades_by_parent_id_aggregates_student_info():
     course_repo.get.assert_called_once_with(101)
 
 
-def test_get_grades_by_parent_id_handles_missing_course_names():
+def test_parent_grades_missing_course():
     grade_repo = Mock()
     course_repo = Mock()
     student_repo = Mock()
