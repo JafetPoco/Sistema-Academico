@@ -2,27 +2,27 @@
 <!-- Cards de acciones principales -->
 <div class="row g-4">
     <div class="col-md-6">
-        <div class="card dashboard-card h-100 shadow-sm">
+        <div class="card dashboard-card h-100 shadow-sm" id="card-calificaciones">
             <div class="card-body text-center">
                 <div class="mb-3">
                     <i class="fas fa-chart-line fa-3x text-success"></i>
                 </div>
-                <h5 class="card-title">Ver Calificaciones</h5>
+                <h5 class="card-title" id="card-title-calificaciones">Ver Calificaciones</h5>
                 <p class="card-text">Ve todas las notas y calificaciones por curso</p>
-                <a href="{{ url_for('grades_routes.parent_query_grades') }}" class="btn btn-success">Ver Notas</a>
+                <a href="{{ url_for('grades_routes.parent_query_grades') }}" class="btn btn-success" id="btn-notas">Ver Notas</a>
             </div>
         </div>
     </div>
 
     <div class="col-md-6">
-        <div class="card dashboard-card h-100 shadow-sm">
+        <div class="card dashboard-card h-100 shadow-sm" id="card-perfil">
             <div class="card-body text-center">
                 <div class="mb-3">
                     <i class="fas fa-user fa-3x text-info"></i>
                 </div>
-                <h5 class="card-title">Mi Perfil</h5>
+                <h5 class="card-title" id="card-title-perfil">Mi Perfil</h5>
                 <p class="card-text">Actualiza tu información personal</p>
-                <a href="{{ url_for('user.profile') }}" class="btn btn-info">Ver Perfil</a>
+                <a href="{{ url_for('user.profile') }}" class="btn btn-info" id="btn-perfil">Ver Perfil</a>
             </div>
         </div>
     </div>
