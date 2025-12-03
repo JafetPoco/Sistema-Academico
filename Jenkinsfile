@@ -57,6 +57,7 @@ pipeline {
 
     stage ('Build') {
       steps {
+        echo 'Build stage - no build steps for Python app.'
       }
       post {
         always {
@@ -88,15 +89,9 @@ pipeline {
 
     stage('ZAP Security Scan (Baseline)') {
       steps {
-        // NOTE: Requires OWASP ZAP plugin and a configured ZAP tool (Manage Jenkins > Global Tool Configuration)
-        // Replace 'ZAP_DEFAULT' below with your configured tool name.
         script {
-          // Ensure app is running from Deploy stage; wait briefly
           sleep time: 5, unit: 'SECONDS'
 
-          // Run ZAP Baseline via plugin
-          // The plugin step names can vary; commonly 'zap' or 'zapPipeline' from OWASP ZAP plugin.
-          // Example using "zap" step:
           zap toolName: 'ZAP_DEFAULT', 
               session: '', 
               includePaths: [], 
