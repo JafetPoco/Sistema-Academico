@@ -11,7 +11,9 @@ pipeline {
     TEST_REPORT_DIR = "reports/tests"
     COVERAGE_HTML_DIR = "reports/coverage/html"
     LINT_REPORT_DIR = "reports/lint"
-    SECURITY_REPORT_DIR = "reports/security" 
+    SECURITY_REPORT_DIR = "reports/security"
+    SONAR_HOST_URL = "http://localhost:9000"  // Replace with your SonarQube server URL
+    SONAR_TOKEN = credentials('sonar-token')  // Replace with your Jenkins credential ID for SonarQube token
   }
 
   stages {
@@ -41,6 +43,7 @@ pipeline {
         sh '''
           . venv/bin/activate
           coverage run -m pytest tests/domain tests/application tests/infrastructure --junitxml=${TEST_REPORT_DIR}/junit.xml
+          coverage xml -o reports/coverage/coverage.xml
           coverage html -d ${COVERAGE_HTML_DIR}
           coverage report -m
         '''
@@ -50,7 +53,18 @@ pipeline {
           junit allowEmptyResults: true, testResults: "${TEST_REPORT_DIR}/junit.xml"
           archiveArtifacts artifacts: "${TEST_REPORT_DIR}/**", fingerprint: true
           archiveArtifacts artifacts: "${COVERAGE_HTML_DIR}/**", fingerprint: true
-          archiveArtifacts artifacts: "${LINT_REPORT_DIR}/**", fingerprint: true
+        }
+      }
+    }
+
+    stage('SonarQube Analysis') {
+      steps {
+        script {
+          sh 'curl -f ${SONAR_HOST_URL}/api/system/status || (echo "SonarQube server not running" && exit 1)'
+          
+          withSonarQubeEnv('SonarQube') { 
+            sh 'sonar-scanner -Dsonar.login=${SONAR_TOKEN}'
+          }
         }
       }
     }
