@@ -14,26 +14,23 @@ pipeline {
     SECURITY_REPORT_DIR = "reports/security"
     SONAR_HOST_URL = "http://localhost:9000"  // Replace with your SonarQube server URL
     SONAR_TOKEN = credentials('sonar-token')  // Replace with your Jenkins credential ID for SonarQube token
+    DOCKER_IMAGE = "sistema-academico:ci"
+    APP_CONTAINER = "sistema-academico-app"
   }
 
   stages {
-    stage('Checkout') {
+    stage('Prepare Workspace') {
       steps {
-        checkout scm
-        script {
-          echo "Branch: ${env.BRANCH_NAME ?: 'unknown'}"
-        }
+        sh '''
+          mkdir -p ${TEST_REPORT_DIR} ${COVERAGE_HTML_DIR} ${LINT_REPORT_DIR} ${SECURITY_REPORT_DIR} reports/coverage
+        '''
       }
     }
 
-    stage('Setup Python') {
+    stage('Build Docker Image') {
       steps {
         sh '''
-          python3 -m venv venv
-          . venv/bin/activate
-          pip install --upgrade pip
-          pip install -r requirements.txt
-          mkdir -p ${TEST_REPORT_DIR} ${COVERAGE_HTML_DIR} ${LINT_REPORT_DIR} ${SECURITY_REPORT_DIR}
+          docker build -t ${DOCKER_IMAGE} .
         '''
       }
     }
@@ -41,11 +38,13 @@ pipeline {
     stage('Unit Tests & Coverage') {
       steps {
         sh '''
-          . venv/bin/activate
-          coverage run -m pytest tests/domain tests/application tests/infrastructure --junitxml=${TEST_REPORT_DIR}/junit.xml
-          coverage xml -o reports/coverage/coverage.xml
-          coverage html -d ${COVERAGE_HTML_DIR}
-          coverage report -m
+          docker run --rm \
+            -v "$PWD/reports":/app/reports \
+            ${DOCKER_IMAGE} \
+            sh -c "coverage run -m pytest tests/domain tests/application tests/infrastructure --junitxml=/app/${TEST_REPORT_DIR}/junit.xml && \
+                   coverage xml -o /app/reports/coverage/coverage.xml && \
+                   coverage html -d /app/${COVERAGE_HTML_DIR} && \
+                   coverage report -m"
         '''
       }
       post {
@@ -63,8 +62,13 @@ pipeline {
           sh 'curl -f ${SONAR_HOST_URL}/api/system/status || (echo "SonarQube server not running" && exit 1)'
           
           withSonarQubeEnv('SonarQube') { 
-            sh 'sonar-scanner -Dsonar.login=${SONAR_TOKEN}'
+            sh 'sonar-scanner -Dsonar.login=${SONAR_TOKEN} -Dsonar.report.export.path=${REPORT_ROOT}/sonar-report.json'
           }
+        }
+      }
+      post {
+        always {
+          archiveArtifacts artifacts: "${REPORT_ROOT}/sonar-report.json", allowEmptyArchive: true, fingerprint: true
         }
       }
     }
@@ -81,36 +85,53 @@ pipeline {
     }
 
     stage('Deploy') {
-      when { branch 'main' }
+      when { anyOf { branch 'main'; branch 'dev' } }
       steps {
         script {
-          // Local developer deploy: start the app using Python run.py on localhost:8000
-          // Uses the venv created earlier; each developer can run on their own Jenkins machine
+          sh 'docker rm -f ${APP_CONTAINER} || true'
           sh '''
-            . venv/bin/activate
-            nohup python run.py > deploy.log 2>&1 & echo $! > deploy.pid
+            docker run -d --name ${APP_CONTAINER} -p 5000:5000 ${DOCKER_IMAGE}
           '''
-          echo 'Application (run.py) started locally on http://localhost:8000'
+          sh '''
+            for i in {1..30}; do
+              if curl -sSf http://localhost:5000/health > /dev/null; then
+                break
+              fi
+              sleep 1
+            done
+          '''
+          echo 'Application container started on http://localhost:5000'
         }
       }
       post {
         always {
-          // Keep PID file for later stages to stop the app after tests
+          sh 'docker logs ${APP_CONTAINER} > deploy.log || true'
           archiveArtifacts artifacts: 'deploy.log', fingerprint: true
         }
       }
     }
 
     stage('ZAP Security Scan (Baseline)') {
+      when { branch 'dev' }
       steps {
         script {
           sleep time: 5, unit: 'SECONDS'
 
+          // Wait for web app to be ready (container should already be running from Deploy)
+          sh '''
+            for i in {1..30}; do
+              if curl -sSf http://localhost:5000/health > /dev/null; then
+                break
+              fi
+              sleep 1
+            done
+          '''
+          // Then run ZAP
           zap toolName: 'ZAP_DEFAULT', 
               session: '', 
               includePaths: [], 
               excludePaths: [], 
-              targetUrl: 'http://localhost:8000', 
+              targetUrl: 'http://localhost:5000', 
               failBuild: false, 
               generateReports: true, 
               reportDir: "${SECURITY_REPORT_DIR}", 
@@ -127,11 +148,12 @@ pipeline {
 
     // Optional functional smoke tests against the running app
     stage('Functional Smoke Tests') {
+      when { branch 'dev' }
       steps {
         script {
           // Simple curl checks as placeholders; replace with your real test harness
-          sh 'curl -sSf http://localhost:8000/ || (echo "Home endpoint failed" && exit 1)'
-          sh 'curl -sSf http://localhost:8000/health || (echo "Health endpoint failed" && exit 1)'
+          sh 'curl -sSf http://localhost:5000/ || (echo "Home endpoint failed" && exit 1)'
+          sh 'curl -sSf http://localhost:5000/health || (echo "Health endpoint failed" && exit 1)'
         }
       }
     }
@@ -140,7 +162,7 @@ pipeline {
     stage('Stop App') {
       when { branch 'main' }
       steps {
-        sh 'test -f deploy.pid && kill $(cat deploy.pid) || true'
+        sh 'docker rm -f ${APP_CONTAINER} || true'
       }
     }
   }
