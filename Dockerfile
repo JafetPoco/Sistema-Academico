@@ -29,6 +29,4 @@ ENV APP_FACTORY="app:create_app()" \
     PYTHONPATH=/app
 
 # Expose port for the web server
-EXPOSE 8000
-
-CMD ["python", "run.py"]
+EXPOSE 5000

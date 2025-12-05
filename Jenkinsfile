@@ -62,9 +62,17 @@ pipeline {
           sh 'curl -f ${SONAR_HOST_URL}/api/system/status || (echo "SonarQube server not running" && exit 1)'
 
           withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-            withSonarQubeEnv('SonarQube') { 
-              sh 'sonar-scanner -Dsonar.login=${SONAR_TOKEN} -Dsonar.report.export.path=${REPORT_ROOT}/sonar-report.json'
-            }
+            // Run official SonarScanner CLI in a Docker container so no host install is required.
+            // The container will mount the workspace and execute the scanner.
+            sh '''
+              docker run --rm \
+                -v "$PWD":/usr/src \
+                -w /usr/src \
+                sonarsource/sonar-scanner-cli:latest \
+                -Dsonar.login=${SONAR_TOKEN} \
+                -Dsonar.host.url=${SONAR_HOST_URL} \
+                -Dsonar.report.export.path=${REPORT_ROOT}/sonar-report.json
+            '''
           }
         }
       }
@@ -119,7 +127,6 @@ pipeline {
         script {
           sleep time: 5, unit: 'SECONDS'
 
-          // Wait for web app to be ready (container should already be running from Deploy)
           sh '''
             for i in {1..30}; do
               if curl -sSf http://localhost:5000/health > /dev/null; then
@@ -128,7 +135,6 @@ pipeline {
               sleep 1
             done
           '''
-          // Then run ZAP
           zap toolName: 'ZAP_DEFAULT', 
               session: '', 
               includePaths: [], 
@@ -148,12 +154,10 @@ pipeline {
       }
     }
 
-    // Optional functional smoke tests against the running app
     stage('Functional Smoke Tests') {
       when { branch 'dev' }
       steps {
         script {
-          // Simple curl checks as placeholders; replace with your real test harness
           sh 'curl -sSf http://localhost:5000/ || (echo "Home endpoint failed" && exit 1)'
           sh 'curl -sSf http://localhost:5000/health || (echo "Health endpoint failed" && exit 1)'
         }
