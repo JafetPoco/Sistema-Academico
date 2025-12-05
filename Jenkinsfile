@@ -13,7 +13,6 @@ pipeline {
     LINT_REPORT_DIR = "reports/lint"
     SECURITY_REPORT_DIR = "reports/security"
     SONAR_HOST_URL = "http://localhost:9000"  // Replace with your SonarQube server URL
-    SONAR_TOKEN = credentials('sonar-token')  // Replace with your Jenkins credential ID for SonarQube token
     DOCKER_IMAGE = "sistema-academico:ci"
     APP_CONTAINER = "sistema-academico-app"
   }
@@ -39,7 +38,8 @@ pipeline {
       steps {
         sh '''
           docker run --rm \
-            -v "$PWD/reports":/app/reports \
+            -v "$PWD":/app \
+            -w /app \
             ${DOCKER_IMAGE} \
             sh -c "coverage run -m pytest tests/domain tests/application tests/infrastructure --junitxml=/app/${TEST_REPORT_DIR}/junit.xml && \
                    coverage xml -o /app/reports/coverage/coverage.xml && \
@@ -60,9 +60,11 @@ pipeline {
       steps {
         script {
           sh 'curl -f ${SONAR_HOST_URL}/api/system/status || (echo "SonarQube server not running" && exit 1)'
-          
-          withSonarQubeEnv('SonarQube') { 
-            sh 'sonar-scanner -Dsonar.login=${SONAR_TOKEN} -Dsonar.report.export.path=${REPORT_ROOT}/sonar-report.json'
+
+          withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+            withSonarQubeEnv('SonarQube') { 
+              sh 'sonar-scanner -Dsonar.login=${SONAR_TOKEN} -Dsonar.report.export.path=${REPORT_ROOT}/sonar-report.json'
+            }
           }
         }
       }
