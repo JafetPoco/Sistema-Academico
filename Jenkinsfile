@@ -62,15 +62,22 @@ pipeline {
           sh 'curl -f ${SONAR_HOST_URL}/api/system/status || (echo "SonarQube server not running" && exit 1)'
 
           withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-            // Run official SonarScanner CLI in a Docker container so no host install is required.
-            // The container will mount the workspace and execute the scanner.
+            // Run SonarScanner CLI in Docker with explicit project settings, similar to the provided snippet.
             sh '''
               docker run --rm \
                 -v "$PWD":/usr/src \
                 -w /usr/src \
                 sonarsource/sonar-scanner-cli:latest \
+                sonar-scanner \
                 -Dsonar.login=${SONAR_TOKEN} \
                 -Dsonar.host.url=${SONAR_HOST_URL} \
+                -Dsonar.projectKey=sys:acad \
+                -Dsonar.projectName="Sistema Académico" \
+                -Dsonar.sources=. \
+                -Dsonar.tests=tests \
+                -Dsonar.python.version=3.13 \
+                -Dsonar.python.coverage.reportPaths=reports/coverage/coverage.xml \
+                -Dsonar.python.xunit.reportPath=reports/tests/junit.xml \
                 -Dsonar.report.export.path=${REPORT_ROOT}/sonar-report.json
             '''
           }
