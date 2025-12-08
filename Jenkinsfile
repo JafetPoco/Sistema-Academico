@@ -60,7 +60,11 @@ pipeline {
 
     stage('Poetry Install') {
       steps {
-        sh 'poetry install --with dev'
+        sh '''
+          python -m pip install --upgrade pip
+          python -m pip install poetry==2.2.1
+          python -m poetry install --with dev
+        '''
       }
     }
 
@@ -75,10 +79,10 @@ pipeline {
     stage('Unit Tests & Coverage') {
       steps {
         sh '''
-          poetry run coverage run -m pytest tests/domain tests/application tests/infrastructure --junitxml=${TEST_REPORT_DIR}/junit.xml && \
-          poetry run coverage xml -o reports/coverage/coverage.xml && \
-          poetry run coverage html -d ${COVERAGE_HTML_DIR} && \
-          poetry run coverage report -m
+          python -m poetry run coverage run -m pytest tests/domain tests/application tests/infrastructure --junitxml=${TEST_REPORT_DIR}/junit.xml && \
+          python -m poetry run coverage xml -o reports/coverage/coverage.xml && \
+          python -m poetry run coverage html -d ${COVERAGE_HTML_DIR} && \
+          python -m poetry run coverage report -m
         '''
       }
       post {
