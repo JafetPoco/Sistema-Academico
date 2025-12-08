@@ -230,12 +230,13 @@ pipeline {
       }
     }
 
-    stage('Functional Smoke Tests') {
+    stage('Functional Tests - Selenium') {
       steps {
-        script {
-          sh 'curl -sSf http://localhost:5000/ || (echo "Home endpoint failed" && exit 1)'
-          sh 'curl -sSf http://localhost:5000/health || (echo "Health endpoint failed" && exit 1)'
-        }
+        echo 'Running functional tests with Selenium...'
+        sh '''
+          . venv/bin/activate
+          pytest tests/functional --junitxml=${TEST_REPORT_DIR}/functional_junit.xml
+        '''
       }
     }
   }

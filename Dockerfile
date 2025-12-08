@@ -15,12 +15,11 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
     libsqlite3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy only requirements first to leverage Docker layer caching
+# Copy requirements first to leverage Docker layer caching
 COPY requirements.txt ./
-RUN pip install poetry==2.2.1 
-RUN pip install --no-cache-dir gunicorn
-RUN poetry config virtualenvs.create false
-RUN poetry install --no-dev --no-interaction --no-ansi
+RUN pip install --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir gunicorn
 
 # Copy project files
 COPY app/ ./app/
@@ -28,8 +27,6 @@ COPY run.py ./
 COPY templates/ ./templates/
 COPY static/ ./static/
 COPY scripts/ ./scripts/
-COPY pyproject.toml ./
-COPY poetry.lock ./
 
 # Configure Flask application factory target
 ENV APP_FACTORY="app:create_app()" \
