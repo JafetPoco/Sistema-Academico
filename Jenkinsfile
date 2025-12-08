@@ -132,7 +132,6 @@ pipeline {
     }
 
     stage('Deploy') {
-      when { anyOf { branch 'main'; branch 'dev' } }
       steps {
         script {
           sh 'docker rm -f ${APP_CONTAINER} || true'
