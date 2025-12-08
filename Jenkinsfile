@@ -137,7 +137,9 @@ pipeline {
       steps {
         echo 'Building the App package with Poetry...'
         sh '''
-          poetry config virtualenvs.create false
+          . venv/bin/activate
+          pip list
+          pip install poetry
           poetry build
         '''
       }
@@ -245,6 +247,7 @@ pipeline {
       sh 'docker stop ${APP_CONTAINER} || true'
       sh 'docker rm -f ${APP_CONTAINER} || true'
       echo 'Pipeline finished.'
+      cleanupWs()
     }
   }
 }
