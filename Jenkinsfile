@@ -6,6 +6,10 @@ pipeline {
     timeout(time: 30, unit: 'MINUTES')
   }
 
+  parameters {
+    booleanParam(name: 'RELEASE_BUILD', defaultValue: false, description: 'Run poetry build to produce release artifacts')
+  }
+
   environment {
     REPORT_ROOT = "reports"
     TEST_REPORT_DIR = "reports/tests"
@@ -54,6 +58,12 @@ pipeline {
       }
     }
 
+    stage('Poetry Install') {
+      steps {
+        sh 'poetry install --with dev'
+      }
+    }
+
     stage('Build Docker Image') {
       steps {
         sh '''
@@ -65,14 +75,10 @@ pipeline {
     stage('Unit Tests & Coverage') {
       steps {
         sh '''
-          docker run --rm \
-            -v "$PWD":/app \
-            -w /app \
-            ${DOCKER_IMAGE} \
-            sh -c "coverage run -m pytest tests/domain tests/application tests/infrastructure --junitxml=/app/${TEST_REPORT_DIR}/junit.xml && \
-                   coverage xml -o /app/reports/coverage/coverage.xml && \
-                   coverage html -d /app/${COVERAGE_HTML_DIR} && \
-                   coverage report -m"
+          poetry run coverage run -m pytest tests/domain tests/application tests/infrastructure --junitxml=${TEST_REPORT_DIR}/junit.xml && \
+          poetry run coverage xml -o reports/coverage/coverage.xml && \
+          poetry run coverage html -d ${COVERAGE_HTML_DIR} && \
+          poetry run coverage report -m
         '''
       }
       post {
@@ -102,6 +108,9 @@ pipeline {
                   -Dsonar.projectName="Sistema Académico" \
                   -Dsonar.sources=. \
                   -Dsonar.tests=tests \
+                  -Dsonar.test.inclusions=**/tests/**/*.py \
+                  -Dsonar.python.coverage.reportPaths=reports/coverage/coverage.xml \
+                  -Dsonar.python.xunit.reportPath=reports/tests/junit.xml \
                   -Dsonar.python.version=3.13 \
                   -Dsonar.python.coverage.reportPaths=reports/coverage/coverage.xml \
                   -Dsonar.python.xunit.reportPath=reports/tests/junit.xml \
@@ -110,6 +119,23 @@ pipeline {
 
             '''
           }
+        }
+      }
+    }
+
+    stage('Poetry Release') {
+      when {
+        expression { params.RELEASE_BUILD }
+      }
+      steps {
+        sh '''
+          rm -rf dist || true
+          poetry build
+        '''
+      }
+      post {
+        success {
+          archiveArtifacts artifacts: 'dist/**', fingerprint: true
         }
       }
     }
