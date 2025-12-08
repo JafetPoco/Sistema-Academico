@@ -92,6 +92,7 @@ pipeline {
           withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
             sh '''
               docker run --rm \
+                --name sonar-scanner \
                 --network=host \
                 -v "$PWD":/usr/src \
                 -w /usr/src \
@@ -106,17 +107,15 @@ pipeline {
                   -Dsonar.python.xunit.reportPath=reports/tests/junit.xml \
                   -Dsonar.host.url=${SONAR_HOST_URL} \
                   -Dsonar.login=$SONAR_TOKEN \
-                  -Dsonar.report.export.path=${REPORT_ROOT}/sonar-report.json
 
-              cp .scannerwork/report-task.txt ${REPORT_ROOT}/report-task.txt || true
             '''
           }
         }
       }
       post {
         always {
-          archiveArtifacts artifacts: "${REPORT_ROOT}/sonar-report.json", allowEmptyArchive: true, fingerprint: true
-          archiveArtifacts artifacts: "${REPORT_ROOT}/report-task.txt", allowEmptyArchive: true, fingerprint: true
+          sh 'docker stop sonar-scanner || true'
+          sh 'docker rm sonar-scanner || true'
         }
       }
     }
