@@ -244,10 +244,8 @@ pipeline {
 
   post {
     always {
-      sh 'docker stop ${APP_CONTAINER} || true'
-      sh 'docker rm -f ${APP_CONTAINER} || true'
       echo 'Pipeline finished.'
-      cleanupWs()
+      cleanWs()
     }
   }
 }
