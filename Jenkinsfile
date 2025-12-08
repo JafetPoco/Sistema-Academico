@@ -21,6 +21,12 @@ pipeline {
   }
 
   stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
     stage('Pipeline Info') {
       steps {
         script {
