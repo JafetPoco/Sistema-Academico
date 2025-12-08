@@ -56,10 +56,13 @@ pipeline {
         sh '''
           mkdir -p ${TEST_REPORT_DIR} ${COVERAGE_REPORT_DIR} ${PERFORMANCE_REPORT_DIR} ${SECURITY_REPORT_DIR} reports/coverage
         '''
-        echo 'Updating dependencies with Poetry...'
+        echo 'Creating virtual environment and installing dependencies...'
         sh '''
-          python -m pip install --upgrade pip
+          python -m venv .venv
+          . .venv/bin/activate
+          pip install --upgrade pip
           pip install poetry
+
           poetry config virtualenvs.create false
           poetry install --no-interaction --no-ansi
         '''
@@ -92,7 +95,7 @@ pipeline {
       }
     }
 
-    stage('SonarQube Analysis') {
+    stage('SonarQube Static Analysis') {
       steps {
         script {
           sh 'curl -f ${SONAR_HOST_URL}/api/system/status || (echo "SonarQube server not running" && exit 1)'
