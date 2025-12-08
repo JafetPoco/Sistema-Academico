@@ -13,7 +13,7 @@ pipeline {
   environment {
     REPORT_ROOT = "reports"
     TEST_REPORT_DIR = "reports/tests"
-    COVERAGE_REPORT_DIR = "reports/coverage/html"
+    COVERAGE_HTML_DIR = "reports/coverage/html"
     PERFORMANCE_REPORT_DIR = "reports/performance"
     SECURITY_REPORT_DIR = "reports/security"
     ZAP_TARGET = "http://localhost:5000"
@@ -40,7 +40,7 @@ pipeline {
            Parameters:
             REPORT_ROOT = ${REPORT_ROOT}
             TEST_REPORT_DIR = ${TEST_REPORT_DIR}
-            COVERAGE_REPORT_DIR = ${COVERAGE_REPORT_DIR}
+            COVERAGE_HTML_DIR = ${COVERAGE_HTML_DIR}
             PERFORMANCE_REPORT_DIR = ${PERFORMANCE_REPORT_DIR}
             SECURITY_REPORT_DIR = ${SECURITY_REPORT_DIR}
             SONAR_HOST_URL = ${SONAR_HOST_URL}
@@ -54,17 +54,20 @@ pipeline {
       steps {
         echo 'Preparing workspace directories...'
         sh '''
-          mkdir -p ${TEST_REPORT_DIR} ${COVERAGE_REPORT_DIR} ${PERFORMANCE_REPORT_DIR} ${SECURITY_REPORT_DIR} reports/coverage
+          mkdir -p ${TEST_REPORT_DIR} ${COVERAGE_HTML_DIR} ${PERFORMANCE_REPORT_DIR} ${SECURITY_REPORT_DIR} reports/coverage
         '''
-        echo 'Creating virtual environment and installing dependencies...'
-        sh '''
-          python -m venv .venv
-          . .venv/bin/activate
-          pip install --upgrade pip
-          pip install poetry
+      }
+    }
 
-          poetry config virtualenvs.create false
-          poetry install --no-interaction --no-ansi
+    stage('Installing Dependencies') {
+      steps {
+        echo 'Setting up dependencies...'
+        sh '''
+          python -m ensurepip --upgrade || true
+          python -m pip install --upgrade pip
+          python -m pip install poetry==2.2.1
+          python -m poetry config virtualenvs.create false
+          python -m poetry install --with dev
         '''
       }
     }
@@ -80,9 +83,9 @@ pipeline {
     stage('Unit Tests & Coverage') {
       steps {
         sh '''
-          python -m poetry run coverage run -m pytest tests/domain tests/application tests/infrastructure --junitxml=${TEST_REPORT_DIR}/junit.xml && \
+          python -m poetry run coverage run --source=app -m pytest tests/domain tests/application tests/infrastructure --junitxml=${TEST_REPORT_DIR}/junit.xml && \
           python -m poetry run coverage xml -o reports/coverage/coverage.xml && \
-          python -m poetry run coverage html -d ${COVERAGE_REPORT_DIR} && \
+          python -m poetry run coverage html -d ${COVERAGE_HTML_DIR} && \
           python -m poetry run coverage report -m
         '''
       }
@@ -139,7 +142,7 @@ pipeline {
         echo 'Cleaning previous builds... --> End'
         echo 'Building packages. --> Start'
         sh '''
-          poetry build
+          python -m poetry build
         '''
         echo 'Building packages. --> End'
       }
