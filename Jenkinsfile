@@ -6,11 +6,6 @@ pipeline {
     timeout(time: 30, unit: 'MINUTES')
   }
 
-  tools {
-    sonarQube 'SonarQube'
-    nodejs 'NodeJS'
-  }
-
   environment {
     REPORT_ROOT = "reports"
     TEST_REPORT_DIR = "reports/tests"
