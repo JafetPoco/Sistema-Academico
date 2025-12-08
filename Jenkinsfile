@@ -13,7 +13,7 @@ pipeline {
   environment {
     REPORT_ROOT = "reports"
     TEST_REPORT_DIR = "reports/tests"
-    COVERAGE_HTML_DIR = "reports/coverage/html"
+    COVERAGE_REPORT_DIR = "reports/coverage/html"
     PERFORMANCE_REPORT_DIR = "reports/performance"
     SECURITY_REPORT_DIR = "reports/security"
     ZAP_TARGET = "http://localhost:5000"
@@ -40,7 +40,7 @@ pipeline {
            Parameters:
             REPORT_ROOT = ${REPORT_ROOT}
             TEST_REPORT_DIR = ${TEST_REPORT_DIR}
-            COVERAGE_HTML_DIR = ${COVERAGE_HTML_DIR}
+            COVERAGE_REPORT_DIR = ${COVERAGE_REPORT_DIR}
             PERFORMANCE_REPORT_DIR = ${PERFORMANCE_REPORT_DIR}
             SECURITY_REPORT_DIR = ${SECURITY_REPORT_DIR}
             SONAR_HOST_URL = ${SONAR_HOST_URL}
@@ -52,18 +52,16 @@ pipeline {
     }
     stage('Prepare Workspace') {
       steps {
+        echo 'Preparing workspace directories...'
         sh '''
-          mkdir -p ${TEST_REPORT_DIR} ${COVERAGE_HTML_DIR} ${PERFORMANCE_REPORT_DIR} ${SECURITY_REPORT_DIR} reports/coverage
+          mkdir -p ${TEST_REPORT_DIR} ${COVERAGE_REPORT_DIR} ${PERFORMANCE_REPORT_DIR} ${SECURITY_REPORT_DIR} reports/coverage
         '''
-      }
-    }
-
-    stage('Poetry Install') {
-      steps {
+        echo 'Updating dependencies with Poetry...'
         sh '''
           python -m pip install --upgrade pip
-          python -m pip install poetry==2.2.1
-          python -m poetry install --with dev
+          pip install poetry
+          poetry config virtualenvs.create false
+          poetry install --no-interaction --no-ansi
         '''
       }
     }
@@ -81,7 +79,7 @@ pipeline {
         sh '''
           python -m poetry run coverage run -m pytest tests/domain tests/application tests/infrastructure --junitxml=${TEST_REPORT_DIR}/junit.xml && \
           python -m poetry run coverage xml -o reports/coverage/coverage.xml && \
-          python -m poetry run coverage html -d ${COVERAGE_HTML_DIR} && \
+          python -m poetry run coverage html -d ${COVERAGE_REPORT_DIR} && \
           python -m poetry run coverage report -m
         '''
       }
@@ -130,10 +128,17 @@ pipeline {
         expression { params.RELEASE_BUILD }
       }
       steps {
+        echo 'Performing Poetry build for release artifacts...'
+        echo 'Cleaning previous builds... --> Start'
         sh '''
           rm -rf dist || true
+          '''
+        echo 'Cleaning previous builds... --> End'
+        echo 'Building packages. --> Start'
+        sh '''
           poetry build
         '''
+        echo 'Building packages. --> End'
       }
       post {
         success {
