@@ -137,7 +137,6 @@ pipeline {
       steps {
         echo 'Building the App package with Poetry...'
         sh '''
-          pip install poetry==2.2.1
           poetry config virtualenvs.create false
           poetry build
         '''
