@@ -17,7 +17,7 @@ pipeline {
     DOCKER_IMAGE = "sistema-academico:ci"
     APP_CONTAINER = "sistema-academico-app"
 
-    SONAR_SCANNER_HOME = tool 'SonarQube Scanner'
+    SONAR_SCANNER_HOME = tool 'SonarQube'
   }
 
   stages {
