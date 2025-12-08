@@ -10,18 +10,37 @@ pipeline {
     REPORT_ROOT = "reports"
     TEST_REPORT_DIR = "reports/tests"
     COVERAGE_HTML_DIR = "reports/coverage/html"
-    LINT_REPORT_DIR = "reports/lint"
+    PERFORMANCE_REPORT_DIR = "reports/performance"
     SECURITY_REPORT_DIR = "reports/security"
-    SONAR_HOST_URL = "http://localhost:9000"  // Replace with your SonarQube server URL
+    
+    SONAR_HOST_URL = "http://localhost:9000"
     DOCKER_IMAGE = "sistema-academico:ci"
     APP_CONTAINER = "sistema-academico-app"
   }
 
   stages {
+    stage('Pipeline Info') {
+      steps {
+        script {
+          echo '<--Parameter Initialization-->'
+          echo """
+           Parameters:
+            REPORT_ROOT = ${REPORT_ROOT}
+            TEST_REPORT_DIR = ${TEST_REPORT_DIR}
+            COVERAGE_HTML_DIR = ${COVERAGE_HTML_DIR}
+            PERFORMANCE_REPORT_DIR = ${PERFORMANCE_REPORT_DIR}
+            SECURITY_REPORT_DIR = ${SECURITY_REPORT_DIR}
+            SONAR_HOST_URL = ${SONAR_HOST_URL}
+            DOCKER_IMAGE = ${DOCKER_IMAGE}
+            APP_CONTAINER = ${APP_CONTAINER}
+          """ 
+        }
+      }
+    }
     stage('Prepare Workspace') {
       steps {
         sh '''
-          mkdir -p ${TEST_REPORT_DIR} ${COVERAGE_HTML_DIR} ${LINT_REPORT_DIR} ${SECURITY_REPORT_DIR} reports/coverage
+          mkdir -p ${TEST_REPORT_DIR} ${COVERAGE_HTML_DIR} ${PERFORMANCE_REPORT_DIR} ${SECURITY_REPORT_DIR} reports/coverage
         '''
       }
     }
@@ -62,7 +81,6 @@ pipeline {
           sh 'curl -f ${SONAR_HOST_URL}/api/system/status || (echo "SonarQube server not running" && exit 1)'
 
           withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-            // Run SonarScanner CLI in Docker with explicit project settings, similar to the provided snippet.
             sh '''
               docker run --rm \
                 -v "$PWD":/usr/src \
@@ -127,40 +145,42 @@ pipeline {
         }
       }
     }
-
-    stage('ZAP Security Scan (Baseline)') {
-      when { branch 'dev' }
+    stage('Setting up OWASP ZAP docker container') {
       steps {
+        echo 'Pulling up last OWASP ZAP container --> Start'
+        sh 'docker pull owasp/zap2docker-stable:latest'
+        echo 'Pulling up last VMS container --> End'
+        echo 'Starting container --> Start'
+        sh 'docker run -dt --name owasp owasp/zap2docker-stable /bin/bash '
+        echo "Preparing ZAP working directory"
         script {
-          sleep time: 5, unit: 'SECONDS'
-
           sh '''
-            for i in {1..30}; do
-              if curl -sSf http://localhost:5000/health > /dev/null; then
-                break
-              fi
-              sleep 1
-            done
+            docker exec owasp \
+            mkdir /zap/wrk
           '''
-          zap toolName: 'ZAP_DEFAULT', 
-              session: '', 
-              includePaths: [], 
-              excludePaths: [], 
-              targetUrl: 'http://localhost:5000', 
-              failBuild: false, 
-              generateReports: true, 
-              reportDir: "${SECURITY_REPORT_DIR}", 
-              attackMode: false, 
-              quickScan: true
         }
+        echo "Scanning target on owasp container"
+          sh """
+        docker exec owasp \
+        zap-full-scan.py \
+        -t $target \
+        -r report.html \
+        -I
+            """
       }
       post {
         always {
-          archiveArtifacts artifacts: "${SECURITY_REPORT_DIR}/**", fingerprint: true
+          echo 'Archiving OWASP ZAP report --> Start'
+          sh 'docker cp owasp:/zap/report.html ${SECURITY_REPORT_DIR}/zap_report.html || true'
+          echo 'Archiving OWASP ZAP report --> End'
+          archiveArtifacts artifacts: "${SECURITY_REPORT_DIR}/zap_report.html", fingerprint: true
+          echo 'Stopping and removing OWASP ZAP container --> Start'
+          sh 'docker stop owasp || true'
+          sh 'docker rm owasp || true'
+          echo 'Stopping and removing OWASP ZAP container --> End'
         }
       }
     }
-
     stage('Functional Smoke Tests') {
       when { branch 'dev' }
       steps {
