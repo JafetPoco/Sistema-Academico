@@ -17,8 +17,10 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
 
 # Copy only requirements first to leverage Docker layer caching
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt \
-    && pip install --no-cache-dir gunicorn
+RUN pip install poetry==2.2.1 
+RUN pip install --no-cache-dir gunicorn
+RUN poetry config virtualenvs.create false
+RUN poetry install --no-dev --no-interaction --no-ansi
 
 # Copy project files
 COPY app/ ./app/
