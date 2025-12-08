@@ -6,6 +6,11 @@ pipeline {
     timeout(time: 30, unit: 'MINUTES')
   }
 
+  tools {
+    sonarQube 'SonarQube'
+    nodejs 'NodeJS'
+  }
+
   environment {
     REPORT_ROOT = "reports"
     TEST_REPORT_DIR = "reports/tests"
@@ -16,6 +21,8 @@ pipeline {
     SONAR_HOST_URL = "http://localhost:9000"
     DOCKER_IMAGE = "sistema-academico:ci"
     APP_CONTAINER = "sistema-academico-app"
+
+    SONAR_SCANNER_HOME = tool 'SonarQube Scanner'
   }
 
   stages {
@@ -80,24 +87,22 @@ pipeline {
         script {
           sh 'curl -f ${SONAR_HOST_URL}/api/system/status || (echo "SonarQube server not running" && exit 1)'
 
+          // Simple scanner run using Jenkins-installed SonarQube Scanner and token credential
           withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-            sh '''
-              docker run --rm \
-                -v "$PWD":/usr/src \
-                -w /usr/src \
-                sonarsource/sonar-scanner-cli:latest \
-                sonar-scanner \
-                -Dsonar.login=${SONAR_TOKEN} \
-                -Dsonar.host.url=${SONAR_HOST_URL} \
-                -Dsonar.projectKey=sys:acad \
-                -Dsonar.projectName="Sistema Académico" \
-                -Dsonar.sources=. \
-                -Dsonar.tests=tests \
-                -Dsonar.python.version=3.13 \
-                -Dsonar.python.coverage.reportPaths=reports/coverage/coverage.xml \
-                -Dsonar.python.xunit.reportPath=reports/tests/junit.xml \
-                -Dsonar.report.export.path=${REPORT_ROOT}/sonar-report.json
-            '''
+            withSonarQubeEnv('SonarQube') {
+              sh """
+                ${SONAR_SCANNER_HOME}/bin/sonar-scanner \
+                  -Dsonar.projectKey=sys:acad \
+                  -Dsonar.projectName=\"Sistema Académico\" \
+                  -Dsonar.sources=. \
+                  -Dsonar.tests=tests \
+                  -Dsonar.python.version=3.13 \
+                  -Dsonar.python.coverage.reportPaths=reports/coverage/coverage.xml \
+                  -Dsonar.python.xunit.reportPath=reports/tests/junit.xml \
+                  -Dsonar.host.url=${SONAR_HOST_URL} \
+                  -Dsonar.login=${SONAR_TOKEN}
+              """
+            }
           }
         }
       }
@@ -110,7 +115,7 @@ pipeline {
 
     stage ('Build') {
       steps {
-        echo 'Build stage - no build steps for Python app.'
+        echo 'Build stage - no build steps for Python app. poetry'
       }
       post {
         always {
@@ -181,8 +186,8 @@ pipeline {
         }
       }
     }
+
     stage('Functional Smoke Tests') {
-      when { branch 'dev' }
       steps {
         script {
           sh 'curl -sSf http://localhost:5000/ || (echo "Home endpoint failed" && exit 1)'
@@ -190,18 +195,12 @@ pipeline {
         }
       }
     }
-
-    // Final cleanup: stop the app once all tests are complete
-    stage('Stop App') {
-      when { branch 'main' }
-      steps {
-        sh 'docker rm -f ${APP_CONTAINER} || true'
-      }
-    }
   }
 
   post {
     always {
+      sh 'docker stop ${APP_CONTAINER} || true'
+      sh 'docker rm -f ${APP_CONTAINER} || true'
       echo 'Pipeline finished.'
     }
   }
