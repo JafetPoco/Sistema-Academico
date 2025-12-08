@@ -111,12 +111,6 @@ pipeline {
           }
         }
       }
-      post {
-        always {
-          sh 'docker stop sonar-scanner || true'
-          sh 'docker rm sonar-scanner || true'
-        }
-      }
     }
 
     stage ('Build') {

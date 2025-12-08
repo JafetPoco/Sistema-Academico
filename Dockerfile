@@ -25,6 +25,7 @@ COPY app/ ./app/
 COPY run.py ./
 COPY templates/ ./templates/
 COPY static/ ./static/
+COPY .env ./
 
 # Configure Flask application factory target
 ENV APP_FACTORY="app:create_app()" \
