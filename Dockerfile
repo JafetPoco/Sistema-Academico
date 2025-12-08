@@ -28,6 +28,8 @@ COPY run.py ./
 COPY templates/ ./templates/
 COPY static/ ./static/
 COPY scripts/ ./scripts/
+COPY pyproject.toml ./
+COPY poetry.lock ./
 
 # Configure Flask application factory target
 ENV APP_FACTORY="app:create_app()" \
