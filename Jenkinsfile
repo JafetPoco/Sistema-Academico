@@ -81,10 +81,12 @@ pipeline {
     stage('Unit Tests & Coverage') {
       steps {
         sh '''
+          . venv/bin/activate
           python -m coverage run --source=app -m pytest tests/domain tests/application tests/infrastructure --junitxml=${TEST_REPORT_DIR}/junit.xml && \
           python -m coverage xml -o reports/coverage/coverage.xml && \
           python -m coverage html -d ${COVERAGE_HTML_DIR} && \
           python -m coverage report -m
+
         '''
       }
       post {
