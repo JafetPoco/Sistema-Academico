@@ -57,6 +57,8 @@ build/
 *.egg
 
 MANIFEST
+
+poetry.lock
 Pipfile.lock
 
 .scannerwork/

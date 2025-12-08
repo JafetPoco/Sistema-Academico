@@ -61,14 +61,10 @@ pipeline {
 
     stage('Installing Dependencies') {
       steps {
-        echo 'Setting up dependencies...'
+        echo 'Installing dependencies from requirements.txt...'
         sh '''
-          python -m venv venv
-          . venv/bin/activate
           python -m pip install --upgrade pip
-          python -m pip install poetry==2.2.1
-          poetry config virtualenvs.create false
-          poetry install --with dev
+          pip install -r requirements.txt
         '''
       }
     }
@@ -84,10 +80,10 @@ pipeline {
     stage('Unit Tests & Coverage') {
       steps {
         sh '''
-          python -m poetry run coverage run --source=app -m pytest tests/domain tests/application tests/infrastructure --junitxml=${TEST_REPORT_DIR}/junit.xml && \
-          python -m poetry run coverage xml -o reports/coverage/coverage.xml && \
-          python -m poetry run coverage html -d ${COVERAGE_HTML_DIR} && \
-          python -m poetry run coverage report -m
+          python -m coverage run --source=app -m pytest tests/domain tests/application tests/infrastructure --junitxml=${TEST_REPORT_DIR}/junit.xml && \
+          python -m coverage xml -o reports/coverage/coverage.xml && \
+          python -m coverage html -d ${COVERAGE_HTML_DIR} && \
+          python -m coverage report -m
         '''
       }
       post {
@@ -135,17 +131,12 @@ pipeline {
         expression { params.RELEASE_BUILD }
       }
       steps {
-        echo 'Performing Poetry build for release artifacts...'
-        echo 'Cleaning previous builds... --> Start'
+        echo 'Installing Poetry and performing build for release artifacts...'
         sh '''
-          rm -rf dist || true
-          '''
-        echo 'Cleaning previous builds... --> End'
-        echo 'Building packages. --> Start'
-        sh '''
-          python -m poetry build
+          pip install poetry==2.2.1
+          poetry config virtualenvs.create false
+          poetry build
         '''
-        echo 'Building packages. --> End'
       }
       post {
         success {
