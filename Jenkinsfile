@@ -86,6 +86,7 @@ pipeline {
           withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
             withSonarQubeEnv('SonarQube') {
               sh """
+                chmod +x ${SONAR_SCANNER_HOME}/bin/sonar-scanner
                 ${SONAR_SCANNER_HOME}/bin/sonar-scanner \
                   -Dsonar.projectKey=sys:acad \
                   -Dsonar.projectName=\"Sistema Académico\" \
