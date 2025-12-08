@@ -109,8 +109,6 @@ pipeline {
                   -Dsonar.sources=. \
                   -Dsonar.tests=tests \
                   -Dsonar.test.inclusions=**/tests/**/*.py \
-                  -Dsonar.python.coverage.reportPaths=reports/coverage/coverage.xml \
-                  -Dsonar.python.xunit.reportPath=reports/tests/junit.xml \
                   -Dsonar.python.version=3.13 \
                   -Dsonar.python.coverage.reportPaths=reports/coverage/coverage.xml \
                   -Dsonar.python.xunit.reportPath=reports/tests/junit.xml \
