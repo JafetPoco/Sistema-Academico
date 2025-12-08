@@ -63,7 +63,8 @@ pipeline {
       steps {
         echo 'Installing dependencies from requirements.txt...'
         sh '''
-          python -m pip install --upgrade pip
+          python -m venv venv
+          . venv/bin/activate
           pip install -r requirements.txt
         '''
       }
