@@ -12,6 +12,7 @@ pipeline {
     COVERAGE_HTML_DIR = "reports/coverage/html"
     PERFORMANCE_REPORT_DIR = "reports/performance"
     SECURITY_REPORT_DIR = "reports/security"
+    ZAP_TARGET = "http://localhost:5000"
     
     SONAR_HOST_URL = "http://localhost:9000"
     DOCKER_IMAGE = "sistema-academico:ci"
@@ -178,7 +179,7 @@ pipeline {
           sh """
         docker exec owasp \
         zap-full-scan.py \
-        -t $target \
+        -t ${ZAP_TARGET} \
         -r report.html \
         -I
             """
