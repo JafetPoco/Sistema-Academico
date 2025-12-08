@@ -88,7 +88,6 @@ pipeline {
         script {
           sh 'curl -f ${SONAR_HOST_URL}/api/system/status || (echo "SonarQube server not running" && exit 1)'
 
-          // Use Dockerized SonarScanner to avoid local permission/path issues
           withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
             sh '''
               docker run --rm \
@@ -106,7 +105,7 @@ pipeline {
                   -Dsonar.python.coverage.reportPaths=reports/coverage/coverage.xml \
                   -Dsonar.python.xunit.reportPath=reports/tests/junit.xml \
                   -Dsonar.host.url=${SONAR_HOST_URL} \
-                  -Dsonar.login=$SONAR_TOKEN \
+                  -Dsonar.login=$SONAR_TOKEN
 
             '''
           }
@@ -136,15 +135,18 @@ pipeline {
         script {
           sh 'docker rm -f ${APP_CONTAINER} || true'
           sh '''
-            docker run -d --name ${APP_CONTAINER} -p 5000:5000 ${DOCKER_IMAGE}
+            docker run -d --name ${APP_CONTAINER} -p 5000:5000 ${DOCKER_IMAGE} \
+              gunicorn --bind 0.0.0.0:5000 run:app
           '''
           sh '''
             for i in {1..30}; do
               if curl -sSf http://localhost:5000/health > /dev/null; then
-                break
+                exit 0
               fi
               sleep 1
             done
+            echo 'Health check failed' >&2
+            exit 1
           '''
           echo 'Application container started on http://localhost:5000'
         }
@@ -159,10 +161,10 @@ pipeline {
     stage('Setting up OWASP ZAP docker container') {
       steps {
         echo 'Pulling up last OWASP ZAP container --> Start'
-        sh 'docker pull owasp/zap2docker-stable:latest'
+        sh 'docker pull zaproxy/zap-stable'
         echo 'Pulling up last VMS container --> End'
         echo 'Starting container --> Start'
-        sh 'docker run -dt --name owasp owasp/zap2docker-stable /bin/bash '
+        sh 'docker run -dt --name owasp zaproxy/zap-stable /bin/bash '
         echo "Preparing ZAP working directory"
         script {
           sh '''
