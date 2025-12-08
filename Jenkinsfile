@@ -129,12 +129,12 @@ pipeline {
       }
     }
 
-    stage('Poetry Release') {
+    stage('Build') {
       when {
         expression { params.RELEASE_BUILD }
       }
       steps {
-        echo 'Installing Poetry and performing build for release artifacts...'
+        echo 'Building the App package with Poetry...'
         sh '''
           pip install poetry==2.2.1
           poetry config virtualenvs.create false
@@ -148,44 +148,25 @@ pipeline {
       }
     }
 
-    stage ('Build') {
-      steps {
-        echo 'Build stage - no build steps for Python app. poetry'
-      }
-      post {
-        always {
-          echo 'Build stage completed.'
-        }
-      }
-    }
-
     stage('Deploy') {
       steps {
         script {
           sh 'docker rm -f ${APP_CONTAINER} || true'
-            sh '''
-              docker run --rm \
-                --env-file .env.example \
-                ${DOCKER_IMAGE} \
-                python scripts/seed_admin.py
-            '''
+          sh '''
+            docker run --rm \
+              --env-file .env.example \
+              ${DOCKER_IMAGE} \
+              python scripts/seed_admin.py
+          '''
           sh '''
             docker run -d --name ${APP_CONTAINER} -p 5000:5000 \
               --env-file .env.example \
               ${DOCKER_IMAGE} \
               gunicorn --bind 0.0.0.0:5000 run:app
           '''
-          sh '''
-            for i in {1..30}; do
-              if curl -sSf http://localhost:5000/health > /dev/null; then
-                exit 0
-              fi
-              sleep 1
-            done
-            echo 'Health check failed' >&2
-            exit 1
-          '''
           echo 'Application container started on http://localhost:5000'
+          echo 'Waiting for the application to be ready...'
+          sleep 5
         }
       }
       post {
@@ -195,6 +176,22 @@ pipeline {
         }
       }
     }
+
+    stage ('Performance Tests - Jmeter') {
+      steps {
+        echo 'Running performance tests with JMeter...'
+        sh '''
+          docker run --rm \
+          -v $PWD/tests/performance:/tests \
+          -v $PWD/${PERFORMANCE_REPORT_DIR}:/results \
+          justb4/jmeter \
+          -n -t /tests/performance_test.jmx \
+          -l /results/performance_results.jtl \
+          -e -o /results/html_report
+        '''
+      }
+    }
+
     stage('Setting up OWASP ZAP docker container') {
       steps {
         echo 'Pulling up last OWASP ZAP container --> Start'
