@@ -107,6 +107,8 @@ pipeline {
                   -Dsonar.host.url=${SONAR_HOST_URL} \
                   -Dsonar.login=$SONAR_TOKEN \
                   -Dsonar.report.export.path=${REPORT_ROOT}/sonar-report.json
+
+              cp .scannerwork/report-task.txt ${REPORT_ROOT}/report-task.txt || true
             '''
           }
         }
@@ -114,6 +116,7 @@ pipeline {
       post {
         always {
           archiveArtifacts artifacts: "${REPORT_ROOT}/sonar-report.json", allowEmptyArchive: true, fingerprint: true
+          archiveArtifacts artifacts: "${REPORT_ROOT}/report-task.txt", allowEmptyArchive: true, fingerprint: true
         }
       }
     }
