@@ -16,7 +16,7 @@ class User:
         self.password_hash = new_hash
 
     def __repr__(self):
-        return f"<User(id={self.user_id}, email={self.email})>"
+        return f"<User(id={self.user_id}, name={self.full_name}, email={self.email})>"
 
 class Announcement:
     def __init__(self, announcement_id, course_id, user_id,

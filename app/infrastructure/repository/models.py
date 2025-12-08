@@ -17,7 +17,7 @@ class UserDTO(db.Model):
 
     courses = relationship('CourseDTO', back_populates='users')
     def __repr__(self):
-        return f"<UserDTO(id={self.user_id}, email={self.email})>"
+        return f"<UserDTO(id={self.user_id}, name={self.full_name}, email={self.email})>"
 
 class AnnouncementDTO(db.Model):
     __tablename__ = 'announcements'

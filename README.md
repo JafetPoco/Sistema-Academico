@@ -17,6 +17,16 @@
   - [DTOs](#dtos)
   - [Requisitos](#requisitos)
 - [Practicas de desarrollo de software](#practicas-de-desarrollo-de-software)
+  - [Reporte SonarLint](#reporte-sonarlint)
+    - [1. Literales de Cadena Duplicadas](#1-literales-de-cadena-duplicadas)
+    - [2. Clase/Funcion/Metodo no cumple la convención de nombres (python:S101)](#2-clasefuncionmetodo-no-cumple-la-convención-de-nombres-pythons101)
+    - [3. MySQL database passwords should not be disclosed (secrets:S6697)](#3-mysql-database-passwords-should-not-be-disclosed-secretss6697)
+    - [4. Unused local variables should be removed (python:S1481)](#4-unused-local-variables-should-be-removed-pythons1481)
+  - [Estilos de programacion](#estilos-de-programacion)
+    - [coobook](#coobook)
+    - [Adversity](#adversity)
+    - [Persistent-Tables (Tablas Persistentes)](#persistent-tables-tablas-persistentes)
+    - [Pipeline (Tubería de Procesamiento)](#pipeline-tubería-de-procesamiento)
   - [Convenciones de codificacion PEP8 para python](#convenciones-de-codificacion-pep8-para-python)
     - [Clases (PascalCase)](#clases-pascalcase)
     - [Funciones y Métodos (snake\_case)](#funciones-y-métodos-snake_case)
@@ -326,7 +336,7 @@ class CourseRepository(BaseRepository):
         # Reutiliza la "receta" add de BaseRepository
         return self.add(course)
 ```
-### Error/Exception Handling (Manejo de Errores/Excepciones)
+### Adversity
 Ejemplo de Manejo de Excepciones (tomado del ejemplo de código previamente inferido)
 En app/infrastructure/repository/repository.py (hipotético en un método de un repositorio)
 ```python
@@ -435,19 +445,19 @@ class UserRepository(BaseRepository):
 ## Convenciones de codificacion PEP8 para python
 El proyecto "Sistema-Academico EDUNET" se adhiere a las directrices de estilo PEP 8, el estándar de facto para el código Python. Esto asegura la legibilidad, coherencia y mantenibilidad del código a lo largo de todo el proyecto.
 ### Clases (PascalCase)
-**BaseRepository, UserRepository, AuthService, AnnouncementController.**
+BaseRepository, UserRepository, AuthService, AnnouncementController.
 ### Funciones y Métodos (snake_case)
 Ejemplo:
-**register_user, authenticate, get_all_courses, get_courses_by_professor**
+register_user, authenticate, get_all_courses, get_courses_by_professor
 ### Variables (snake_case)
 Ejemplo:
-**professor_id, db_session, user_repository**
+professor_id, db_session, user_repository
 ### Constantes (UPPER_SNAKE_CASE)
 Ejemplo:
-**UNKNOWN_ROLE = 0**
-**TEACHER_ROLE = 1**
-**ADMIN_ROLE = 2**
-**PARENT_ROLE = 3**
+UNKNOWN_ROLE = 0
+TEACHER_ROLE = 1
+ADMIN_ROLE = 2
+PARENT_ROLE = 3
 
 ## Codificacion limpia (Clean Code) y Principios SOLID
 Aplicamos un conjunto de principios y prácticas de Clean Code para desarrollar este proyecto. Nuestro objetivo es que el código sea fácil de leer, entender, mantener y extender a lo largo del tiempo.
