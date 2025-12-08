@@ -26,7 +26,6 @@ COPY run.py ./
 COPY templates/ ./templates/
 COPY static/ ./static/
 COPY scripts/ ./scripts/
-COPY app/seed_admin.py ./
 
 # Configure Flask application factory target
 ENV APP_FACTORY="app:create_app()" \
