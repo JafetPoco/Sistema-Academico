@@ -6,11 +6,6 @@ pipeline {
     timeout(time: 30, unit: 'MINUTES')
   }
 
-  tools {
-    sonarQube 'SonarQube'
-    nodejs 'NodeJS'
-  }
-
   environment {
     REPORT_ROOT = "reports"
     TEST_REPORT_DIR = "reports/tests"
@@ -22,10 +17,16 @@ pipeline {
     DOCKER_IMAGE = "sistema-academico:ci"
     APP_CONTAINER = "sistema-academico-app"
 
-    SONAR_SCANNER_HOME = tool 'SonarQube Scanner'
+    SONAR_SCANNER_HOME = tool 'SonarQube'
   }
 
   stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+    
     stage('Pipeline Info') {
       steps {
         script {
@@ -87,28 +88,28 @@ pipeline {
         script {
           sh 'curl -f ${SONAR_HOST_URL}/api/system/status || (echo "SonarQube server not running" && exit 1)'
 
-          // Simple scanner run using Jenkins-installed SonarQube Scanner and token credential
+          // Use Dockerized SonarScanner to avoid local permission/path issues
           withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-            withSonarQubeEnv('SonarQube') {
-              sh """
-                ${SONAR_SCANNER_HOME}/bin/sonar-scanner \
+            sh '''
+              docker run --rm \
+                --name sonar-scanner \
+                --network=host \
+                -v "$PWD":/usr/src \
+                -w /usr/src \
+                sonarsource/sonar-scanner-cli:latest \
+                sonar-scanner \
                   -Dsonar.projectKey=sys:acad \
-                  -Dsonar.projectName=\"Sistema Académico\" \
+                  -Dsonar.projectName="Sistema Académico" \
                   -Dsonar.sources=. \
                   -Dsonar.tests=tests \
                   -Dsonar.python.version=3.13 \
                   -Dsonar.python.coverage.reportPaths=reports/coverage/coverage.xml \
                   -Dsonar.python.xunit.reportPath=reports/tests/junit.xml \
                   -Dsonar.host.url=${SONAR_HOST_URL} \
-                  -Dsonar.login=${SONAR_TOKEN}
-              """
-            }
+                  -Dsonar.login=$SONAR_TOKEN \
+
+            '''
           }
-        }
-      }
-      post {
-        always {
-          archiveArtifacts artifacts: "${REPORT_ROOT}/sonar-report.json", allowEmptyArchive: true, fingerprint: true
         }
       }
     }
@@ -125,7 +126,6 @@ pipeline {
     }
 
     stage('Deploy') {
-      when { anyOf { branch 'main'; branch 'dev' } }
       steps {
         script {
           sh 'docker rm -f ${APP_CONTAINER} || true'
