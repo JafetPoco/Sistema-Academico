@@ -63,11 +63,12 @@ pipeline {
       steps {
         echo 'Setting up dependencies...'
         sh '''
-          python -m ensurepip --upgrade || true
+          python -m venv venv
+          . venv/bin/activate
           python -m pip install --upgrade pip
           python -m pip install poetry==2.2.1
-          python -m poetry config virtualenvs.create false
-          python -m poetry install --with dev
+          poetry config virtualenvs.create false
+          poetry install --with dev
         '''
       }
     }
