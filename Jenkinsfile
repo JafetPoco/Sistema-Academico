@@ -88,7 +88,6 @@ pipeline {
         script {
           sh 'curl -f ${SONAR_HOST_URL}/api/system/status || (echo "SonarQube server not running" && exit 1)'
 
-          // Use Dockerized SonarScanner to avoid local permission/path issues
           withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
             sh '''
               docker run --rm \
@@ -106,7 +105,7 @@ pipeline {
                   -Dsonar.python.coverage.reportPaths=reports/coverage/coverage.xml \
                   -Dsonar.python.xunit.reportPath=reports/tests/junit.xml \
                   -Dsonar.host.url=${SONAR_HOST_URL} \
-                  -Dsonar.login=$SONAR_TOKEN \
+                  -Dsonar.login=$SONAR_TOKEN
 
             '''
           }
@@ -129,34 +128,75 @@ pipeline {
       steps {
         script {
           sh 'docker rm -f ${APP_CONTAINER} || true'
+            sh '''
+              docker run --rm \
+                --env-file .env.example \
+                ${DOCKER_IMAGE} \
+                python scripts/seed_admin.py
+            '''
           sh '''
-            docker run -d --name ${APP_CONTAINER} -p 5000:5000 ${DOCKER_IMAGE}
+            docker run -d --name ${APP_CONTAINER} -p 5000:5000 \
+              --env-file .env.example \
+              ${DOCKER_IMAGE} \
+              gunicorn --bind 0.0.0.0:5000 run:app
           '''
           sh '''
             for i in {1..30}; do
               if curl -sSf http://localhost:5000/health > /dev/null; then
-                break
+                exit 0
               fi
               sleep 1
             done
+            echo 'Health check failed' >&2
+            exit 1
           '''
           echo 'Application container started on http://localhost:5000'
         }
       }
       post {
-        always {
+        failure {
           sh 'docker logs ${APP_CONTAINER} > deploy.log || true'
           archiveArtifacts artifacts: 'deploy.log', fingerprint: true
+        }
+      }
+    }
+
+    stage('Performance (JMeter)') {
+      steps {
+        script {
+          sh '''
+            JMETER_PLAN=${JMETER_PLAN:-tests/performance/test-plan.jmx}
+
+            if [ ! -f "$JMETER_PLAN" ]; then
+              echo "Missing JMeter test plan at $JMETER_PLAN" >&2
+              exit 1
+            fi
+
+            docker run --rm \
+              --network=host \
+              -v "$PWD":/workspace \
+              -w /workspace \
+              justb4/jmeter:5.6.3 \
+              -n -t "$JMETER_PLAN" \
+              -l ${PERFORMANCE_REPORT_DIR}/jmeter-results.jtl \
+              -j ${PERFORMANCE_REPORT_DIR}/jmeter.log \
+              -e -o ${PERFORMANCE_REPORT_DIR}/html
+          '''
+        }
+      }
+      post {
+        always {
+          archiveArtifacts artifacts: "${PERFORMANCE_REPORT_DIR}/**", fingerprint: true
         }
       }
     }
     stage('Setting up OWASP ZAP docker container') {
       steps {
         echo 'Pulling up last OWASP ZAP container --> Start'
-        sh 'docker pull owasp/zap2docker-stable:latest'
+        sh 'docker pull zaproxy/zap-stable'
         echo 'Pulling up last VMS container --> End'
         echo 'Starting container --> Start'
-        sh 'docker run -dt --name owasp owasp/zap2docker-stable /bin/bash '
+        sh 'docker run -dt --name owasp zaproxy/zap-stable /bin/bash '
         echo "Preparing ZAP working directory"
         script {
           sh '''

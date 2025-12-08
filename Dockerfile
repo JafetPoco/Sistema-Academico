@@ -11,6 +11,8 @@ WORKDIR /app
 # System deps (gcc for building some wheels if needed)
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
     build-essential \
+    sqlite3 \
+    libsqlite3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy only requirements first to leverage Docker layer caching
@@ -23,6 +25,7 @@ COPY app/ ./app/
 COPY run.py ./
 COPY templates/ ./templates/
 COPY static/ ./static/
+COPY scripts/ ./scripts/
 
 # Configure Flask application factory target
 ENV APP_FACTORY="app:create_app()" \
