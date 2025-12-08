@@ -115,6 +115,17 @@ pipeline {
 
     stage ('Build') {
       steps {
+
+          stage('Seed Admin User') {
+            steps {
+              sh '''
+                docker run --rm \
+                  --env-file .env.example \
+                  ${DOCKER_IMAGE} \
+                  python scripts/seed_admin.py
+              '''
+            }
+          }
         echo 'Build stage - no build steps for Python app. poetry'
       }
       post {
@@ -129,7 +140,9 @@ pipeline {
         script {
           sh 'docker rm -f ${APP_CONTAINER} || true'
           sh '''
-            docker run -d --name ${APP_CONTAINER} -p 5000:5000 ${DOCKER_IMAGE} \
+            docker run -d --name ${APP_CONTAINER} -p 5000:5000 \
+              --env-file .env.example \
+              ${DOCKER_IMAGE} \
               gunicorn --bind 0.0.0.0:5000 run:app
           '''
           sh '''

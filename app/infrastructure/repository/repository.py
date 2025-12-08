@@ -204,6 +204,11 @@ class GradeRepository(BaseRepository):
             return 0.0
 
 
+class AdminRepository(BaseRepository):
+    dto = AdminDTO
+    mapper = AdminMapper
+
+
         
 class ParentRepository(BaseRepository):
     dto = ParentDTO
