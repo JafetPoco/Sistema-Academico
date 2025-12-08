@@ -6,6 +6,11 @@ pipeline {
     timeout(time: 30, unit: 'MINUTES')
   }
 
+  tools {
+    sonarQube 'SonarQube'
+    nodejs 'NodeJS'
+  }
+
   environment {
     REPORT_ROOT = "reports"
     TEST_REPORT_DIR = "reports/tests"
@@ -17,16 +22,10 @@ pipeline {
     DOCKER_IMAGE = "sistema-academico:ci"
     APP_CONTAINER = "sistema-academico-app"
 
-    SONAR_SCANNER_HOME = tool 'SonarQube'
+    SONAR_SCANNER_HOME = tool 'SonarQube Scanner'
   }
 
   stages {
-    stage('Checkout') {
-      steps {
-        checkout scm
-      }
-    }
-
     stage('Pipeline Info') {
       steps {
         script {
