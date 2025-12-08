@@ -115,17 +115,6 @@ pipeline {
 
     stage ('Build') {
       steps {
-
-          stage('Seed Admin User') {
-            steps {
-              sh '''
-                docker run --rm \
-                  --env-file .env.example \
-                  ${DOCKER_IMAGE} \
-                  python scripts/seed_admin.py
-              '''
-            }
-          }
         echo 'Build stage - no build steps for Python app. poetry'
       }
       post {
@@ -139,6 +128,12 @@ pipeline {
       steps {
         script {
           sh 'docker rm -f ${APP_CONTAINER} || true'
+            sh '''
+              docker run --rm \
+                --env-file .env.example \
+                ${DOCKER_IMAGE} \
+                python scripts/seed_admin.py
+            '''
           sh '''
             docker run -d --name ${APP_CONTAINER} -p 5000:5000 \
               --env-file .env.example \
@@ -159,7 +154,7 @@ pipeline {
         }
       }
       post {
-        always {
+        failure {
           sh 'docker logs ${APP_CONTAINER} > deploy.log || true'
           archiveArtifacts artifacts: 'deploy.log', fingerprint: true
         }
