@@ -54,6 +54,7 @@ pipeline {
       steps {
         echo 'Preparing workspace directories...'
         sh '''
+          rm -rf ${REPORT_ROOT} || true
           mkdir -p ${TEST_REPORT_DIR} ${COVERAGE_HTML_DIR} ${PERFORMANCE_REPORT_DIR} ${SECURITY_REPORT_DIR} reports/coverage
         '''
       }
