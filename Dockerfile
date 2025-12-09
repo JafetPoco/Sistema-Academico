@@ -1,5 +1,5 @@
 # Use a lightweight Python base image
-FROM python:3.13-slim
+FROM python:3.13-slim as python-base
 
 # Prevent Python from buffering stdout/stderr
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -13,11 +13,13 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
     build-essential \
     sqlite3 \
     libsqlite3-dev \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy only requirements first to leverage Docker layer caching
+# Copy requirements first to leverage Docker layer caching
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt \
+RUN pip install --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt \
     && pip install --no-cache-dir gunicorn
 
 # Copy project files

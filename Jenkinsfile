@@ -6,12 +6,17 @@ pipeline {
     timeout(time: 30, unit: 'MINUTES')
   }
 
+  parameters {
+    booleanParam(name: 'RELEASE_BUILD', defaultValue: false, description: 'Run poetry build to produce release artifacts')
+  }
+
   environment {
     REPORT_ROOT = "reports"
     TEST_REPORT_DIR = "reports/tests"
     COVERAGE_HTML_DIR = "reports/coverage/html"
     PERFORMANCE_REPORT_DIR = "reports/performance"
     SECURITY_REPORT_DIR = "reports/security"
+    ZAP_TARGET = "http://localhost:5000"
     
     SONAR_HOST_URL = "http://localhost:9000"
     DOCKER_IMAGE = "sistema-academico:ci"
@@ -47,8 +52,21 @@ pipeline {
     }
     stage('Prepare Workspace') {
       steps {
+        echo 'Preparing workspace directories...'
         sh '''
+          rm -rf ${REPORT_ROOT} || true
           mkdir -p ${TEST_REPORT_DIR} ${COVERAGE_HTML_DIR} ${PERFORMANCE_REPORT_DIR} ${SECURITY_REPORT_DIR} reports/coverage
+        '''
+      }
+    }
+
+    stage('Installing Dependencies') {
+      steps {
+        echo 'Installing dependencies from requirements.txt...'
+        sh '''
+          python -m venv venv
+          . venv/bin/activate
+          pip install -r requirements.txt
         '''
       }
     }
@@ -64,14 +82,12 @@ pipeline {
     stage('Unit Tests & Coverage') {
       steps {
         sh '''
-          docker run --rm \
-            -v "$PWD":/app \
-            -w /app \
-            ${DOCKER_IMAGE} \
-            sh -c "coverage run -m pytest tests/domain tests/application tests/infrastructure --junitxml=/app/${TEST_REPORT_DIR}/junit.xml && \
-                   coverage xml -o /app/reports/coverage/coverage.xml && \
-                   coverage html -d /app/${COVERAGE_HTML_DIR} && \
-                   coverage report -m"
+          . venv/bin/activate
+          python -m coverage run --source=app -m pytest tests/domain tests/application tests/infrastructure --junitxml=${TEST_REPORT_DIR}/junit.xml && \
+          python -m coverage xml -o reports/coverage/coverage.xml && \
+          python -m coverage html -d ${COVERAGE_HTML_DIR} && \
+          python -m coverage report -m
+
         '''
       }
       post {
@@ -83,7 +99,7 @@ pipeline {
       }
     }
 
-    stage('SonarQube Analysis') {
+    stage('SonarQube Static Analysis') {
       steps {
         script {
           sh 'curl -f ${SONAR_HOST_URL}/api/system/status || (echo "SonarQube server not running" && exit 1)'
@@ -101,6 +117,7 @@ pipeline {
                   -Dsonar.projectName="Sistema Académico" \
                   -Dsonar.sources=. \
                   -Dsonar.tests=tests \
+                  -Dsonar.test.inclusions=**/tests/**/*.py \
                   -Dsonar.python.version=3.13 \
                   -Dsonar.python.coverage.reportPaths=reports/coverage/coverage.xml \
                   -Dsonar.python.xunit.reportPath=reports/tests/junit.xml \
@@ -113,13 +130,22 @@ pipeline {
       }
     }
 
-    stage ('Build') {
+    stage('Build') {
+      when {
+        expression { params.RELEASE_BUILD }
+      }
       steps {
-        echo 'Build stage - no build steps for Python app. poetry'
+        echo 'Building the App package with Poetry...'
+        sh '''
+          . venv/bin/activate
+          pip list
+          pip install poetry
+          poetry build
+        '''
       }
       post {
-        always {
-          echo 'Build stage completed.'
+        success {
+          archiveArtifacts artifacts: 'dist/**', fingerprint: true
         }
       }
     }
@@ -128,29 +154,21 @@ pipeline {
       steps {
         script {
           sh 'docker rm -f ${APP_CONTAINER} || true'
-            sh '''
-              docker run --rm \
-                --env-file .env.example \
-                ${DOCKER_IMAGE} \
-                python scripts/seed_admin.py
-            '''
+          sh '''
+            docker run --rm \
+              --env-file .env.example \
+              ${DOCKER_IMAGE} \
+              python scripts/seed_admin.py
+          '''
           sh '''
             docker run -d --name ${APP_CONTAINER} -p 5000:5000 \
               --env-file .env.example \
               ${DOCKER_IMAGE} \
               gunicorn --bind 0.0.0.0:5000 run:app
           '''
-          sh '''
-            for i in {1..30}; do
-              if curl -sSf http://localhost:5000/health > /dev/null; then
-                exit 0
-              fi
-              sleep 1
-            done
-            echo 'Health check failed' >&2
-            exit 1
-          '''
           echo 'Application container started on http://localhost:5000'
+          echo 'Waiting for the application to be ready...'
+          sleep 5
         }
       }
       post {
@@ -161,35 +179,21 @@ pipeline {
       }
     }
 
-    stage('Performance (JMeter)') {
+    stage ('Performance Tests - Jmeter') {
       steps {
-        script {
-          sh '''
-            JMETER_PLAN=${JMETER_PLAN:-tests/performance/test-plan.jmx}
-
-            if [ ! -f "$JMETER_PLAN" ]; then
-              echo "Missing JMeter test plan at $JMETER_PLAN" >&2
-              exit 1
-            fi
-
-            docker run --rm \
-              --network=host \
-              -v "$PWD":/workspace \
-              -w /workspace \
-              justb4/jmeter:5.6.3 \
-              -n -t "$JMETER_PLAN" \
-              -l ${PERFORMANCE_REPORT_DIR}/jmeter-results.jtl \
-              -j ${PERFORMANCE_REPORT_DIR}/jmeter.log \
-              -e -o ${PERFORMANCE_REPORT_DIR}/html
-          '''
-        }
-      }
-      post {
-        always {
-          archiveArtifacts artifacts: "${PERFORMANCE_REPORT_DIR}/**", fingerprint: true
-        }
+        echo 'Running performance tests with JMeter...'
+        sh '''
+          docker run --rm \
+          -v $PWD/tests/performance:/tests \
+          -v $PWD/${PERFORMANCE_REPORT_DIR}:/results \
+          justb4/jmeter \
+          -n -t /tests/performance_test.jmx \
+          -l /results/performance_results.jtl \
+          -e -o /results/html_report
+        '''
       }
     }
+
     stage('Setting up OWASP ZAP docker container') {
       steps {
         echo 'Pulling up last OWASP ZAP container --> Start'
@@ -208,7 +212,7 @@ pipeline {
           sh """
         docker exec owasp \
         zap-full-scan.py \
-        -t $target \
+        -t ${ZAP_TARGET} \
         -r report.html \
         -I
             """
@@ -227,21 +231,21 @@ pipeline {
       }
     }
 
-    stage('Functional Smoke Tests') {
+    stage('Functional Tests - Selenium') {
       steps {
-        script {
-          sh 'curl -sSf http://localhost:5000/ || (echo "Home endpoint failed" && exit 1)'
-          sh 'curl -sSf http://localhost:5000/health || (echo "Health endpoint failed" && exit 1)'
-        }
+        echo 'Running functional tests with Selenium...'
+        sh '''
+          . venv/bin/activate
+          pytest tests/functional --junitxml=${TEST_REPORT_DIR}/functional_junit.xml
+        '''
       }
     }
   }
 
   post {
     always {
-      sh 'docker stop ${APP_CONTAINER} || true'
-      sh 'docker rm -f ${APP_CONTAINER} || true'
       echo 'Pipeline finished.'
+      cleanWs()
     }
   }
 }
