@@ -33,7 +33,7 @@ class BaseRepository:
     mapper = None
 
     def _safe_write(self, action_desc, action):
-        # Write operation with commit/rollback and uniform logging
+        # Wrap write operations with commit/rollback and uniform logging
         try:
             result = action()
             db.session.commit()
@@ -44,7 +44,7 @@ class BaseRepository:
             return None, str(e)
 
     def _safe_read(self, action_desc, action, default=None):
-        # Read operation with uniform logging
+        # Wrap read operations with uniform logging
         try:
             return action()
         except Exception as e:
