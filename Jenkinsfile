@@ -187,7 +187,7 @@ pipeline {
           -v $PWD/tests/performance:/tests \
           -v $PWD/${PERFORMANCE_REPORT_DIR}:/results \
           justb4/jmeter \
-          -n -t /tests/performance_test.jmx \
+          -n -t /tests/TestRendimiento.jmx \
           -l /results/performance_results.jtl \
           -e -o /results/html_report
         '''

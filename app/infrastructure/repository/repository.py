@@ -26,70 +26,73 @@ from app.infrastructure.repository.mapper import (
 from app.domain.entities import User, Announcement, Grade, Parent, Course, Student, Admin, Professor, Enrollment
 import logging
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import or_
 from typing import List
 
 class BaseRepository:
     dto = None
     mapper = None
 
-    def add(self, domain_obj):
-        dto_obj = self.mapper.to_dto(domain_obj)
+    def _safe_write(self, action_desc, action):
+        # Write operation with commit/rollback and uniform logging
         try:
-            db.session.add(dto_obj)
+            result = action()
             db.session.commit()
-            return self.mapper.to_domain(dto_obj), None  # devuelves el user con ID seteado
+            return result, None
         except Exception as e:
             db.session.rollback()
-            logging.error(f"Error adding {self.dto.__tablename__}: {e}")
+            logging.error(f"{action_desc} {self.dto.__tablename__}: {e}")
             return None, str(e)
+
+    def _safe_read(self, action_desc, action, default=None):
+        # Read operation with uniform logging
+        try:
+            return action()
+        except Exception as e:
+            logging.error(f"{action_desc} {self.dto.__tablename__}: {e}")
+            return default
+
+    def add(self, domain_obj):
+        dto_obj = self.mapper.to_dto(domain_obj)
+        result, error = self._safe_write("Error adding", lambda: db.session.add(dto_obj) or dto_obj)
+        return (self.mapper.to_domain(result), None) if not error else (None, error)
 
 
     def remove(self, obj_id):
-        try:
+        def action():
             dto_obj = self.dto.query.get(obj_id)
             if not dto_obj:
                 return False
             db.session.delete(dto_obj)
-            db.session.commit()
             return True
-        except Exception as e:
-            db.session.rollback()
-            logging.error(f"Error removing {self.dto.__tablename__}: {e}")
-            return False
+
+        result, error = self._safe_write("Error removing", action)
+        return False if error else result
 
     def update(self, obj_id, data: dict):
-        try:
+        def action():
             dto_obj = self.dto.query.get(obj_id)
             if not dto_obj:
                 return False
             for key, value in data.items():
                 setattr(dto_obj, key, value)
-            db.session.commit()
             return True
-        except Exception as e:
-            db.session.rollback()
-            logging.error(f"Error updating {self.dto.__tablename__}: {e}")
-            return False
+
+        result, error = self._safe_write("Error updating", action)
+        return False if error else result
 
     def get(self, obj_id):
-        try:
+        def action():
             dto_obj = self.dto.query.get(obj_id)
             return self.mapper.to_domain(dto_obj) if dto_obj else None
-        except Exception as e:
-            logging.error(f"Error fetching {self.dto.__tablename__}: {e}")
-            return None
+
+        return self._safe_read("Error fetching", action, None)
 
     def list_all(self):
-        try:
-            dto_objs = self.dto.query.all()
-            return [self.mapper.to_domain(dto) for dto in dto_objs]
-        except SQLAlchemyError as e:
-            logging.error(f"Database error listing {self.dto.__tablename__}: {e}")
-            return []
-        except Exception as e:
-            logging.error(f"Unexpected error listing {self.dto.__tablename__}: {e}")
-            return []
+        return self._safe_read(
+            "Error listing",
+            lambda: [self.mapper.to_domain(dto) for dto in self.dto.query.all()],
+            []
+        )
 
 # Repositories for each model
 class UserRepository(BaseRepository):
@@ -108,13 +111,11 @@ class UserRepository(BaseRepository):
         return self.add(user)
     
     def list_by_role(self, role: int):
-        try:
-            dtos = self.dto.query.filter_by(role=role).all()
-            print(f"Listing users with role {role}: {dtos}")
-            return [self.mapper.to_domain(d) for d in dtos]
-        except Exception as e:
-            logging.error(f"Error listing users by role {role}: {e}")
-            return []
+        return self._safe_read(
+            f"Error listing users by role {role}",
+            lambda: [self.mapper.to_domain(d) for d in self.dto.query.filter_by(role=role).all()],
+            []
+        )
 
 
 class AnnouncementRepository(BaseRepository):
@@ -203,8 +204,6 @@ class GradeRepository(BaseRepository):
             logging.error(f"Error al calcular promedio sin func para curso {course_id}: {e}")
             return 0.0
 
-
-        
 class ParentRepository(BaseRepository):
     dto = ParentDTO
     mapper = ParentMapper
