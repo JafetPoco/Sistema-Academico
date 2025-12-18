@@ -27,7 +27,7 @@
         <tr>
           <form method="POST" action="{{ url_for('admin.update_user', user_id=user.user_id) }}">
             <td>{{ user.user_id }}</td>
-            <td>{{ user.name }}</td>
+            <td>{{ user.full_name }}</td>
             <td>{{ user.email }}</td>
             <td>
               <select class="form-select" name="role" required>
@@ -39,7 +39,7 @@
             </td>
             <td>
               <input type="hidden" name="user_id" value="{{ user.id }}">
-              <button type="submit" class="btn btn-sm btn-primary">Actualizar</button>
+              <button type="submit" class="btn btn-sm btn-primary" id="btn-update-{{ user.user_id }}">Actualizar</button>
             </td>
           </form>
         </tr>

@@ -8,21 +8,19 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav ms-auto d-flex align-items-center gap-2">
-                  <a class="nav-link active" aria-current="page" href="{{ url_for('main.index') }}">Home</a>
-                    <a class="nav-link active" href="{{ url_for('anuncios.list_all') }}">Anuncios</a>
+                  <a class="nav-link active" aria-current="page" href="{{ url_for('main.index') }}" id="btn-home">Home</a>
+                    <a class="nav-link active" href="{{ url_for('anuncios.list_all') }}" id="btn-anuncios">Anuncios</a>
                     {% if session.email %}
-                        <a class="nav-link active" href="{{ url_for('user.profile') }}">Mi perfil</a>
+                        <a class="nav-link active" href="{{ url_for('user.profile') }}" id="btn-mi-perfil">Mi perfil</a>
                         <a class="nav-link active" href="{{ url_for('dashboard.main') }}">Dashboard</a>
                     {% else %}
-                        <a class="nav-link active" href="{{ url_for('auth.login_get') }}">
-                            Dashboard
-                        </a>
+                        <a class="nav-link active" href="{{ url_for('auth.login_get') }}">Dashboard</a>
                     {% endif %}
                     
                     {% if session.email %}
-                        <a href="{{ url_for('auth.logout') }}" class="btn btn-dark">Logout</a>
+                        <a href="{{ url_for('auth.logout') }}" class="btn btn-dark" id="btn-logout">Logout</a>
                     {% else %}
-                        <a href="{{ url_for('auth.login_get') }}" class="btn btn-dark">Iniciar Sesión</a>
+                        <a href="{{ url_for('auth.login_get') }}" class="btn btn-dark" id="btn-iniciar-sesion">Iniciar Sesión</a>
                     {% endif %}
                 </div>
             </div>
