@@ -116,23 +116,39 @@ class QualificationController:
     
     @staticmethod
     def _validate_input(data):
-        required_fields = ['student_id', 'course_id', 'score']
-        for field in required_fields:
-            if not data.get(field):
-                return f"Campo '{field}' es obligatorio"
+        missing = QualificationController._check_required_fields(data, ['student_id','course_id','score'])
+        if missing:
+            return missing
+        score_err = QualificationController._parse_and_validate_score(data['score'])
+        if score_err:
+            return score_err
+        ids_err = QualificationController._validate_ids(data['student_id'], data['course_id'])
+        if ids_err:
+            return ids_err
+        return None
         
+    @staticmethod
+    def _check_required_fields(data, fields):
+        for f in fields:
+            if not data.get(f):
+                return f"Campo '{f}' es obligatorio."
+        return None
+        
+    @staticmethod
+    def _parse_and_validate_score(score_value):
         try:
-            score = float(data['score'])
-        except ValueError:
-            return "El campo 'score' debe ser un número válido"
-        
+            score = float(score_value)
+        except (TypeError, ValueError):
+            return "El campo 'score' debe ser un número válido."
         if not (0 <= score <= 20):
-            return "La calificación debe estar entre 0 y 20"
-        
+            return "La calificación debe estar entre 0 y 20."
+        return None
+    
+    @staticmethod
+    def _validate_ids(student_id, course_id):
         try:
-            int(data['student_id'])
-            int(data['course_id'])
-        except ValueError:
-            return "Los IDs deben ser números válidos"
-        
+            int(student_id)
+            int(course_id)
+        except (TypeError, ValueError):
+            return "Los IDs deben ser números válidos."
         return None
