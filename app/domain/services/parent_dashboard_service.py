@@ -5,72 +5,16 @@ from app.infrastructure.repository.repository import (
 )
 import logging
 
-class ParentDashboardService:  
-    def __init__(
-        self,
-        parent_repo: Optional[ParentRepository] = None,
-        enrollment_repo: Optional[EnrollmentRepository] = None,
-        grade_repo: Optional[GradeRepository] = None,
-        user_repo: Optional[UserRepository] = None,
-    ):
-        # Allow injecting repositories so the service can be tested with mocks
-        self.parent_repo = parent_repo or ParentRepository()
-        self.enrollment_repo = enrollment_repo or EnrollmentRepository()
-        self.grade_repo = grade_repo or GradeRepository()
-        self.user_repo = user_repo or UserRepository()
-    
-    def get_parent_dashboard_data(self, parent_id: int) -> dict:
-        try:
-            children, error = self.parent_repo.get_children_by_parent(parent_id)
-            if error:
-                return {
-                    'children_stats': [],
-                    'total_summary': self._get_empty_summary(),
-                    'status': 'error',
-                    'message': error
-                }
-            
-            if not children:
-                return {
-                    'children_stats': [],
-                    'total_summary': self._get_empty_summary(),
-                    'status': 'no_children',
-                    'message': 'No tienes hijos registrados en el sistema'
-                }
-            
-            children_stats = []
-            total_summary = self._initialize_total_summary()
-            
-            for child in children:
-                child_stats = self._get_child_statistics(child)
-                children_stats.append(child_stats)
+class ChildMetricsBuilder:
+    def __init__(self, enrollment_repo: EnrollmentRepository, grade_repo: GradeRepository):
+        self.enrollment_repo = enrollment_repo
+        self.grade_repo = grade_repo
 
-                self._accumulate_total_stats(total_summary, child_stats)
-            
-            self._finalize_total_summary(total_summary)
-            
-            return {
-                'children_stats': children_stats,
-                'total_summary': total_summary,
-                'total_children': len(children),
-                'status': 'success'
-            }
-            
-        except Exception as e:
-            logging.error(f"Error en get_parent_dashboard_data: {e}")
-            return {
-                'children_stats': [],
-                'total_summary': self._get_empty_summary(),
-                'status': 'error',
-                'message': f"Error obteniendo datos: {str(e)}"
-            }
-    
-    def _get_child_statistics(self, child) -> dict:
+    def build(self, child) -> dict:
         child_id, child_name = self._extract_child_info(child)
         courses_count = self._get_courses_count(child_id)
         all_grades = self._safe_get_child_all_grades(child_id)
-        stats = self._calculate_child_stats(child_id, child_name, courses_count, all_grades)
-        return stats
+        return self._calculate_child_stats(child_id, child_name, courses_count, all_grades)
 
     def _extract_child_info(self, child):
         try:
@@ -89,8 +33,7 @@ class ParentDashboardService:
 
     def _safe_get_child_all_grades(self, child_id):
         try:
-            grades = self._get_child_all_grades(child_id)
-            return grades
+            return self._get_child_all_grades(child_id)
         except Exception:
             return []
 
@@ -126,15 +69,12 @@ class ParentDashboardService:
         try:
             grades, error = self.grade_repo.get_grades_by_student(child_id)
 
-            if error:
-                return []
-            
-            if not grades:
+            if error or not grades:
                 return []
 
             scores = []
-            
-            for i, grade in enumerate(grades):
+
+            for grade in grades:
                 try:
                     if isinstance(grade, dict):
                         score = grade.get('score', 0)
@@ -142,38 +82,103 @@ class ParentDashboardService:
                         score = grade.score
                     else:
                         continue
-                    
+
                     if score > 0:
                         scores.append(score)
-                       
+
                 except Exception:
                     continue
 
             return scores
-            
+
         except Exception:
             return []
 
-    def _calculate_average_grade(self, grades: list) -> float:      
+    def _calculate_average_grade(self, grades: list) -> float:
         if not grades:
             return 0.0
-        
+
         try:
-            average = round(sum(grades) / len(grades), 2)
-            return average
+            return round(sum(grades) / len(grades), 2)
         except Exception:
             return 0.0
-
 
     def _count_passed_courses(self, grades: list) -> int:
         if not grades:
             return 0
         return len([grade for grade in grades if grade >= 11])
-    
+
     def _count_failed_courses(self, grades: list) -> int:
         if not grades:
             return 0
         return len([grade for grade in grades if grade < 11])
+
+
+class ParentDashboardService:  
+    def __init__(
+        self,
+        parent_repo: Optional[ParentRepository] = None,
+        enrollment_repo: Optional[EnrollmentRepository] = None,
+        grade_repo: Optional[GradeRepository] = None,
+        user_repo: Optional[UserRepository] = None,
+    ):
+        # Allow injecting repositories so the service can be tested with mocks
+        self.parent_repo = parent_repo or ParentRepository()
+        self.enrollment_repo = enrollment_repo or EnrollmentRepository()
+        self.grade_repo = grade_repo or GradeRepository()
+        self.user_repo = user_repo or UserRepository()
+        self.metrics_builder = ChildMetricsBuilder(self.enrollment_repo, self.grade_repo)
+    
+    def get_parent_dashboard_data(self, parent_id: int) -> dict:
+        try:
+            children, error = self.parent_repo.get_children_by_parent(parent_id)
+            guard = self._guard_children(children, error)
+            if guard:
+                return guard
+
+            children_stats = []
+            total_summary = self._initialize_total_summary()
+
+            for child in children:
+                child_stats = self.metrics_builder.build(child)
+                children_stats.append(child_stats)
+                self._accumulate_total_stats(total_summary, child_stats)
+
+            self._finalize_total_summary(total_summary)
+
+            return self._success_response(children_stats, total_summary, len(children))
+            
+        except Exception as e:
+            logging.error(f"Error en get_parent_dashboard_data: {e}")
+            return self._error_response(f"Error obteniendo datos: {str(e)}")
+
+    def _guard_children(self, children, error):
+        if error:
+            return self._error_response(error)
+        if not children:
+            return {
+                'children_stats': [],
+                'total_summary': self._get_empty_summary(),
+                'status': 'no_children',
+                'message': 'No tienes hijos registrados en el sistema'
+            }
+        return None
+
+    def _success_response(self, children_stats, total_summary, total_children):
+        return {
+            'children_stats': children_stats,
+            'total_summary': total_summary,
+            'total_children': total_children,
+            'status': 'success'
+        }
+
+    def _error_response(self, message: str):
+        return {
+            'children_stats': [],
+            'total_summary': self._get_empty_summary(),
+            'status': 'error',
+            'message': message
+        }
     
     def _initialize_total_summary(self) -> dict:
         return {
