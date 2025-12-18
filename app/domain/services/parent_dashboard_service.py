@@ -68,31 +68,28 @@ class ChildMetricsBuilder:
     def _get_child_all_grades(self, child_id: int) -> list:
         try:
             grades, error = self.grade_repo.get_grades_by_student(child_id)
-
             if error or not grades:
                 return []
 
             scores = []
-
             for grade in grades:
-                try:
-                    if isinstance(grade, dict):
-                        score = grade.get('score', 0)
-                    elif hasattr(grade, 'score'):
-                        score = grade.score
-                    else:
-                        continue
-
-                    if score > 0:
-                        scores.append(score)
-
-                except Exception:
-                    continue
+                score = self._extract_score_from_grade(grade)
+                if score and score > 0:
+                    scores.append(score)
 
             return scores
-
         except Exception:
             return []
+        
+    def _extract_score_from_grade(self, grade):
+        try:
+            if isinstance(grade, dict):
+                return grade.get('score', 0)
+            if hasattr(grade, 'score'):
+                return grade.score
+        except Exception:
+            return 0
+        return 0
 
     def _calculate_average_grade(self, grades: list) -> float:
         if not grades:
