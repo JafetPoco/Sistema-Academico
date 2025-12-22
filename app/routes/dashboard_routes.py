@@ -8,11 +8,13 @@ dashboard_bp = Blueprint('dashboard', __name__, url_prefix='/dashboard')
 @dashboard_bp.route('/')
 @login_required
 def main():
-    return DashboardController.show_dashboard()
+    controller = DashboardController()
+    return controller.show_dashboard()
 
 @dashboard_bp.route('/unknow')
 @dashboard_bp.route('/teacher') 
 @dashboard_bp.route('/parent')
 @dashboard_bp.route('/admin')
 def redirect_to_main():
-    return DashboardController.show_dashboard()
+    controller = DashboardController()
+    return controller.show_dashboard()
