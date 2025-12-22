@@ -20,34 +20,32 @@ class GradeService:
 
     def get_grades_by_parent_id(self, parent_id):
         students = self.student_repository.get_by_parent_id(parent_id)
-        result = []
+        return [self._build_student_result(student) for student in students]
 
-        for student in students:
-            # 🔧 Accedemos al nombre desde la relación con UserDTO
-            if hasattr(student, 'user') and student.user:
-                full_name = student.user.full_name
-            else:
-                # 🛠 Fallback en caso la relación no funcione aún
-                from app.infrastructure.database import db
-                user = db.session.get(UserDTO, student.user_id)
-                full_name = user.full_name if user else "Nombre no disponible"
+    def _build_student_result(self, student):
+        return {
+            'id': student.user_id,
+            'name': self._resolve_student_name(student),
+            'grades': self._build_grades_for_view(student.user_id),
+        }
 
-            grades_dto = self.grade_repository.get_by_student_id(student.user_id)
-            grades_for_view = []
+    def _build_grades_for_view(self, student_id):
+        return [self._map_grade(dto) for dto in self.grade_repository.get_by_student_id(student_id)]
 
-            for dto in grades_dto:
-                course = self.course_repository.get(dto.course_id)
-                course_name = course.name if course else "Curso Desconocido"
+    def _map_grade(self, dto):
+        course = self.course_repository.get(dto.course_id)
+        course_name = course.name if course else "Curso Desconocido"
 
-                grades_for_view.append({
-                    'score': dto.score,
-                    'course_name': course_name
-                })
+        return {
+            'score': dto.score,
+            'course_name': course_name,
+        }
 
-            result.append({
-                'id': student.user_id,
-                'name': full_name,
-                'grades': grades_for_view
-            })
+    def _resolve_student_name(self, student):
+        if hasattr(student, 'user') and student.user:
+            return student.user.full_name
 
-        return result
+        from app.infrastructure.database import db
+
+        user = db.session.get(UserDTO, student.user_id)
+        return user.full_name if user else "Nombre no disponible"

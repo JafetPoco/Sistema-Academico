@@ -1,6 +1,7 @@
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash
 from app.infrastructure.repository.repository import UserRepository
 from app.domain.entities import User
+from app.domain.factories.user_factory import UserFactory
 
 class AuthService:
     UNKNOWN_ROLE = 0
@@ -8,8 +9,9 @@ class AuthService:
     ADMIN_ROLE = 2
     PARENT_ROLE = 3
 
-    def __init__(self):
-        self.user_repo = UserRepository()
+    def __init__(self, user_repo: UserRepository | None = None, user_factory: type[UserFactory] = UserFactory):
+        self.user_repo = user_repo or UserRepository()
+        self.user_factory = user_factory
 
     def is_email_taken(self, email):
         return self.user_repo.find_by_email(email) is not None
@@ -18,14 +20,7 @@ class AuthService:
         if self.is_email_taken(email):
             return {"status": "error", "message": "Ya existe un usuario con este correo"}
 
-        password_hash = generate_password_hash(password)
-        new_user = User(
-            user_id=None,
-            full_name=full_name,
-            email=email,
-            password_hash=password_hash,
-            role=role
-        )
+        new_user = self.user_factory.create_with_raw_password(full_name, email, password, role)
 
         created_user, err = self.user_repo.create(new_user)
         if err:

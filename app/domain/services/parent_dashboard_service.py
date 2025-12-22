@@ -42,8 +42,8 @@ class ChildMetricsBuilder:
             average_grade = self._calculate_average_grade(all_grades)
             courses_passed = self._count_passed_courses(all_grades)
             courses_failed = self._count_failed_courses(all_grades)
-            highest_grade = max(all_grades) if all_grades else 0
-            lowest_grade = min(all_grades) if all_grades else 0
+            highest_grade = max(all_grades, default=0)
+            lowest_grade = min(all_grades, default=0)
             status = 'success'
         except Exception:
             average_grade = 0.0
