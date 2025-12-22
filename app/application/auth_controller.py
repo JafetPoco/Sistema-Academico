@@ -5,13 +5,7 @@ auth_service = AuthService()
 REGISTER_TEMPLATE = 'auth/register.html'
 LOGIN_TEMPLATE = 'auth/login.html'
 
-def do_login(email, password):
-    result = auth_service.authenticate(email, password)
-
-    if result["status"] == "error":
-        return render_template(LOGIN_TEMPLATE, error=result["message"])
-
-    user = result["user"]
+def _set_user_session(user):
     session["user_id"] = user.user_id
     session["email"] = user.email
     session["name"] = user.full_name
@@ -19,6 +13,30 @@ def do_login(email, password):
     session["role_display"] = auth_service.get_role_display_name(user.role)
     session["permissions"] = auth_service.get_user_permissions(user.role)
 
+def do_login(email, password):
+    result = auth_service.authenticate(email, password)
+
+    if result["status"] == "error":
+        return render_template(LOGIN_TEMPLATE, error=result["message"])
+
+    _set_user_session(result["user"])
+    return redirect(url_for("dashboard.main"))
+
+def _set_user_session(user):
+    session["user_id"] = user.user_id
+    session["email"] = user.email
+    session["name"] = user.full_name
+    session["role"] = user.role
+    session["role_display"] = auth_service.get_role_display_name(user.role)
+    session["permissions"] = auth_service.get_user_permissions(user.role)
+
+def do_login(email, password):
+    result = auth_service.authenticate(email, password)
+
+    if result["status"] == "error":
+        return render_template(LOGIN_TEMPLATE, error=result["message"])
+
+    _set_user_session(result["user"])
     return redirect(url_for("dashboard.main"))
 
 def do_register(full_name, email, password, confirm):
