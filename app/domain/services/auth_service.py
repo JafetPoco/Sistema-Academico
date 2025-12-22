@@ -1,15 +1,30 @@
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash
 from app.infrastructure.repository.repository import UserRepository
 from app.domain.entities import User
+from app.domain.factories.user_factory import UserFactory
+from app.domain.roles import Role
+from app.domain.services.role_permission_service import RolePermissionService
 
 class AuthService:
-    UNKNOWN_ROLE = 0
-    TEACHER_ROLE = 1
-    ADMIN_ROLE = 2
-    PARENT_ROLE = 3
+    """
+    Authentication service for user login and registration.
+    
+    Handles authentication logic and delegates role/permission checks
+    to RolePermissionService following Single Responsibility Principle.
+    """
+    
+    # Deprecated: Use app.domain.roles.Role enum instead
+    UNKNOWN_ROLE = Role.UNKNOWN
+    TEACHER_ROLE = Role.TEACHER
+    ADMIN_ROLE = Role.ADMIN
+    PARENT_ROLE = Role.PARENT
 
-    def __init__(self):
-        self.user_repo = UserRepository()
+    def __init__(self, user_repo: UserRepository | None = None, 
+                 user_factory: type[UserFactory] = UserFactory,
+                 role_permission_service: RolePermissionService | None = None):
+        self.user_repo = user_repo or UserRepository()
+        self.user_factory = user_factory
+        self.role_permission_service = role_permission_service or RolePermissionService()
 
     def is_email_taken(self, email):
         return self.user_repo.find_by_email(email) is not None
@@ -18,14 +33,7 @@ class AuthService:
         if self.is_email_taken(email):
             return {"status": "error", "message": "Ya existe un usuario con este correo"}
 
-        password_hash = generate_password_hash(password)
-        new_user = User(
-            user_id=None,
-            full_name=full_name,
-            email=email,
-            password_hash=password_hash,
-            role=role
-        )
+        new_user = self.user_factory.create_with_raw_password(full_name, email, password, role)
 
         created_user, err = self.user_repo.create(new_user)
         if err:
@@ -38,7 +46,7 @@ class AuthService:
         if not user:
             return {"status": "error", "message": "Usuario no registrado"}
 
-        if user.role == 0:
+        if user.role == Role.UNKNOWN:
             return {"status": "error", "message": "Aun no se activo su cuenta, contáctese con un administrador si cree que esto se trata de un error."}
 
         if not check_password_hash(user.password_hash, password):
@@ -56,25 +64,17 @@ class AuthService:
         return {"status": "success"}
 
     def get_role_display_name(self, role: int) -> str:
-        role_names = {
-            self.UNKNOWN_ROLE: "Unknown",
-            self.TEACHER_ROLE: "Profesor",
-            self.PARENT_ROLE: "Padre",
-            self.ADMIN_ROLE: "Administrador"
-        }
-        return role_names.get(role, "Usuario")
+        """Get display name for a role. Delegates to RolePermissionService."""
+        return self.role_permission_service.get_role_display_name(role)
     
     def can_access_qualification(self, role: int) -> bool:
-        return role == self.TEACHER_ROLE
+        """Check if role can access qualification system. Delegates to RolePermissionService."""
+        return self.role_permission_service.can_access_qualification(role)
     
     def is_admin(self, role: int) -> bool:
-        return role == self.ADMIN_ROLE
+        """Check if role is admin. Delegates to RolePermissionService."""
+        return self.role_permission_service.is_admin(role)
     
     def get_user_permissions(self, role: int) -> list:
-        permissions_map = {
-            self.UNKNOWN_ROLE: ["view_grades", "view_profile"],
-            self.TEACHER_ROLE: ["qualify_students", "view_courses", "view_reports"],
-            self.PARENT_ROLE: ["view_children", "view_messages"],
-            self.ADMIN_ROLE: ["manage_users", "manage_courses", "view_all_reports"]
-        }
-        return permissions_map.get(role, [])
+        """Get permissions for a role. Delegates to RolePermissionService."""
+        return self.role_permission_service.get_user_permissions(role)

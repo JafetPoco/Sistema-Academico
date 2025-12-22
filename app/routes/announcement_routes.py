@@ -1,7 +1,9 @@
 from flask import Blueprint, render_template, session, redirect, url_for, request, flash
 from app.application.announcement_controller import AnnouncementController
+from app.domain.roles import Role
 
 anuncios_bp = Blueprint('anuncios', __name__, url_prefix='/anuncios')
+
 
 @anuncios_bp.route('/', methods=['GET'])
 def list_all():
@@ -14,14 +16,15 @@ def list_all():
         role=role
     )
 
+
 @anuncios_bp.route('/admin', methods=['GET', 'POST'])
 def admin_panel():
-    role    = session.get("role")
+    """Admin panel for managing announcements. Restricted to administrators."""
+    user_role = session.get("role")
     user_id = session.get("user_id")
 
-    if role != 2 or user_id is None:
-        return redirect(url_for('main.index'))
-
+    # Only admins can access this panel
+    if user_role != Role.ADMIN or user_id is None:
     controller = AnnouncementController()
 
     if request.method == 'POST':
