@@ -25,8 +25,6 @@ def admin_panel():
 
     # Only admins can access this panel
     if user_role != Role.ADMIN or user_id is None:
-        return redirect(url_for('main.index'))
-
     controller = AnnouncementController()
 
     if request.method == 'POST':
