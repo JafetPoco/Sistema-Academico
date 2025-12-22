@@ -115,7 +115,7 @@ pipeline {
                 sonar-scanner \
                   -Dsonar.projectKey=sys:acad \
                   -Dsonar.projectName="Sistema Académico" \
-                  -Dsonar.sources=. \
+                  -Dsonar.sources=app,run.py,tests,Dockerfile,templates,static \
                   -Dsonar.tests=tests \
                   -Dsonar.test.inclusions=**/tests/**/*.py \
                   -Dsonar.python.version=3.13 \
