@@ -32,10 +32,7 @@ class ChildMetricsBuilder:
             return 0
 
     def _safe_get_child_all_grades(self, child_id):
-        try:
-            return self._get_child_all_grades(child_id)
-        except Exception:
-            return []
+        return self._get_child_all_grades(child_id)
 
     def _calculate_child_stats(self, child_id, child_name, courses_count, all_grades):
         try:
