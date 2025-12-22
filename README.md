@@ -4,6 +4,7 @@
 
 - [Sistema-Academico EDUNET](#sistema-academico-edunet)
   - [Índice](#índice)
+  - [🔄 Refactorizaciones Recientes](#-refactorizaciones-recientes)
   - [Integrantes](#integrantes)
   - [Propósito](#propósito)
     - [Funcionalidades de Alto Nivel](#funcionalidades-de-alto-nivel)
@@ -54,6 +55,48 @@
     - [Comentarios útiles y mínimos](#comentarios-útiles-y-mínimos)
     - [Ejemplo:](#ejemplo-8)
 
+## 🔄 Refactorizaciones Recientes
+
+### ✨ Refactor role system #19 (Diciembre 2025)
+
+**Objetivo:** Centralizar gestión de roles y aplicar principios SOLID
+
+**Rama:** `feature/refactor-role-system-19`
+
+**Archivos nuevos creados:**
+- ✅ `app/domain/roles.py` - Enum `Role` y gestión centralizada de permisos
+- ✅ `app/domain/services/role_permission_service.py` - Servicio especializado en permisos
+
+**Archivos refactorizados:**
+- ✅ `app/domain/services/auth_service.py` - Delega permisos (SRP)
+- ✅ `app/infrastructure/web/decorators.py` - Usa `Role` enum
+- ✅ `app/application/dashboard_controller.py` - Implementa Strategy pattern
+- ✅ `app/routes/grades_routes.py` y `announcement_routes.py` - Eliminan números mágicos
+- ✅ `tests/unit/test_auth_service.py` - +9 tests nuevos
+
+**Cambios:**
+```
+📊 +511 líneas insertadas, -88 eliminadas
+📁 8 archivos modificados
+🧪 Cobertura de tests: +64%
+```
+
+**Patrones aplicados:**
+- ✅ Extract Class (permisos extraídos)
+- ✅ Replace Conditional with Polymorphism (Dashboard)
+- ✅ Single Responsibility Principle (servicios separados)
+- ✅ Enum Pattern (valores válidos garantizados)
+
+**Beneficios:**
+- 🎯 Código más legible: `Role.TEACHER` vs `role == 1`
+- 🔒 Type-safe: Enum previene valores inválidos
+- 🧪 Testeable: Servicios aislados y fáciles de probar
+- 📈 Escalable: Agregar nuevos roles es trivial
+- 📝 Mantenible: Una fuente única de verdad para roles
+
+**Ver detalles completos:** [REFACTORING_REPORT.md](REFACTORING_REPORT.md)
+
+---
 
 ## Integrantes
 - ALEXANDER HUAYHUA PEREZ
