@@ -1,18 +1,29 @@
-from flask import Blueprint, render_template, session, redirect, url_for, request, flash
+from flask import Blueprint, render_template, session, redirect, url_for, request, flash, jsonify
 from app.application.announcement_controller import AnnouncementController
 
-anuncios_bp = Blueprint('anuncios', __name__, url_prefix='/anuncios')
+anuncios_bp = Blueprint('anuncios', __name__, url_prefix='/api/anuncios')
 
-@anuncios_bp.route('/', methods=['GET'])
+@anuncios_bp.route('/')
 def list_all():
     controller = AnnouncementController()
     public, private, role = controller.get_announcements()
-    return render_template(
-        'anuncios/anuncios.html',
-        public_announcements=public,
-        private_announcements=private,
-        role=role
-    )
+
+    def _serialize_list(items):
+        out = []
+        for it in items or []:
+            if hasattr(it, 'to_dict'):
+                out.append(it.to_dict())
+            else:
+                data = getattr(it, '__dict__', {})
+                out.append({k: v for k, v in data.items() if not k.startswith('_')})
+        return out
+
+    return jsonify({
+        'public_announcements': _serialize_list(public),
+        'private_announcements': _serialize_list(private),
+        'role': role
+    })
+
 
 @anuncios_bp.route('/admin', methods=['GET', 'POST'])
 def admin_panel():

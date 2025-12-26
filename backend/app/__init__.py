@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from app.config import Config
 
 from app.routes.main_routes import main_bp
@@ -20,8 +21,8 @@ def create_app():
         template_folder='../templates',
         static_folder='../static'
     )
-
     app.config.from_object(Config)
+    CORS(app)
 
     init_db(app)
     create_tables(app)
