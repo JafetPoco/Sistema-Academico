@@ -1,5 +1,10 @@
 <script setup>
 import Navbar from '../components/navbar.vue'
+import main_img from '../assets/img/img2.jpg'
+import teacher_img from '../assets/img/teacher.jpg'
+import schedule_img from '../assets/img/schedule.jpg'
+import feedback_img from '../assets/img/feedback.jpg'
+
 </script>
 
 <template>
@@ -16,7 +21,7 @@ import Navbar from '../components/navbar.vue'
         </div>
 
         <div class="container-fluid p-0 mt-5 mb-5">
-            <img class="main-img" src="/img/img2.jpg" alt="EDUNET" />
+            <img class="main-img" :src="main_img" alt="EDUNET" />
         </div>
 
         <div class="container">
@@ -24,21 +29,21 @@ import Navbar from '../components/navbar.vue'
             <div class="row">
                 <div class="col">
                     <div>
-                        <img class="secondary-img" src="/img/teacher.jpg" alt="teacher" />
+                        <img class="secondary-img" :src="teacher_img" alt="teacher" />
                         <h4 class="mt-2">Comunicación directa con tus profesores</h4>
                         <p class="long-text">Mantente en contacto de forma rápida y sencilla. Podrás resolver dudas, recibir orientación personalizada y mantener un seguimiento constante de tu desempeño académico.</p>
                     </div>
                 </div>
                 <div class="col">
                     <div>
-                        <img class="secondary-img" src="/img/schedule.jpg" alt="schedule" />
+                        <img class="secondary-img" :src="schedule_img" alt="schedule" />
                         <h4 class="mt-2">Acceso inmediato a todas las novedades</h4>
                         <p class="long-text">No te pierdas nada importante. Infórmate al instante sobre comunicados oficiales, actividades escolares, fechas clave y noticias relevantes del colegio.</p>
                     </div>
                 </div>
                 <div class="col">
                     <div>
-                        <img class="secondary-img" src="/img/feedback.jpg" alt="feedback" />
+                        <img class="secondary-img" :src="feedback_img" alt="feedback" />
                         <h4 class="mt-2">Feedback personalizado</h4>
                         <p class="long-text">Recibe devoluciones y comentarios de tus profesores sobre tus trabajos, exámenes y participación. Una herramienta clave para mejorar tu aprendizaje y avanzar con seguridad.</p>
                     </div>

@@ -1,43 +1,70 @@
-# app/routes/auth_routes.py
+from flask import Blueprint, request, session, jsonify
+from app.domain.services.auth_service import AuthService
 
-from flask import Blueprint, redirect, request, url_for, session
-from app.application.auth_controller import (
-    do_login,
-    do_register,
-    show_register,
-    show_login,
-    do_logout
-)
+auth_bp = Blueprint('api_auth', __name__, url_prefix='/api/auth')
 
-auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
-
-@auth_bp.route('/login', methods=['GET'])
-def login_get():
-    if "user_id" in session:
-        return redirect(url_for("main.index"))
-    return show_login()
 
 @auth_bp.route('/login', methods=['POST'])
-def login_post():
-    email = request.form.get('email')
-    password = request.form.get('password')
-    return do_login(email, password)
+def api_login():
+    if not request.is_json:
+        return jsonify({'status': 'error', 'message': 'JSON required'}), 400
+
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+
+    auth_service = AuthService()
+    result = auth_service.authenticate(email, password)
+
+    if result.get('status') == 'error':
+        return jsonify({'status': 'error', 'message': result.get('message')}), 401
+
+    user = result.get('user')
+    session['user_id'] = user.user_id
+    session['email'] = user.email
+    session['name'] = user.full_name
+    session['role'] = user.role
+    session['role_display'] = auth_service.get_role_display_name(user.role)
+    session['permissions'] = auth_service.get_user_permissions(user.role)
+
+    return jsonify({'status': 'success', 'user': {
+        'user_id': user.user_id,
+        'email': user.email,
+        'full_name': user.full_name,
+        'role': user.role
+    }})
 
 
 @auth_bp.route('/register', methods=['POST'])
-def register_post():
-    full_name = request.form.get('full_name')
-    email = request.form.get('email')
-    password = request.form.get('password')
-    confirm = request.form.get('confirm_password')
-    return do_register(full_name, email, password, confirm)
+def api_register():
+    if not request.is_json:
+        return jsonify({'status': 'error', 'message': 'JSON required'}), 400
 
-@auth_bp.route('/register', methods=['GET'])
-def register_get():
-    return show_register()
+    data = request.get_json()
+    full_name = data.get('full_name')
+    email = data.get('email')
+    password = data.get('password')
+    confirm = data.get('confirm_password') or data.get('confirm')
 
-@auth_bp.route('/logout')
-def logout():
-    if session:
-        do_logout()
-    return redirect(url_for('main.index'))
+    auth_service = AuthService()
+    valid = auth_service.validate_registration_data(full_name, email, password, confirm)
+    if valid.get('status') == 'error':
+        return jsonify({'status': 'error', 'message': valid.get('message')}), 400
+
+    result = auth_service.register_user(full_name, email, password)
+    if result.get('status') == 'error':
+        return jsonify({'status': 'error', 'message': result.get('message')}), 400
+
+    user = result.get('user')
+    return jsonify({'status': 'success', 'user': {
+        'user_id': user.user_id,
+        'email': user.email,
+        'full_name': user.full_name,
+        'role': user.role
+    }})
+
+
+@auth_bp.route('/logout', methods=['POST'])
+def api_logout():
+    session.clear()
+    return jsonify({'status': 'success'})
