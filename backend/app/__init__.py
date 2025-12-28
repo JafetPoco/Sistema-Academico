@@ -1,0 +1,45 @@
+from flask import Flask
+from flask_cors import CORS
+from app.config import Config
+
+from app.routes.main_routes import main_bp
+from app.routes.course_routes import curso_bp
+from app.routes.announcement_routes import anuncios_bp
+from app.routes.qualification_routes import calificaciones_bp
+from app.routes.auth_routes import auth_bp
+from app.routes.grades_routes import grades_routes
+from app.routes.user_route import user_bp
+from app.routes.dashboard_routes import dashboard_bp
+from app.routes.admin_routes import admin_bp
+from app.routes.report_routes import report_bp
+from app.routes.api_docs import api_docs_bp, swagger_ui_bp
+
+from app.infrastructure.database import init_db, create_tables
+
+def create_app():
+    app = Flask(
+        __name__,
+        template_folder='../templates',
+        static_folder='../static'
+    )
+    app.config.from_object(Config)
+    # Enable CORS with credentials for SPA integration. Adjust origins for production.
+    CORS(app, supports_credentials=True, origins=["http://localhost:5173"]) 
+
+    init_db(app)
+    create_tables(app)
+
+    app.register_blueprint(main_bp)
+    app.register_blueprint(curso_bp)
+    app.register_blueprint(anuncios_bp)
+    app.register_blueprint(calificaciones_bp)
+    #app.register_blueprint(notas_bp)
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(grades_routes)
+    app.register_blueprint(user_bp)
+    app.register_blueprint(dashboard_bp)
+    app.register_blueprint(admin_bp)
+    app.register_blueprint(report_bp)
+    app.register_blueprint(api_docs_bp)
+    app.register_blueprint(swagger_ui_bp, url_prefix='/api/docs')
+    return app

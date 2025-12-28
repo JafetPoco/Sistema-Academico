@@ -1,0 +1,66 @@
+openapi: 3.0.3
+info:
+  title: Sistema Academico API
+  version: 0.1.0
+  description: |
+    API contract for the academic system, starting with admin user management.
+    Expand with auth, courses, grades, and reports as endpoints are migrated from server-rendered views.
+servers:
+  - url: http://localhost:5000
+    description: Local server
+paths:
+  /admin/users:
+    get:
+      summary: List users (admin)
+      description: Returns the full list of users for admin dashboards.
+      tags: [Admin]
+      responses:
+        '200':
+          description: Users list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  count:
+                    type: integer
+                    description: Total number of users returned.
+                required: [data, count]
+              examples:
+                demo:
+                  summary: Sample payload
+                  value:
+                    data:
+                      - id: 1
+                        full_name: "Ana Perez"
+                        email: "ana@example.com"
+                        role: 2
+                      - id: 2
+                        full_name: "Luis Torres"
+                        email: "luis@example.com"
+                        role: 1
+                    count: 2
+        '401':
+          description: Unauthorized; authentication required.
+        '403':
+          description: Forbidden; only admins can access this endpoint.
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        full_name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: integer
+          description: Role code (0=student, 1=professor, 2=admin, etc).
+      required: [id, full_name, email, role]
