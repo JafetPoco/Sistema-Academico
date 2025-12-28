@@ -1,4 +1,6 @@
 <script>
+import authService from '../services/authService'
+
 export default {
   name: 'DashboardHeader',
   props: {
@@ -28,6 +30,18 @@ export default {
         default: return '¡Hola!'
       }
     }
+  },
+  methods: {
+    async handleLogout () {
+      try {
+        await authService.logout()
+      } catch (err) {
+        console.warn('Logout API failed, continuing to redirect', err)
+      }
+      // clear any local user cache and navigate to main
+      try { localStorage.removeItem('user') } catch (e) {}
+      this.$router.push('/')
+    }
   }
 }
 </script>
@@ -52,7 +66,7 @@ export default {
 
         <div class="header-controls">
           <router-link class="nav-chip" to="/"><i class="fas fa-arrow-left"></i> Volver al Inicio</router-link>
-          <button class="nav-chip header-btn" @click="$emit('logout')">
+          <button class="nav-chip header-btn" @click="handleLogout">
             <i class="bi bi-door-open-fill"></i> Cerrar Sesión
           </button>
         </div>
