@@ -1,0 +1,47 @@
+<template>
+    <div class="unknown-page">
+        <div class="container mt-5">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card border-warning">
+                        <div class="card-header bg-warning text-black text-center">
+                            <h4><i class="fas fa-ban"></i> Acceso en Revisión</h4>
+                        </div>
+                        <div class="card-body text-center">
+                            <div class="mb-4">
+                                <i class="fas fa-user-slash fa-5x text-danger"></i>
+                            </div>
+                            <p class="card-text">Tu cuenta ha sido registrada, pero aún no tienes permisos de acceso. Por favor, espera a que un administrador la active.</p>
+
+                            <div class="alert alert-warning mt-3">
+                                <small><i class="fas fa-info-circle"></i> Si crees que esto es un error, contacta al administrador del sistema.</small>
+                            </div>
+
+                            <div class="mt-4">
+                                <router-link to="/" class="btn btn-primary"><i class="fas fa-home"></i> Volver al Inicio</router-link>
+                                <button @click="goBack" class="btn btn-outline-secondary"><i class="fas fa-arrow-left"></i> Volver Atrás</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+export default {
+    name: 'UnknownContent',
+    methods: {
+        goBack () {
+            if (this.$router && this.$router.back) this.$router.back()
+            else window.history.back()
+        }
+    }
+}
+</script>
+
+<style scoped>
+.unknown-page { min-height: 100vh; background-image: url('/img/pattern.png'); background-repeat: repeat; background-size: 500px 500px; }
+.card-header h4 { margin: 0; }
+</style>

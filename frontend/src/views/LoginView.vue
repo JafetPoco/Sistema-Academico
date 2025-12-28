@@ -16,6 +16,11 @@ async function submit() {
     const data = await authService.login(email.value, password.value)
     console.log(data)
     if (data?.status === 'success') {
+      // store returned user info if present so dashboard can fallback when /api/auth/me is missing
+      const userPayload = data.user || (data.data && data.data.user) || null
+      if (userPayload) localStorage.setItem('user', JSON.stringify(userPayload))
+      // also accept role directly in response
+      if (!userPayload && data.role) localStorage.setItem('user', JSON.stringify({ role: data.role, role_name: data.role_name, full_name: data.full_name }))
       router.push('/dashboard')
       return
     }
