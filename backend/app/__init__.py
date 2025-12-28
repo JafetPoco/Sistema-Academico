@@ -12,6 +12,7 @@ from app.routes.user_route import user_bp
 from app.routes.dashboard_routes import dashboard_bp
 from app.routes.admin_routes import admin_bp
 from app.routes.report_routes import report_bp
+from app.routes.api_docs import api_docs_bp, swagger_ui_bp
 
 from app.infrastructure.database import init_db, create_tables
 
@@ -39,4 +40,6 @@ def create_app():
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(report_bp)
+    app.register_blueprint(api_docs_bp)
+    app.register_blueprint(swagger_ui_bp, url_prefix='/api/docs')
     return app
