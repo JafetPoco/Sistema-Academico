@@ -13,6 +13,7 @@ venv.bak/
 .env
 *.env
 *.ini
+!pytest.ini
 *.cfg
 *.local
 *.log
@@ -64,3 +65,5 @@ Pipfile.lock
 .scannerwork/
 config/__pycache__/
 interfaces/controllers/__pycache__/
+
+reports/
