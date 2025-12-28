@@ -1,4 +1,4 @@
-from flask import Blueprint, request, render_template, redirect, url_for
+from flask import Blueprint, request, render_template, redirect, url_for, jsonify
 from app.application.admin_controller import AdminController
 from app.infrastructure.web.decorators import admin_only
 
@@ -9,7 +9,16 @@ controller = AdminController()
 @admin_only
 def users():
     users = controller.handle_get_users()
-    return render_template('admin/user_list.html', users=users)
+    serialized = [
+        {
+            "id": user.user_id,
+            "full_name": user.full_name,
+            "email": user.email,
+            "role": user.role,
+        }
+        for user in users
+    ]
+    return jsonify({"data": serialized, "count": len(serialized)}), 200
 
 @admin_bp.route('/users/<int:user_id>', methods=['POST'])
 @admin_only

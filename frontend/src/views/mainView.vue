@@ -1,5 +1,5 @@
 <script setup>
-import Navbar from '../components/navbar.vue'
+import Navbar from '../components/Navbar.vue'
 import main_img from '../assets/img/img2.jpg'
 import teacher_img from '../assets/img/teacher.jpg'
 import schedule_img from '../assets/img/schedule.jpg'
