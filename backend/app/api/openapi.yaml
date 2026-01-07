@@ -48,8 +48,143 @@ paths:
           description: Unauthorized; authentication required.
         '403':
           description: Forbidden; only admins can access this endpoint.
+  /api/anuncios:
+    get:
+      summary: List announcements (public and private)
+      description: |
+        Returns public announcements for all users and private announcements when the
+        caller has an active session. Private announcements are filtered by the current
+        user stored in the session.
+      tags: [Announcements]
+      responses:
+        '200':
+          description: Announcements grouped by visibility.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  public_announcements:
+                    type: array
+                    description: Announcements visible to everyone.
+                    items:
+                      $ref: '#/components/schemas/Announcement'
+                  private_announcements:
+                    type: array
+                    description: Announcements visible only to the authenticated user.
+                    items:
+                      $ref: '#/components/schemas/Announcement'
+                  role:
+                    type: integer
+                    description: Role code from the current session (0 when unauthenticated).
+                required: [public_announcements, private_announcements, role]
+              examples:
+                demo:
+                  summary: Sample grouped announcements
+                  value:
+                    public_announcements:
+                      - announcement_id: 10
+                        title: "Bienvenida"
+                        content: "Inicio del semestre."
+                        is_private: false
+                        course_id: null
+                        user_id: 2
+                        created_at: "2024-08-01T10:00:00Z"
+                    private_announcements:
+                      - announcement_id: 11
+                        title: "Tarea 1"
+                        content: "Entrega en una semana."
+                        is_private: true
+                        course_id: 3
+                        user_id: 5
+                        created_at: "2024-08-02T12:00:00Z"
+                    role: 1
+  /api/anuncios/admin:
+    post:
+      summary: Create announcement (admin)
+      description: |
+        Creates a public or private announcement. Only admins (role 2) with an active
+        session can use this endpoint.
+      tags: [Announcements]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnnouncementCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AnnouncementCreateRequest'
+      responses:
+        '201':
+          description: Announcement created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnnouncementCreateResponse'
+        '400':
+          description: Validation error while creating announcement.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: Forbidden; only admins with an active session can create announcements.
 components:
   schemas:
+    Announcement:
+      type: object
+      properties:
+        announcement_id:
+          type: integer
+        course_id:
+          type: integer
+          nullable: true
+        user_id:
+          type: integer
+          description: Creator user id.
+        title:
+          type: string
+        content:
+          type: string
+        is_private:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+      required: [announcement_id, user_id, title, content, is_private, created_at]
+    AnnouncementCreateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        is_private:
+          type: boolean
+          default: false
+        course_id:
+          type: integer
+          nullable: true
+      required: [title, content]
+    AnnouncementCreateResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        announcement:
+          $ref: '#/components/schemas/Announcement'
+      required: [success, message]
+    ErrorMessage:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required: [success, message]
     User:
       type: object
       properties:

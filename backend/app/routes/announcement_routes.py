@@ -1,43 +1,37 @@
-from flask import Blueprint, render_template, session, redirect, url_for, request, flash, jsonify
+from flask import Blueprint, jsonify, request, session
 from app.application.announcement_controller import AnnouncementController
 
 anuncios_bp = Blueprint('anuncios', __name__, url_prefix='/api/anuncios')
 
-@anuncios_bp.route('/')
+controller = AnnouncementController()
+
+
+@anuncios_bp.route('/', methods=['GET'])
 def list_all():
-    controller = AnnouncementController()
-    public, private, role = controller.get_announcements()
-
-    def _serialize_list(items):
-        out = []
-        for it in items or []:
-            if hasattr(it, 'to_dict'):
-                out.append(it.to_dict())
-            else:
-                data = getattr(it, '__dict__', {})
-                out.append({k: v for k, v in data.items() if not k.startswith('_')})
-        return out
-
-    return jsonify({
-        'public_announcements': _serialize_list(public),
-        'private_announcements': _serialize_list(private),
-        'role': role
-    })
+    user_id = session.get("user_id")
+    role = session.get("role", 0)
+    return jsonify(controller.get_announcements(user_id=user_id, role=role))
 
 
-@anuncios_bp.route('/admin', methods=['GET', 'POST'])
+@anuncios_bp.route('/admin', methods=['POST'])
 def admin_panel():
-    role    = session.get("role")
+    role = session.get("role")
     user_id = session.get("user_id")
 
     if role != 2 or user_id is None:
-        return redirect(url_for('main.index'))
+        return jsonify({"success": False, "message": "Acceso no autorizado."}), 403
 
-    controller = AnnouncementController()
+    title = request.json.get('title') if request.is_json else request.form.get('title')
+    content = request.json.get('content') if request.is_json else request.form.get('content')
+    is_private = bool(request.json.get('is_private') if request.is_json else request.form.get('is_private'))
+    course_id = request.json.get('course_id') if request.is_json else request.form.get('course_id')
 
-    if request.method == 'POST':
-        msg_type, msg_text = controller.handle_create(request.form, user_id)
-        flash(msg_text, msg_type)
-        return redirect(url_for('anuncios.admin_panel'))
-
-    return render_template("anuncios/admin_anuncios.html")
+    response = controller.create_announcement(
+        title=title,
+        content=content,
+        user_id=user_id,
+        is_private=is_private,
+        course_id=course_id,
+    )
+    status_code = 201 if response.get('success') else 400
+    return jsonify(response), status_code
