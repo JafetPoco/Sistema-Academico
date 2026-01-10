@@ -1,20 +1,33 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
+
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000'
 
 const isAuthenticated = ref(false)
 const user = ref(null)
 
 async function checkAuth() {
     try {
-        const res = await fetch('/api/auth/me', { credentials: 'include' })
-        if (res.ok) {
-            user.value = await res.json()
+        const res = await axios.get(`${API_BASE}/dashboard/`, { withCredentials: true })
+        const data = res.data || {}
+        if (data.status === 'success') {
+            user.value = data
             isAuthenticated.value = true
-        } else {
-            isAuthenticated.value = false
+            return
         }
+        isAuthenticated.value = false
     } catch (e) {
+        // fallback to localStorage when API not reachable
+        const stored = localStorage.getItem('user')
+        if (stored) {
+            try {
+                user.value = JSON.parse(stored)
+                isAuthenticated.value = true
+                return
+            } catch (_) {}
+        }
         isAuthenticated.value = false
     }
 }
@@ -26,10 +39,11 @@ function navigate(href) {
 
 async function logout() {
     try {
-        await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+        await axios.post(`${API_BASE}/api/auth/logout`, {}, { withCredentials: true })
     } catch (e) {
         // ignore
     }
+    localStorage.removeItem('user')
     window.location.href = '/'
 }
 

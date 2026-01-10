@@ -1,31 +1,29 @@
 # app/application/dashboard_controller.py
-from flask import render_template, session, redirect, url_for
+from flask import session
 from app.domain.services.parent_dashboard_service import ParentDashboardService
 
+
 class DashboardController:
-    
+
     @staticmethod
-    def show_dashboard():
+    def show_dashboard() -> dict:
+        if 'user_id' not in session:
+            return {"status": "error", "message": "Usuario no autenticado."}
+
         try:
-            if 'user_id' not in session:
-                return redirect(url_for('auth.login_get'))
-            
             user_id = session.get('user_id')
             user_role = session.get('role')
-            
-            # Obtener datos específicos del rol
             dashboard_data = DashboardController._get_dashboard_data(user_id, user_role)
-            
-            return render_template('dashboards/base_dashboard.html',
-                                 user_name=session.get('name'),
-                                 user_role=user_role,
-                                 role_name=session.get('role_display'),
-                                 permissions=session.get('permissions', []),
-                                 dashboard_data=dashboard_data)
-                                 
+            return {
+                "status": "success",
+                "user_name": session.get('name'),
+                "user_role": user_role,
+                "role_name": session.get('role_display'),
+                "permissions": session.get('permissions', []),
+                "dashboard_data": dashboard_data,
+            }
         except Exception as e:
-            return render_template('errors/500.html',
-                                 error=f"Error cargando dashboard: {str(e)}")
+            return {"status": "error", "message": f"Error cargando dashboard: {str(e)}"}
 
     @staticmethod
     def _get_dashboard_data(user_id: int, user_role: int) -> dict:

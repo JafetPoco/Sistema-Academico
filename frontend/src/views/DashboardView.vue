@@ -5,7 +5,9 @@ import AdminContent from '../components/AdminContent.vue'
 import ParentContent from '../components/ParentContent.vue'
 import TeacherContent from '../components/TeacherContent.vue'
 import UnknownContent from '../components/unknownContent.vue'
+
 const DefaultContent = { template: '<div><p>Contenido por defecto.</p></div>' }
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000'
 
 export default {
     name: 'DashboardView',
@@ -31,11 +33,9 @@ export default {
             }
         },
         componentProps () {
-            // Pass dashboardData only when available (ParentContent expects it)
             if (this.userRole === 3) return { dashboardData: this.dashboardData }
             return {}
-        }
-        ,
+        },
         errorMessage () {
             if (!this.error) return null
             return this.error.message || (this.error.response && (this.error.response.data?.message || JSON.stringify(this.error.response.data))) || String(this.error)
@@ -50,50 +50,32 @@ export default {
         },
         async init () {
             this.loading = true
+            this.error = null
             try {
-                // Fetch current user info; adjust endpoint to your backend
-                let me = null
-                try {
-                    const meRes = await axios.get('/api/auth/me', { withCredentials: true })
-                    me = meRes.data || {}
-                    console.debug('/api/auth/me ->', meRes.status, me)
-                } catch (e) {
-                    // If /api/auth/me is not available (404) try fallback to localStorage (set by LoginView)
-                    if (e.response && e.response.status === 404) {
-                        console.warn('/api/auth/me returned 404, attempting localStorage fallback')
-                        const stored = localStorage.getItem('user')
-                        if (stored) {
-                            try { me = JSON.parse(stored) } catch (er) { me = null }
-                        }
-                    } else {
-                        throw e
+                const res = await axios.get(`${API_BASE}/dashboard/`, { withCredentials: true })
+                const data = res.data || {}
+
+                if (data.status !== 'success') {
+                    throw new Error(data.message || 'No se pudo cargar el dashboard')
+                }
+
+                this.userName = data.user_name || data.name || 'Usuario'
+                this.userRole = typeof data.user_role !== 'undefined' ? data.user_role : null
+                this.roleName = data.role_name || data.role_display || 'Usuario'
+                this.dashboardData = data.dashboard_data || null
+            } catch (err) {
+                // Fallback to localStorage if API is unreachable but session exists locally
+                const stored = localStorage.getItem('user')
+                if (stored && !this.userRole) {
+                    try {
+                        const parsed = JSON.parse(stored)
+                        this.userName = parsed.full_name || parsed.name || 'Usuario'
+                        this.userRole = parsed.role
+                        this.roleName = parsed.role_name || parsed.roleName || 'Usuario'
+                    } catch (e) {
+                        // ignore
                     }
                 }
-
-                if (!me) {
-                    // no user info available
-                    this.userName = null
-                    this.userRole = null
-                    this.roleName = null
-                    throw new Error('No se encontró información del usuario (ni /api/auth/me ni localStorage).')
-                }
-
-                this.userName = me.full_name || me.name || me.fullName || 'Usuario'
-                this.userRole = typeof me.role !== 'undefined' ? me.role : (me.role_id ?? me.roleId ?? 2)
-                this.roleName = me.role_name || me.roleName || 'Usuario'
-
-                // Fetch dashboard data depending on role. Adjust endpoints as needed.
-                if (this.userRole === 3) {
-                    const dashRes = await axios.get('/api/dashboard/parent', { withCredentials: true }).catch(err => { console.warn('parent dashboard fetch failed', err); return { data: null } })
-                    this.dashboardData = dashRes.data
-                } else if (this.userRole === 2) {
-                    // admin dashboard could fetch admin stats if available
-                    const dashRes = await axios.get('/api/dashboard/admin', { withCredentials: true }).catch(err => { console.warn('admin dashboard fetch failed', err); return { data: null } })
-                    this.dashboardData = dashRes.data
-                } else {
-                    this.dashboardData = null
-                }
-            } catch (err) {
                 this.error = err
                 console.error('Error cargando usuario/dashboard', err)
             } finally {
@@ -133,7 +115,7 @@ export default {
             </div>
 
             <div v-else>
-                <component :is="roleComponent" v-bind="componentProps" />
+                <component :is="roleComponent" v-bind="componentProps" @reload="init" />
             </div>
         </div>
     </div>

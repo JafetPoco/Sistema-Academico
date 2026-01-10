@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
-import Navbar from '../components/navbar.vue'
+import Navbar from '../components/Navbar.vue'
 
 const publicAnnouncements = ref([])
 const privateAnnouncements = ref([])
