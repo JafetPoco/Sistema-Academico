@@ -1,5 +1,5 @@
 # Use a lightweight Python base image
-FROM python:3.13-slim as python-base
+FROM python:3.13-slim AS python-base
 
 # Prevent Python from buffering stdout/stderr
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -11,9 +11,9 @@ WORKDIR /app
 # System deps (gcc for building some wheels if needed)
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
     build-essential \
-    sqlite3 \
-    libsqlite3-dev \
     curl \
+    libsqlite3-dev \
+    sqlite3 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first to leverage Docker layer caching
