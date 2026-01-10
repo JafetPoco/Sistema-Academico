@@ -299,6 +299,86 @@ paths:
                       professor_id: 2
         '403':
           description: Forbidden; only professors can access.
+  /reporte/formulario:
+    get:
+      summary: Get professor courses for report (professor)
+      description: Returns all courses assigned to the authenticated professor for report generation.
+      tags: [Reports]
+      responses:
+        '200':
+          description: Professor courses list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  courses:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Course'
+                required: [success, courses]
+              examples:
+                demo:
+                  summary: Sample courses for report
+                  value:
+                    success: true
+                    courses:
+                      - id: 1
+                        name: "Matemáticas"
+                        professor_id: 2
+                      - id: 3
+                        name: "Física"
+                        professor_id: 2
+        '400':
+          description: Invalid session or user not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: Forbidden; only professors can access.
+  /reporte/curso:
+    get:
+      summary: Get course grades report (professor)
+      description: Returns all grades for a specific course, including student names and scores.
+      tags: [Reports]
+      parameters:
+        - name: course_id
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: ID of the course for which to generate the report
+      responses:
+        '200':
+          description: Course grades report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseReportResponse'
+              examples:
+                demo:
+                  summary: Sample course report
+                  value:
+                    success: true
+                    course_name: "Matemáticas"
+                    grades:
+                      - student_name: "Juan Perez"
+                        student_id: 5
+                        score: 8.5
+                      - student_name: "María García"
+                        student_id: 6
+                        score: 9.2
+        '400':
+          description: Invalid course_id or report generation failed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: Forbidden; only professors can access.
 components:
   schemas:
     Announcement:
@@ -432,3 +512,35 @@ components:
           type: integer
           description: ID of the professor to assign.
       required: [name, professor_id]
+    StudentGrade:
+      type: object
+      properties:
+        student_name:
+          type: string
+          description: Full name of the student.
+        student_id:
+          type: integer
+          description: ID of the student.
+        score:
+          type: number
+          format: float
+          description: Grade/score for the course.
+      required: [student_name, student_id, score]
+    CourseReportResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the request was successful.
+        course_name:
+          type: string
+          description: Name of the course.
+        grades:
+          type: array
+          description: List of student grades for the course.
+          items:
+            $ref: '#/components/schemas/StudentGrade'
+        message:
+          type: string
+          description: Error message if success is false.
+      required: [success]
