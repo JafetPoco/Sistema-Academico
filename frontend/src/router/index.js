@@ -11,6 +11,7 @@ const routes = [
   { path: '/register', name: 'Register', component: () => import('../views/RegisterView.vue') },
   { path: '/admin/users', name: 'AdminUsers', component: AdminUsersView },
   { path: '/grades/parent', name: 'ParentGrades', component: ParentGradesView },
+  { path: '/admin/courses', name: 'AdminCourses', component: AdminCoursesView },
 ]
 
 const router = createRouter({

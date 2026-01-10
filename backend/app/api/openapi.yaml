@@ -176,6 +176,129 @@ paths:
                   value:
                     success: false
                     message: "Acceso no autorizado."
+  /admin/courses:
+    get:
+      summary: List all courses (admin)
+      description: Returns the full list of courses for admin management.
+      tags: [Courses]
+      responses:
+        '200':
+          description: Courses list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Course'
+                  count:
+                    type: integer
+                required: [data, count]
+              examples:
+                demo:
+                  summary: Sample courses list
+                  value:
+                    data:
+                      - id: 1
+                        name: "Matemáticas"
+                        professor_id: 2
+                      - id: 2
+                        name: "Lenguaje"
+                        professor_id: 3
+                    count: 2
+        '403':
+          description: Forbidden; only admins can access this endpoint.
+    post:
+      summary: Create course (admin)
+      description: Creates a new course and assigns a professor.
+      tags: [Courses]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseCreateRequest'
+      responses:
+        '201':
+          description: Course created successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '400':
+          description: Validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: Forbidden; only admins can create courses.
+  /admin/professors:
+    get:
+      summary: List professors (admin)
+      description: Returns all professors for course assignment.
+      tags: [Courses]
+      responses:
+        '200':
+          description: Professors list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                required: [data]
+              examples:
+                demo:
+                  summary: Sample professors list
+                  value:
+                    data:
+                      - id: 2
+                        full_name: "Luis Torres"
+                        email: "luis@example.com"
+                        role: 1
+                      - id: 3
+                        full_name: "María García"
+                        email: "maria@example.com"
+                        role: 1
+        '403':
+          description: Forbidden; only admins can access.
+  /cursos:
+    get:
+      summary: Get professor courses
+      description: Returns courses assigned to the authenticated professor.
+      tags: [Courses]
+      responses:
+        '200':
+          description: Professor courses list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Course'
+              examples:
+                demo:
+                  summary: Sample professor courses
+                  value:
+                    - id: 1
+                      name: "Matemáticas"
+                      professor_id: 2
+                    - id: 3
+                      name: "Física"
+                      professor_id: 2
+        '403':
+          description: Forbidden; only professors can access.
 components:
   schemas:
     Announcement:
@@ -286,3 +409,26 @@ components:
           type: string
           description: Error message if success is false.
       required: [success]
+    Course:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Course identifier.
+        name:
+          type: string
+          description: Course name.
+        professor_id:
+          type: integer
+          description: ID of the assigned professor.
+      required: [id, name, professor_id]
+    CourseCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Course name.
+        professor_id:
+          type: integer
+          description: ID of the professor to assign.
+      required: [name, professor_id]
