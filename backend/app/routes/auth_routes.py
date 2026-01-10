@@ -1,7 +1,9 @@
 from flask import Blueprint, request, session, jsonify
-from app.domain.services.auth_service import AuthService
+from app.application.auth_controller import AuthController
 
 auth_bp = Blueprint('api_auth', __name__, url_prefix='/api/auth')
+
+controller = AuthController()
 
 
 @auth_bp.route('/login', methods=['POST'])
@@ -13,26 +15,19 @@ def api_login():
     email = data.get('email')
     password = data.get('password')
 
-    auth_service = AuthService()
-    result = auth_service.authenticate(email, password)
+    payload = controller.login(email, password)
+    if payload.get('status') == 'error':
+        return jsonify(payload), 401
 
-    if result.get('status') == 'error':
-        return jsonify({'status': 'error', 'message': result.get('message')}), 401
+    user = payload.get('user') or {}
+    session['user_id'] = user.get('user_id')
+    session['email'] = user.get('email')
+    session['name'] = user.get('full_name')
+    session['role'] = user.get('role')
+    session['role_display'] = payload.get('role_display')
+    session['permissions'] = payload.get('permissions', [])
 
-    user = result.get('user')
-    session['user_id'] = user.user_id
-    session['email'] = user.email
-    session['name'] = user.full_name
-    session['role'] = user.role
-    session['role_display'] = auth_service.get_role_display_name(user.role)
-    session['permissions'] = auth_service.get_user_permissions(user.role)
-
-    return jsonify({'status': 'success', 'user': {
-        'user_id': user.user_id,
-        'email': user.email,
-        'full_name': user.full_name,
-        'role': user.role
-    }})
+    return jsonify(payload)
 
 
 @auth_bp.route('/register', methods=['POST'])
@@ -46,25 +41,16 @@ def api_register():
     password = data.get('password')
     confirm = data.get('confirm_password') or data.get('confirm')
 
-    auth_service = AuthService()
-    valid = auth_service.validate_registration_data(full_name, email, password, confirm)
-    if valid.get('status') == 'error':
-        return jsonify({'status': 'error', 'message': valid.get('message')}), 400
+    payload = controller.register(full_name, email, password, confirm)
+    if payload.get('status') == 'error':
+        return jsonify(payload), 400
 
-    result = auth_service.register_user(full_name, email, password)
-    if result.get('status') == 'error':
-        return jsonify({'status': 'error', 'message': result.get('message')}), 400
-
-    user = result.get('user')
-    return jsonify({'status': 'success', 'user': {
-        'user_id': user.user_id,
-        'email': user.email,
-        'full_name': user.full_name,
-        'role': user.role
-    }})
+    return jsonify(payload)
 
 
 @auth_bp.route('/logout', methods=['POST'])
 def api_logout():
     session.clear()
-    return jsonify({'status': 'success'})
+    return jsonify(controller.logout())
+
+
