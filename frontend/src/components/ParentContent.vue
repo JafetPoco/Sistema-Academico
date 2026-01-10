@@ -19,7 +19,7 @@
                         <div class="mb-3"><i class="bi bi-person-fill fs-1 text-info"></i></div>
                         <h5 class="card-title" id="card-title-perfil">Mi Perfil</h5>
                         <p class="card-text">Actualiza tu información personal</p>
-                        <router-link to="/user/profile" class="btn btn-info" id="btn-perfil">Ver Perfil</router-link>
+                        <router-link to="/profile" class="btn btn-info" id="btn-perfil">Ver Perfil</router-link>
                     </div>
                 </div>
             </div>
@@ -113,14 +113,12 @@ export default {
     props: {
         dashboardData: { type: Object, default: null }
     },
-    computed: {
-        hasData () { return this.dashboardData !== null }
-    },
     methods: {
         reloadPage () { this.$emit('reload') },
         showChildrenModal () { alert('Funcionalidad de modal detallado por implementar') }
     },
     computed: {
+        hasData () { return this.dashboardData !== null },
         totalSummaryList () {
             const s = this.dashboardData && this.dashboardData.total_summary ? this.dashboardData.total_summary : {}
             return [
