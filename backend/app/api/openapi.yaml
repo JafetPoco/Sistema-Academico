@@ -130,6 +130,52 @@ paths:
                 $ref: '#/components/schemas/ErrorMessage'
         '403':
           description: Forbidden; only admins with an active session can create announcements.
+  /parent_query_grades:
+    get:
+      summary: Get children grades (parent)
+      description: |
+        Returns the grades of all children for a parent user. Only authenticated users with
+        parent role (role 3) can access this endpoint.
+      tags: [Grades]
+      responses:
+        '200':
+          description: Children grades retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParentGradesResponse'
+              examples:
+                demo:
+                  summary: Sample parent grades payload
+                  value:
+                    success: true
+                    data:
+                      - id: 5
+                        name: "Juan Perez"
+                        grades:
+                          - course_name: "Matemáticas"
+                            score: 8.5
+                          - course_name: "Lenguaje"
+                            score: 9.2
+                      - id: 6
+                        name: "María Perez"
+                        grades:
+                          - course_name: "Matemáticas"
+                            score: 7.8
+                          - course_name: "Ciencias"
+                            score: 8.9
+        '403':
+          description: Forbidden; only parents with an active session can access this endpoint.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+              examples:
+                unauthorized:
+                  summary: Unauthorized access
+                  value:
+                    success: false
+                    message: "Acceso no autorizado."
 components:
   schemas:
     Announcement:
@@ -197,5 +243,46 @@ components:
           format: email
         role:
           type: integer
-          description: Role code (0=student, 1=professor, 2=admin, etc).
+          description: Role code (0=student, 1=professor, 2=admin, 3=parent, etc).
       required: [id, full_name, email, role]
+    Grade:
+      type: object
+      properties:
+        course_name:
+          type: string
+          description: Name of the course.
+        score:
+          type: number
+          format: float
+          description: Student grade/score for the course.
+      required: [course_name, score]
+    StudentWithGrades:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Student user id.
+        name:
+          type: string
+          description: Student full name.
+        grades:
+          type: array
+          description: List of grades for the student.
+          items:
+            $ref: '#/components/schemas/Grade'
+      required: [id, name, grades]
+    ParentGradesResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the request was successful.
+        data:
+          type: array
+          description: List of children with their grades.
+          items:
+            $ref: '#/components/schemas/StudentWithGrades'
+        message:
+          type: string
+          description: Error message if success is false.
+      required: [success]

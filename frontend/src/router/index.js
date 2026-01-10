@@ -9,7 +9,8 @@ const routes = [
   { path: '/profile', name: 'Profile', component: () => import('../views/ProfileView.vue') },
   { path: '/dashboard', name: 'Dashboard', component: () => import('../views/DashboardView.vue') },
   { path: '/register', name: 'Register', component: () => import('../views/RegisterView.vue') },
-  { path: '/admin/users', name: 'AdminUsers', component: AdminUsersView }
+  { path: '/admin/users', name: 'AdminUsers', component: AdminUsersView },
+  { path: '/grades/parent', name: 'ParentGrades', component: ParentGradesView },
 ]
 
 const router = createRouter({
