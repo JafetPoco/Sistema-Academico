@@ -6,7 +6,7 @@ export default {
       cards: [
         { id: 'card-usuarios', title: 'Usuarios', text: 'Ve todos los usuarios registrados en el sistema', to: '/admin/users', btnText: 'Ver Usuarios', btnClass: 'btn-success', icon: 'bi bi-people-fill', iconColor: 'text-success' },
         { id: 'card-anuncios', title: 'Anuncios', text: 'Ve los anuncios publicados en el sistema', to: '/anuncios', btnText: 'Ver Anuncios', btnClass: 'btn-primary', icon: 'bi bi-megaphone-fill', iconColor: 'text-primary' },
-        { id: 'card-perfil', title: 'Mi Perfil', text: 'Actualiza tu información personal', to: '/user/profile', btnText: 'Ver Perfil', btnClass: 'btn-info', icon: 'bi bi-person-fill', iconColor: 'text-info' },
+        { id: 'card-perfil', title: 'Mi Perfil', text: 'Actualiza tu información personal', to: '/profile', btnText: 'Ver Perfil', btnClass: 'btn-info', icon: 'bi bi-person-fill', iconColor: 'text-info' },
         { id: 'card-cursos', title: 'Cursos', text: 'Crea un nuevo curso en el sistema', to: '/admin/courses', btnText: 'Crear Curso', btnClass: 'btn-info', icon: 'bi bi-book-half', iconColor: 'text-info' }
       ]
     }
