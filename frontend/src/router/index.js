@@ -4,6 +4,7 @@ import AdminUsersView from '../views/AdminUsersView.vue'
 import ParentGradesView from '../views/ParentGradesView.vue'
 import AdminCoursesView from '../views/AdminCoursesView.vue'
 import ReportsView from '../views/ReportesView.vue'
+import QualificationFormView from '../views/QualificationFormView.vue'
 
 const routes = [
   { path: '/', name: 'Home', component: MainView },
@@ -16,6 +17,8 @@ const routes = [
   { path: '/grades/parent', name: 'ParentGrades', component: ParentGradesView },
   { path: '/admin/courses', name: 'AdminCourses', component: AdminCoursesView },
   { path: '/reportes', name: 'Reportes', component: ReportsView },
+  { path: '/calificaciones/form', name: 'QualificationForm', component: QualificationFormView },
+  { path: '/courses/professor', name: 'ProfessorCourses', component: AdminCoursesView },
 ]
 
 const router = createRouter({
