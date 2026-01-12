@@ -1,23 +1,27 @@
+import os
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:5173")
+
+
 def login(driver):
-    driver.get("http://localhost:5000/auth/login")
+    driver.get(f"{BASE_URL}/login")
     driver.find_element(By.ID, "email").send_keys("parent@test.com")
     driver.find_element(By.ID, "password").send_keys("parent")
-    driver.find_element(By.XPATH, "//button[contains(text(),'Iniciar sesión')]").click()
+    driver.find_element(By.ID, "btn-login").click()
 
-    WebDriverWait(driver, 10).until(
-        EC.url_contains("http://localhost:5000/dashboard/")
-    )
+    WebDriverWait(driver, 10).until(EC.url_contains("/dashboard"))
 
 def test_load_view(driver):
     login(driver)
 
-    # Verificar título
-    title = driver.title
-    assert "Padre" in title
+    header = WebDriverWait(driver, 10).until(
+        EC.visibility_of_element_located((By.CSS_SELECTOR, "h1.welcome-title"))
+    )
+    assert "padre" in header.text.lower() or "madre" in header.text.lower()
 
     card_calificaciones = WebDriverWait(driver, 10).until(
         EC.visibility_of_element_located((By.ID, "card-calificaciones"))
@@ -42,6 +46,6 @@ def test_dashboard_routes(driver):
     assert btn_calificaciones.is_displayed()
     assert btn_perfil.is_displayed()
 
-    assert btn_calificaciones.get_attribute("href") == "http://localhost:5000/parent_query_grades"
-    assert btn_perfil.get_attribute("href") == "http://localhost:5000/user/profile"
+    assert btn_calificaciones.get_attribute("href").endswith("/grades/parent")
+    assert btn_perfil.get_attribute("href").endswith("/user/profile")
 

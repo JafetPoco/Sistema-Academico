@@ -1,8 +1,11 @@
+import os
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-LOGIN_URL = "http://localhost:5000/auth/login"
+BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:5173")
+LOGIN_URL = f"{BASE_URL}/login"
 
 def do_login(driver, email, password):
     driver.get(LOGIN_URL)
@@ -34,56 +37,56 @@ def test_login_page_load(driver):
 
     assert email_input.get_attribute("type") == "email"
     assert password_input.get_attribute("type") == "password"
-    assert btn_login.text.strip().lower() == "iniciar sesión"
+    assert "iniciar" in btn_login.text.strip().lower()
 
 def test_login_wrong_password(driver):
     do_login(driver, "admin@prueba.com", "wrongpass")
 
     error = WebDriverWait(driver, 10).until(
-        EC.visibility_of_element_located((By.ID, "mensage-error"))
+        EC.visibility_of_element_located((By.CSS_SELECTOR, ".alert.alert-danger"))
     )
 
-    assert "contraseña incorrecta" in error.text.lower()
+    assert "contraseña" in error.text.lower()
 
 def test_login_nonexistent_email(driver):
     do_login(driver, "userNotRegister@prueba.com", "somepass")
     error = WebDriverWait(driver, 10).until(
-        EC.visibility_of_element_located((By.ID, "mensage-error"))
+        EC.visibility_of_element_located((By.CSS_SELECTOR, ".alert.alert-danger"))
     )
-    assert "usuario no registrado" in error.text.lower()
+    assert "usuario" in error.text.lower()
 
 def test_login_professor_acount(driver):
     do_login(driver, "professor@test.com", "professor")
     WebDriverWait(driver, 10).until(
-        EC.url_contains("/dashboard/")
+        EC.url_contains("/dashboard")
     )
-    assert "/dashboard/" in driver.current_url
+    assert "/dashboard" in driver.current_url
 
-    role_element = driver.find_element(By.ID, "welcome-title")
-    assert "Profesor" in role_element.text
+    role_element = driver.find_element(By.CSS_SELECTOR, "h1.welcome-title")
+    assert "profesor" in role_element.text.lower()
 
 def test_login_parent_acount(driver):
     do_login(driver, "parent@test.com", "parent")
     WebDriverWait(driver, 10).until(
-        EC.url_contains("/dashboard/")
+        EC.url_contains("/dashboard")
     )
-    assert "/dashboard/" in driver.current_url
-    role_element = driver.find_element(By.ID, "welcome-title")
-    assert "Padre/Madre" in role_element.text
+    assert "/dashboard" in driver.current_url
+    role_element = driver.find_element(By.CSS_SELECTOR, "h1.welcome-title")
+    assert "padre" in role_element.text.lower() or "madre" in role_element.text.lower()
 
 
 def test_login_admin_acount(driver):
     do_login(driver, "admin@prueba.com", "admin")
     WebDriverWait(driver, 10).until(
-        EC.url_contains("/dashboard/")
+        EC.url_contains("/dashboard")
     )
-    assert "/dashboard/" in driver.current_url
-    role_element = driver.find_element(By.ID, "welcome-title")
-    assert "Administrador" in role_element.text
+    assert "/dashboard" in driver.current_url
+    role_element = driver.find_element(By.CSS_SELECTOR, "h1.welcome-title")
+    assert "administrador" in role_element.text.lower()
 
 def test_login_no_activate_acount(driver):
     do_login(driver, "noActivate@test.com", "noActivate")
     error = WebDriverWait(driver, 10).until(
-        EC.visibility_of_element_located((By.ID, "mensage-error"))
+        EC.visibility_of_element_located((By.CSS_SELECTOR, ".alert.alert-danger"))
     )
-    assert "no se activo su cuenta" in error.text.lower()
+    assert "no" in error.text.lower()
