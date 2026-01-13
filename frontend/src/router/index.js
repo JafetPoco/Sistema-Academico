@@ -6,6 +6,7 @@ import AdminCoursesView from '../views/AdminCoursesView.vue'
 import ReportsView from '../views/ReportesView.vue'
 import QualificationFormView from '../views/QualificationFormView.vue'
 import ProfessorCoursesView from '../views/ProfessorCoursesView.vue'
+import AdminAnnouncementFormView from '../views/AdminAnnouncementFormView.vue'
 
 const routes = [
   { path: '/', name: 'Home', component: MainView },
@@ -20,6 +21,7 @@ const routes = [
   { path: '/reportes', name: 'Reportes', component: ReportsView },
   { path: '/calificaciones/form', name: 'QualificationForm', component: QualificationFormView },
   { path: '/courses/professor', name: 'ProfessorCoursesView', component: ProfessorCoursesView },
+  { path: '/anuncios/create', name: 'CreateAnnouncement', component: AdminAnnouncementFormView },
 ]
 
 const router = createRouter({
