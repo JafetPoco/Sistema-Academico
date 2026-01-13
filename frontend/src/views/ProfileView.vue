@@ -23,11 +23,11 @@
               <div class="row g-3">
                 <div class="col-md-6">
                   <label class="form-label fw-bold">ID de Usuario</label>
-                  <p class="form-control-plaintext">{{ profile.id }}</p>
+                  <p class="form-control-plaintext">{{ profile.user_id }}</p>
                 </div>
                 <div class="col-md-6">
                   <label class="form-label fw-bold">Nombre Completo</label>
-                  <p class="form-control-plaintext">{{ profile.full_name }}</p>
+                  <p class="form-control-plaintext">{{ profile.name }}</p>
                 </div>
                 <div class="col-md-6">
                   <label class="form-label fw-bold">Correo Electrónico</label>
