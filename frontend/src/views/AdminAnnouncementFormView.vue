@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import Navbar from '../components/Navbar.vue'
 import announcementService from '../services/announcementService'
 
@@ -9,6 +9,28 @@ const isPrivate = ref(false)
 const courseId = ref('')
 const loading = ref(false)
 const message = ref(null)
+const courses = ref([])
+
+const loadingCourses = ref(false)
+const menssageCourses = ref(null)
+
+async function loadCourses() {
+  loadingCourses.value = true
+  menssageCourses.value = null
+  try {
+    const res = await announcementService.fetchCourses()
+    if (Array.isArray(res)) courses.value = res
+    else if (Array.isArray(res.data)) courses.value = res.data
+    else if (Array.isArray(res.cursos)) courses.value = res.cursos
+    else courses.value = []
+  } catch (err) {
+    menssageCourses.value = { type: 'error', text: err.message || 'Error cargando cursos.' }
+  } finally {
+    loadingCourses.value = false
+  }
+}
+
+onMounted(loadCourses)
 
 async function submit() {
   loading.value = true
@@ -36,6 +58,7 @@ async function submit() {
     loading.value = false
   }
 }
+
 </script>
 
 <template>
@@ -64,7 +87,16 @@ async function submit() {
         </div>
         <div class="mb-3">
           <label class="form-label">ID de curso (opcional)</label>
-          <input v-model="courseId" type="number" class="form-control" placeholder="Ej: 10" />
+          <div class="d-flex align-items-center">
+            <select v-model="courseId" class="form-select me-2" :disabled="loadingCourses || menssageCourses">
+              <option value="">-- Selecciona un curso --</option>
+              <option v-for="curso in courses" :key="curso.id" :value="curso.id">
+                {{ curso.name }} (ID: {{ curso.id }})
+              </option>
+            </select>
+            <div v-if="loadingCourses" class="spinner-border spinner-border-sm text-secondary" role="status" aria-hidden="true"></div>
+          </div>
+          <div v-if="menssageCourses" class="text-danger mt-2"><i class="bi bi-exclamation-octagon-fill"></i> {{ menssageCourses.text || menssageCourses }}</div>
         </div>
         <div class="text-end">
           <button class="btn btn-primary" :disabled="loading" @click="submit">
