@@ -29,7 +29,7 @@
         <div v-if="hasData && dashboardData.status === 'success'" class="mt-5">
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">📊 Resumen General - Todos los Hijos</h5>
+                    <h5 class="mb-0"><i class="bi bi-bar-chart-fill"></i> Resumen General - Todos los Hijos</h5>
                     <small class="text-success"><i class="fas fa-users"></i> {{ dashboardData.total_children }} hijo(s)</small>
                 </div>
                 <div class="card-body">
@@ -45,7 +45,7 @@
             </div>
 
             <div class="card mb-4">
-                <div class="card-header"><h5 class="mb-0">👶 Progreso Individual por Hijo</h5></div>
+                <div class="card-header"><h5 class="mb-0"><i class="bi bi-people"></i> Progreso Individual por Hijo</h5></div>
                 <div class="card-body">
                     <div v-for="child in dashboardData.children_stats" :key="child.child_id" class="child-stats-card mb-4 p-3 border rounded bg-light">
                         <div class="row align-items-center mb-3">
