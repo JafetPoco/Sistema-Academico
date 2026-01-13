@@ -51,7 +51,7 @@ pipeline {
     }
 
     /* ------------------------------------------------------------------ */
-    stage('Backend: Install Dependencies') {
+    stage('Backend: Install') {
       agent {
         docker {
           image 'python:3.12-slim'
@@ -72,7 +72,7 @@ pipeline {
     }
 
     /* ------------------------------------------------------------------ */
-    stage('Frontend: Install & Build') {
+    stage('Frontend: Install') {
       agent { docker { image 'node:24' } }
       steps {
         sh '''
@@ -83,7 +83,7 @@ pipeline {
     }
 
     /* ------------------------------------------------------------------ */
-    stage('Build Python') {
+    stage('Build Backend') {
       when {
         expression { return params.RELEASE_BUILD }
       }
@@ -170,19 +170,17 @@ pipeline {
       }
     }
 
-    /* ------------------------------------------------------------------ */
     stage('Start Frontend Preview') {
-      agent none
       steps {
         sh '''
-          docker rm -f ${FRONTEND_PREVIEW_CONTAINER} >/dev/null 2>&1 || true
+          export BUILD_ID=dontKillMe 
+          docker rm -f ${FRONTEND_PREVIEW_CONTAINER} || true
           docker run -d --name ${FRONTEND_PREVIEW_CONTAINER} \
             -p ${FRONTEND_PREVIEW_PORT}:${FRONTEND_PREVIEW_PORT} \
             -v ${WORKSPACE}/${FRONTEND_DIR}:/app \
             -w /app \
             node:24 \
             sh -c "npm run preview"
-            sleep 10
         '''
       }
     }
@@ -196,6 +194,15 @@ pipeline {
         }
       }
       steps {
+        echo "Deplying frontend"
+        sh '''
+          sudo apt-get install nodejs npm -y
+          cd ${FRONTEND_DIR}
+          npm install
+          npm run build
+          npm run preview &
+        '''
+        sleep 5
         echo "Loading test data"
         sh '''
           cd ${BACKEND_DIR}
@@ -216,67 +223,83 @@ pipeline {
         }
       }
     }
-
     /* ------------------------------------------------------------------ */
+
     stage('SonarQube Static Analysis') {
-      agent { docker { image 'sonarsource/sonar-scanner-cli' } }
       steps {
-        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-          sh '''
-            sonar-scanner \
-              -Dsonar.projectKey=SisAcad\
-              -Dsonar.projectName="Sistema Académico" \
-              -Dsonar.sources=backend/app,frontend/src,frontend/package.json,Dockerfile,templates,static \
-              -Dsonar.tests=tests \
-              -Dsonar.python.coverage.reportPaths=backend/reports/coverage/coverage.xml,backend/reports/junit.xml \
-              -Dsonar.host.url=${SONAR_HOST_URL} \
-              -Dsonar.login=$SONAR_TOKEN
-          '''
+        script {
+          sh 'curl -f ${SONAR_HOST_URL}/api/system/status || (echo "SonarQube server not running" && exit 1)'
+
+          withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+            sh '''
+              docker run --rm \
+                --name sonar-scanner \
+                --network=host \
+                -v "$PWD":/usr/src \
+                -w /usr/src \
+                sonarsource/sonar-scanner-cli:latest \
+                sonar-scanner \
+                  -Dsonar.projectKey=sys:acad \
+                  -Dsonar.projectName="Sistema Académico" \
+                  -Dsonar.sources=backend/app,frontend/src,frontend/package.json,Dockerfile,templates,static \
+                  -Dsonar.python.version=3.12 \
+                  -Dsonar.python.coverage.reportPaths=reports/coverage/coverage.xml \
+                  -Dsonar.python.xunit.reportPath=reports/tests/junit.xml \
+                  -Dsonar.host.url=${SONAR_HOST_URL} \
+                  -Dsonar.token=$SONAR_TOKEN
+
+            '''
+          }
         }
       }
     }
 
-    /* ------------------------------------------------------------------ */
     stage('Performance Tests - JMeter') {
-      agent { docker { image 'justb4/jmeter' } }
       steps {
         sh '''
-          mkdir -p ${PERFORMANCE_REPORT_DIR}
-          jmeter \
+          mkdir -p ${PERFORMANCE_REPORT_DIR}/html_report
+          
+          docker run --rm \
+            -u $(id -u):$(id -g) \
+            -v ${WORKSPACE}:/backend \
+            -w /backend \
+            justb4/jmeter \
             -n \
-            -t tests/performance/TestRendimiento.jmx \
-            -l ${PERFORMANCE_REPORT_DIR}/performance_results.jtl \
+            -t backend/tests/performance/TestRendimiento.jmx \
+            -l backend/reports/performance/performance_results.jtl \
             -e \
             -o ${PERFORMANCE_REPORT_DIR}/html_report
         '''
       }
       post {
         always {
-          archiveArtifacts artifacts: "${PERFORMANCE_REPORT_DIR}/**", fingerprint: true
+          archiveArtifacts artifacts: "${PERFORMANCE_REPORT_DIR}/**", allowEmptyArchive: true
         }
       }
     }
-
     /* ------------------------------------------------------------------ */
     stage('OWASP ZAP Security Scan') {
-      agent {
-        docker {
-          image 'zaproxy/zap-stable'
-          args '--network host'
-        }
-      }
       steps {
         sh '''
+          # Crear el directorio para el reporte
           mkdir -p ${SECURITY_REPORT_DIR}
-          zap-full-scan.py \
-            -t ${ZAP_TARGET} \
-            -r ${SECURITY_REPORT_DIR}/zap_report.html \
-            -I
+          
+          # Ejecutar el escaneo de seguridad
+          # -u 0: Ejecutamos como root temporalmente para que ZAP pueda escribir en el volumen montado
+          docker run --rm \
+            --network host \
+            -u 0 \
+            -v ${WORKSPACE}/${SECURITY_REPORT_DIR}:/zap/wrk/:rw \
+            zaproxy/zap-stable \
+            zap-full-scan.py \
+              -t ${ZAP_TARGET} \
+              -r zap_report.html \
+              -I
         '''
       }
       post {
         always {
-          archiveArtifacts artifacts: "${SECURITY_REPORT_DIR}/zap_report.html", fingerprint: true
+          archiveArtifacts artifacts: "${SECURITY_REPORT_DIR}/zap_report.html", allowEmptyArchive: true
         }
       }
     }
