@@ -26,7 +26,40 @@ async function updateUserRole(userId, role) {
   }
 }
 
+async function fetchCourses() {
+  try {
+    const res = await axios.get(`${API_BASE}/admin/courses`, { withCredentials: true })
+    return res.data
+  } catch (err) {
+    const msg = err.response?.data?.message || err.response?.data || err.message || 'Error de conexión'
+    throw new Error(msg)
+  }
+}
+
+async function fetchProfessors() {
+  try {
+    const res = await axios.get(`${API_BASE}/admin/courses/create`, { withCredentials: true })
+    return res.data
+  } catch (err) {
+    const msg = err.response?.data?.message || err.response?.data || err.message || 'Error de conexión'
+    throw new Error(msg)
+  }
+}
+
+async function createCourse(courseData) {
+  try {
+    const res = await axios.post(`${API_BASE}/admin/courses/create`, courseData, { withCredentials: true })
+    return res.data
+  } catch (err) {
+    const msg = err.response?.data?.message || err.response?.data || err.message || 'Error de conexión'
+    throw new Error(msg)
+  }
+}
+
 export default {
   fetchUsers,
   updateUserRole,
+  fetchCourses,
+  fetchProfessors,
+  createCourse,
 }

@@ -1,11 +1,17 @@
-# Use a lightweight Python base image
-FROM python:3.13-slim as python-base
+# frontend build stage
+FROM node:24 as frontend-builder
+WORKDIR /workspace/frontend
+COPY frontend/package*.json ./
+RUN npm i --no-cache
+COPY frontend/ ./
+RUN npm run build
 
-# Prevent Python from buffering stdout/stderr
+# python runtime stage
+FROM python:3.13-slim
+
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-# Set workdir
 WORKDIR /app
 
 # System deps (gcc for building some wheels if needed)
@@ -17,21 +23,25 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first to leverage Docker layer caching
-COPY requirements.txt ./
+COPY backend/requirements.txt ./requirements.txt
 RUN pip install --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt \
     && pip install --no-cache-dir gunicorn
 
-# Copy project files
-COPY app/ ./app/
-COPY run.py ./
-COPY templates/ ./templates/
-COPY static/ ./static/
-COPY scripts/ ./scripts/
+# Copy backend source
+COPY backend/app/ ./app/
+COPY backend/run.py ./
+COPY backend/scripts/ ./scripts/
+
+# Copy frontend artifacts from build stage
+COPY --from=frontend-builder /workspace/frontend/dist ./frontend/dist
 
 # Configure Flask application factory target
 ENV APP_FACTORY="app:create_app()" \
-    PYTHONPATH=/app
+    PYTHONPATH=backend/app
 
 # Expose port for the web server
+EXPOSE 4173
 EXPOSE 5000
+
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "run:app"]

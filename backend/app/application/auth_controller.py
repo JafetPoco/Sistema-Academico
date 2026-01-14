@@ -1,62 +1,58 @@
 from app.domain.services.auth_service import AuthService
-from flask import render_template, redirect, url_for, session
 
-auth_service = AuthService()
-REGISTER_TEMPLATE = 'auth/register.html'
-LOGIN_TEMPLATE = 'auth/login.html'
 
-def _set_user_session(user):
-    session["user_id"] = user.user_id
-    session["email"] = user.email
-    session["name"] = user.full_name
-    session["role"] = user.role
-    session["role_display"] = auth_service.get_role_display_name(user.role)
-    session["permissions"] = auth_service.get_user_permissions(user.role)
+class AuthController:
+    def __init__(self):
+        self.service = AuthService()
 
-def do_login(email, password):
-    result = auth_service.authenticate(email, password)
+    def login(self, email: str, password: str) -> dict:
+        if not email or not password:
+            return {
+                "status": "error",
+                "message": "Email y contraseña son obligatorios.",
+            }
 
-    if result["status"] == "error":
-        return render_template(LOGIN_TEMPLATE, error=result["message"])
+        result = self.service.authenticate(email, password)
+        if result.get("status") == "error":
+            return {"status": "error", "message": result.get("message")}
 
-    _set_user_session(result["user"])
-    return redirect(url_for("dashboard.main"))
+        user = result.get("user")
+        return {
+            "status": "success",
+            "user": {
+                "user_id": user.user_id,
+                "email": user.email,
+                "full_name": user.full_name,
+                "role": user.role,
+            },
+            "role_display": self.service.get_role_display_name(user.role),
+            "permissions": self.service.get_user_permissions(user.role),
+        }
 
-def _set_user_session(user):
-    session["user_id"] = user.user_id
-    session["email"] = user.email
-    session["name"] = user.full_name
-    session["role"] = user.role
-    session["role_display"] = auth_service.get_role_display_name(user.role)
-    session["permissions"] = auth_service.get_user_permissions(user.role)
+    def register(self, full_name: str, email: str, password: str, confirm: str) -> dict:
+        if not all([full_name, email, password, confirm]):
+            return {"status": "error", "message": "Todos los campos son obligatorios."}
 
-def do_login(email, password):
-    result = auth_service.authenticate(email, password)
+        validation = self.service.validate_registration_data(full_name, email, password, confirm)
+        if validation.get("status") == "error":
+            return {"status": "error", "message": validation.get("message")}
 
-    if result["status"] == "error":
-        return render_template(LOGIN_TEMPLATE, error=result["message"])
+        result = self.service.register_user(full_name, email, password)
+        if result.get("status") == "error":
+            return {"status": "error", "message": result.get("message")}
 
-    _set_user_session(result["user"])
-    return redirect(url_for("dashboard.main"))
+        user = result.get("user")
+        return {
+            "status": "success",
+            "message": "Usuario registrado satisfactoriamente. Su cuenta quedará pendiente de activación.",
+            "user": {
+                "user_id": user.user_id,
+                "email": user.email,
+                "full_name": user.full_name,
+                "role": user.role,
+            },
+        }
 
-def do_register(full_name, email, password, confirm):
-    is_valid = auth_service.validate_registration_data(full_name, email, password, confirm)
-    if is_valid["status"] == "error":
-        return render_template(REGISTER_TEMPLATE, message={"type": "error", "text": is_valid["message"]})
-
-    result = auth_service.register_user(full_name, email, password)
-    if result["status"] == "error":
-        return render_template(REGISTER_TEMPLATE, message={"type": "error", "text": result["message"]})
-
-    return render_template(REGISTER_TEMPLATE, message={"type": "success", "text": "Se registraron sus datos correctamente. Su cuenta se activará en un plazo máximo de 5 días."})
-
-def show_register():
-    return render_template(REGISTER_TEMPLATE)
-
-def show_login():
-    return render_template(LOGIN_TEMPLATE)
-
-def do_logout():
-    session.clear()
-    return redirect(url_for("auth.login_get"))
+    def logout(self) -> dict:
+        return {"status": "success", "message": "Sesión cerrada."}
 

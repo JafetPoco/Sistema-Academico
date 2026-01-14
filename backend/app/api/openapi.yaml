@@ -3,12 +3,131 @@ info:
   title: Sistema Academico API
   version: 0.1.0
   description: |
-    API contract for the academic system, starting with admin user management.
-    Expand with auth, courses, grades, and reports as endpoints are migrated from server-rendered views.
+    API contract for the academic system, covering authentication, admin management,
+    announcements, courses, grades, qualifications, and reports.
 servers:
   - url: http://localhost:5000
     description: Local server
 paths:
+  /api/auth/login:
+    post:
+      summary: Login
+      description: Authenticate a user and start a session (cookies are used for state).
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthLoginRequest'
+            examples:
+              demo:
+                value:
+                  email: "ana@example.com"
+                  password: "secreta"
+      responses:
+        '200':
+          description: Login successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthLoginResponse'
+              examples:
+                success:
+                  value:
+                    status: "success"
+                    user:
+                      user_id: 2
+                      email: "ana@example.com"
+                      full_name: "Ana Perez"
+                      role: 1
+                    role_display: "Profesor"
+                    permissions: ["courses:view", "grades:edit"]
+        '400':
+          description: Validation error or missing JSON body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                missingFields:
+                  value:
+                    status: "error"
+                    message: "Email y contraseña son obligatorios."
+        '401':
+          description: Invalid credentials.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                invalid:
+                  value:
+                    status: "error"
+                    message: "Credenciales inválidas."
+  /api/auth/register:
+    post:
+      summary: Register user
+      description: Create a new user account; activation flow happens separately.
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRegisterRequest'
+            examples:
+              demo:
+                value:
+                  full_name: "Juan Lopez"
+                  email: "juan@example.com"
+                  password: "ClaveSegura123"
+                  confirm_password: "ClaveSegura123"
+      responses:
+        '200':
+          description: User registered.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthRegisterResponse'
+              examples:
+                success:
+                  value:
+                    status: "success"
+                    message: "Usuario registrado satisfactoriamente. Su cuenta quedará pendiente de activación."
+                    user:
+                      user_id: 10
+                      email: "juan@example.com"
+                      full_name: "Juan Lopez"
+                      role: 0
+        '400':
+          description: Validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthErrorResponse'
+              examples:
+                duplicate:
+                  value:
+                    status: "error"
+                    message: "El correo ya está registrado."
+  /api/auth/logout:
+    post:
+      summary: Logout
+      description: Clear the current session.
+      tags: [Auth]
+      responses:
+        '200':
+          description: Session cleared.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutResponse'
+              examples:
+                demo:
+                  value:
+                    status: "success"
+                    message: "Sesión cerrada."
   /admin/users:
     get:
       summary: List users (admin)
@@ -46,10 +165,639 @@ paths:
                     count: 2
         '401':
           description: Unauthorized; authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
         '403':
           description: Forbidden; only admins can access this endpoint.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+  /admin/users/{user_id}:
+    post:
+      summary: Update user role (admin)
+      description: Update the role of a specific user.
+      tags: [Admin]
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRoleRequest'
+            examples:
+              demo:
+                value:
+                  role: 1
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRoleRequest'
+      responses:
+        '200':
+          description: Role updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateUserResponse'
+              examples:
+                success:
+                  value:
+                    success: true
+                    message: "Usuario actualizado correctamente."
+        '400':
+          description: Invalid role value.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateUserResponse'
+              examples:
+                invalidRole:
+                  value:
+                    success: false
+                    message: "Rol inválido."
+        '401':
+          description: Unauthorized; authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+        '403':
+          description: Forbidden; only admins can access.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+  /api/anuncios:
+    get:
+      summary: List announcements (public and private)
+      description: |
+        Returns public announcements for all users and private announcements when the
+        caller has an active session. Private announcements are filtered by the current
+        user stored in the session.
+      tags: [Announcements]
+      responses:
+        '200':
+          description: Announcements grouped by visibility.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  public_announcements:
+                    type: array
+                    description: Announcements visible to everyone.
+                    items:
+                      $ref: '#/components/schemas/Announcement'
+                  private_announcements:
+                    type: array
+                    description: Announcements visible only to the authenticated user.
+                    items:
+                      $ref: '#/components/schemas/Announcement'
+                  role:
+                    type: integer
+                    description: Role code from the current session (0 when unauthenticated).
+                required: [public_announcements, private_announcements, role]
+              examples:
+                demo:
+                  summary: Sample grouped announcements
+                  value:
+                    public_announcements:
+                      - announcement_id: 10
+                        title: "Bienvenida"
+                        content: "Inicio del semestre."
+                        is_private: false
+                        course_id: null
+                        user_id: 2
+                        created_at: "2024-08-01T10:00:00Z"
+                    private_announcements:
+                      - announcement_id: 11
+                        title: "Tarea 1"
+                        content: "Entrega en una semana."
+                        is_private: true
+                        course_id: 3
+                        user_id: 5
+                        created_at: "2024-08-02T12:00:00Z"
+                    role: 1
+  /api/anuncios/admin:
+    post:
+      summary: Create announcement (admin)
+      description: |
+        Creates a public or private announcement. Only admins (role 2) with an active
+        session can use this endpoint.
+      tags: [Announcements]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnnouncementCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AnnouncementCreateRequest'
+      responses:
+        '201':
+          description: Announcement created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnnouncementCreateResponse'
+        '400':
+          description: Validation error while creating announcement.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: Forbidden; only admins with an active session can create announcements.
+  /parent_query_grades:
+    get:
+      summary: Get children grades (parent)
+      description: |
+        Returns the grades of all children for a parent user. Only authenticated users with
+        parent role (role 3) can access this endpoint.
+      tags: [Grades]
+      responses:
+        '200':
+          description: Children grades retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParentGradesResponse'
+              examples:
+                demo:
+                  summary: Sample parent grades payload
+                  value:
+                    success: true
+                    data:
+                      - id: 5
+                        name: "Juan Perez"
+                        grades:
+                          - course_name: "Matemáticas"
+                            score: 8.5
+                          - course_name: "Lenguaje"
+                            score: 9.2
+                      - id: 6
+                        name: "María Perez"
+                        grades:
+                          - course_name: "Matemáticas"
+                            score: 7.8
+                          - course_name: "Ciencias"
+                            score: 8.9
+        '403':
+          description: Forbidden; only parents with an active session can access this endpoint.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+              examples:
+                unauthorized:
+                  summary: Unauthorized access
+                  value:
+                    success: false
+                    message: "Acceso no autorizado."
+  /admin/courses:
+    get:
+      summary: List all courses (admin)
+      description: Returns the full list of courses for admin management.
+      tags: [Courses]
+      responses:
+        '200':
+          description: Courses list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Course'
+                  count:
+                    type: integer
+                required: [data, count]
+              examples:
+                demo:
+                  summary: Sample courses list
+                  value:
+                    data:
+                      - id: 1
+                        name: "Matemáticas"
+                        professor_id: 2
+                      - id: 2
+                        name: "Lenguaje"
+                        professor_id: 3
+                    count: 2
+        '403':
+          description: Forbidden; only admins can access this endpoint.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+  /admin/courses/create:
+    get:
+      summary: List professors for course creation (admin)
+      description: Returns professors available to assign to a new course.
+      tags: [Courses]
+      responses:
+        '200':
+          description: Professors list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  count:
+                    type: integer
+                required: [data, count]
+        '403':
+          description: Forbidden; only admins can access this endpoint.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+    post:
+      summary: Create course (admin)
+      description: Creates a new course and assigns a professor.
+      tags: [Courses]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseCreateRequest'
+            examples:
+              demo:
+                summary: Sample payload
+                value:
+                  name: "Matemáticas"
+                  professor_id: 2
+      responses:
+        '201':
+          description: Course created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseCreateResponse'
+        '400':
+          description: Validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: Forbidden; only admins can create courses.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+  /cursos:
+    get:
+      summary: Get professor courses
+      description: Returns courses assigned to the authenticated professor with student counts and averages.
+      tags: [Courses]
+      responses:
+        '200':
+          description: Professor courses list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfessorCoursesResponse'
+              examples:
+                demo:
+                  summary: Sample professor courses
+                  value:
+                    success: true
+                    courses:
+                      - id: 1
+                        nombre: "Matemáticas"
+                        student_count: 25
+                        average_score: 8.7
+                      - id: 3
+                        nombre: "Física"
+                        student_count: 18
+                        average_score: 9.1
+        '403':
+          description: Forbidden; only professors can access.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+  /calificar:
+    get:
+      summary: Get courses to grade (professor)
+      description: Returns courses assigned to the authenticated professor for grading.
+      tags: [Qualifications]
+      responses:
+        '200':
+          description: Courses retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QualificationCoursesResponse'
+              examples:
+                demo:
+                  summary: Sample courses to grade
+                  value:
+                    success: true
+                    courses:
+                      - id: 1
+                        name: "Matemáticas"
+                        professor_id: 2
+                      - id: 3
+                        name: "Física"
+                        professor_id: 2
+        '403':
+          description: Forbidden; only professors can access.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+    post:
+      summary: Create qualification (professor)
+      description: Register a grade for a student in a course.
+      tags: [Qualifications]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QualificationCreateRequest'
+            examples:
+              demo:
+                summary: Sample grade payload
+                value:
+                  student_id: 15
+                  course_id: 3
+                  score: 18.5
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QualificationCreateRequest'
+      responses:
+        '201':
+          description: Grade registered.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QualificationCreateResponse'
+              examples:
+                created:
+                  value:
+                    message: "Calificación registrada exitosamente."
+        '400':
+          description: Validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QualificationErrorResponse'
+              examples:
+                invalid:
+                  value:
+                    error: "El campo 'score' debe ser un número válido."
+        '403':
+          description: Forbidden; the professor cannot access this course or is not authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+        '500':
+          description: Internal error while saving grade.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QualificationErrorResponse'
+  /api/students-by-course:
+    get:
+      summary: List students by course (professor)
+      description: Returns students enrolled in a course to facilitate grading.
+      tags: [Qualifications]
+      parameters:
+        - name: course_id
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: Course identifier
+      responses:
+        '200':
+          description: Students retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentsByCourseResponse'
+              examples:
+                demo:
+                  summary: Sample students for course
+                  value:
+                    students:
+                      - id: 21
+                        name: "Carlos Diaz"
+                      - id: 22
+                        name: "Lucia Vega"
+        '400':
+          description: Missing course_id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QualificationErrorResponse'
+        '403':
+          description: Forbidden; professor does not have access to this course.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+        '500':
+          description: Error while fetching students.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QualificationErrorResponse'
+  /reporte/formulario:
+    get:
+      summary: Get professor courses for report (professor)
+      description: Returns all courses assigned to the authenticated professor for report generation.
+      tags: [Reports]
+      responses:
+        '200':
+          description: Professor courses list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  courses:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Course'
+                required: [success, courses]
+              examples:
+                demo:
+                  summary: Sample courses for report
+                  value:
+                    success: true
+                    courses:
+                      - id: 1
+                        name: "Matemáticas"
+                        professor_id: 2
+                      - id: 3
+                        name: "Física"
+                        professor_id: 2
+        '400':
+          description: Invalid session or user not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: Forbidden; only professors can access.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+  /reporte/curso:
+    get:
+      summary: Get course grades report (professor)
+      description: Returns all grades for a specific course, including student names and scores.
+      tags: [Reports]
+      parameters:
+        - name: course_id
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: ID of the course for which to generate the report
+      responses:
+        '200':
+          description: Course grades report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseReportResponse'
+              examples:
+                demo:
+                  summary: Sample course report
+                  value:
+                    success: true
+                    course_name: "Matemáticas"
+                    grades:
+                      - student_name: "Juan Perez"
+                        student_id: 5
+                        score: 8.5
+                      - student_name: "María García"
+                        student_id: 6
+                        score: 9.2
+        '400':
+          description: Invalid course_id or report generation failed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: Forbidden; only professors can access.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+  /user/profile:
+    get:
+      summary: Get current user profile
+      description: Returns basic session data for the authenticated user.
+      tags: [Users]
+      responses:
+        '200':
+          description: Current user profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileResponse'
+              examples:
+                demo:
+                  summary: Sample session payload
+                  value:
+                    user_id: 2
+                    name: "Ana Perez"
+                    email: "ana@example.com"
+                    role: 1
+                    permissions: ["courses:view", "grades:edit"]
+        '401':
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
 components:
   schemas:
+    Announcement:
+      type: object
+      properties:
+        announcement_id:
+          type: integer
+        course_id:
+          type: integer
+          nullable: true
+        user_id:
+          type: integer
+          description: Creator user id.
+        title:
+          type: string
+        content:
+          type: string
+        is_private:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+      required: [announcement_id, user_id, title, content, is_private, created_at]
+    AnnouncementCreateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        is_private:
+          type: boolean
+          default: false
+        course_id:
+          type: integer
+          nullable: true
+      required: [title, content]
+    AnnouncementCreateResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        announcement:
+          $ref: '#/components/schemas/Announcement'
+      required: [success, message]
+    ErrorMessage:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required: [success, message]
+    UnauthorizedResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
     User:
       type: object
       properties:
@@ -62,5 +810,312 @@ components:
           format: email
         role:
           type: integer
-          description: Role code (0=student, 1=professor, 2=admin, etc).
+          description: Role code (0=student, 1=professor, 2=admin, 3=parent, etc).
       required: [id, full_name, email, role]
+    AuthUser:
+      type: object
+      properties:
+        user_id:
+          type: integer
+        email:
+          type: string
+          format: email
+        full_name:
+          type: string
+        role:
+          type: integer
+      required: [user_id, email, full_name, role]
+    AuthLoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required: [email, password]
+    AuthLoginResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [success]
+        user:
+          $ref: '#/components/schemas/AuthUser'
+        role_display:
+          type: string
+        permissions:
+          type: array
+          items:
+            type: string
+      required: [status, user]
+    AuthRegisterRequest:
+      type: object
+      properties:
+        full_name:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+        confirm_password:
+          type: string
+      required: [full_name, email, password, confirm_password]
+    AuthRegisterResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [success]
+        message:
+          type: string
+        user:
+          $ref: '#/components/schemas/AuthUser'
+      required: [status, message, user]
+    AuthErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [error]
+        message:
+          type: string
+      required: [status, message]
+    LogoutResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        message:
+          type: string
+      required: [status, message]
+    UpdateUserRoleRequest:
+      type: object
+      properties:
+        role:
+          type: integer
+          description: Role code to assign.
+      required: [role]
+    UpdateUserResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required: [success, message]
+    Grade:
+      type: object
+      properties:
+        course_name:
+          type: string
+          description: Name of the course.
+        score:
+          type: number
+          format: float
+          description: Student grade/score for the course.
+      required: [course_name, score]
+    StudentWithGrades:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Student user id.
+        name:
+          type: string
+          description: Student full name.
+        grades:
+          type: array
+          description: List of grades for the student.
+          items:
+            $ref: '#/components/schemas/Grade'
+      required: [id, name, grades]
+    ParentGradesResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the request was successful.
+        data:
+          type: array
+          description: List of children with their grades.
+          items:
+            $ref: '#/components/schemas/StudentWithGrades'
+        message:
+          type: string
+          description: Error message if success is false.
+      required: [success]
+    Course:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Course identifier.
+        name:
+          type: string
+          description: Course name.
+        professor_id:
+          type: integer
+          description: ID of the assigned professor.
+      required: [id, name, professor_id]
+    CourseCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Course name.
+        professor_id:
+          type: integer
+          description: ID of the professor to assign.
+      required: [name, professor_id]
+    CourseCreateResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        course:
+          $ref: '#/components/schemas/Course'
+      required: [success, message]
+    CourseMetrics:
+      type: object
+      properties:
+        id:
+          type: integer
+        nombre:
+          type: string
+          description: Course name (as returned by the dashboard query).
+        student_count:
+          type: integer
+        average_score:
+          type: number
+          format: float
+      required: [id, nombre, student_count, average_score]
+    ProfessorCoursesResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        courses:
+          type: array
+          items:
+            $ref: '#/components/schemas/CourseMetrics'
+        message:
+          type: string
+      required: [success, courses]
+    QualificationCoursesResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        courses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Course'
+        message:
+          type: string
+      required: [success, courses]
+    QualificationCreateRequest:
+      type: object
+      properties:
+        student_id:
+          type: integer
+        course_id:
+          type: integer
+        score:
+          type: number
+          format: float
+      required: [student_id, course_id, score]
+    QualificationCreateResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required: [message]
+    QualificationErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+    StudentBasic:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+      required: [id, name]
+    StudentsByCourseResponse:
+      type: object
+      properties:
+        students:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentBasic'
+        message:
+          type: string
+      required: [students]
+    ReportCoursesResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        courses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Course'
+        message:
+          type: string
+      required: [success, courses]
+    StudentGrade:
+      type: object
+      properties:
+        student_name:
+          type: string
+          description: Full name of the student.
+        student_id:
+          type: integer
+          description: ID of the student.
+        score:
+          type: number
+          format: float
+          description: Grade/score for the course.
+      required: [student_name, student_id, score]
+    CourseReportResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the request was successful.
+        course_name:
+          type: string
+          description: Name of the course.
+        grades:
+          type: array
+          description: List of student grades for the course.
+          items:
+            $ref: '#/components/schemas/StudentGrade'
+        message:
+          type: string
+          description: Error message if success is false.
+      required: [success]
+    UserProfileResponse:
+      type: object
+      properties:
+        user_id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: integer
+        permissions:
+          type: array
+          items:
+            type: string
+      required: [user_id, name, email, role, permissions]

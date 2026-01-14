@@ -1,17 +1,16 @@
 import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 from werkzeug.security import generate_password_hash
 from app.domain.services.auth_service import AuthService
 from app.domain.entities import User
 
 @pytest.fixture
-def auth_service():
-    return AuthService()
+def mock_user_repo():
+    return Mock()
 
 @pytest.fixture
-def mock_user_repo():
-    with patch('app.domain.services.auth_service.UserRepository') as mock:
-        yield mock.return_value
+def auth_service(mock_user_repo):
+    return AuthService(user_repo=mock_user_repo)
 
 @pytest.fixture
 def sample_user():

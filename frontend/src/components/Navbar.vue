@@ -1,13 +1,15 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+
+const API_BASE = (import.meta.env.VITE_API_BASE || 'http://localhost:5000').replace(/\/+$/, '')
 
 const isAuthenticated = ref(false)
 const user = ref(null)
 
 async function checkAuth() {
     try {
-        const res = await fetch('/api/auth/me', { credentials: 'include' })
+        const res = await fetch(`${API_BASE}/api/auth/me`, { credentials: 'include' })
         if (res.ok) {
             user.value = await res.json()
             isAuthenticated.value = true
@@ -26,15 +28,21 @@ function navigate(href) {
 
 async function logout() {
     try {
-        await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+        await fetch(`${API_BASE}/api/auth/logout`, { method: 'POST', credentials: 'include' })
     } catch (e) {
         // ignore
     }
+    window.dispatchEvent(new Event('auth-changed'))
     window.location.href = '/'
 }
 
 onMounted(() => {
     checkAuth()
+    window.addEventListener('auth-changed', checkAuth)
+})
+
+onUnmounted(() => {
+    window.removeEventListener('auth-changed', checkAuth)
 })
 </script>
 

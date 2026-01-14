@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
-import Navbar from '../components/navbar.vue'
+import Navbar from '../components/Navbar.vue'
 
 const publicAnnouncements = ref([])
 const privateAnnouncements = ref([])
@@ -31,7 +31,7 @@ onMounted(loadAnnouncements)
 <template>
   <Navbar />
 
-  <div class="container pt-5">
+  <div class="container pt-6">
     <div v-if="loading" class="text-center py-4">Cargando...</div>
 
     <div v-else>
@@ -40,7 +40,7 @@ onMounted(loadAnnouncements)
           <i class="bi bi-megaphone-fill text-primary me-2"></i>
           Anuncios
         </h2>
-        <router-link v-if="role === 2" to="/anuncios/admin" class="btn btn-outline-primary">
+        <router-link v-if="role === 2" to="/anuncios/create" class="btn btn-outline-primary">
           <i class="bi bi-plus-circle me-1"></i> Crear nuevo anuncio
         </router-link>
       </div>
