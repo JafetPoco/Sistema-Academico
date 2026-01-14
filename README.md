@@ -216,6 +216,38 @@ Instalar dependencias:
 ```bash
 pip install -r requirements.txt
 ```
+# Gestión de Configuración
+## Gestión de cambios.
+Se utilizo Github Projects para manejar el desarrollo de issues y las prácticas asociadas al proyecto. Seguimos un modelo de branching **Gitflow**.
+
+![management](docs/CI/issues_manage.png)
+## Pipeline CI/CD
+
+![pipeline](docs/CI/pipeline.png)
+### 1. Construcción Automática.
+El proyecto compila el frontend en Vue, mientras el backend se hace con python. La gestión de las  dependencias del proyecto está a cargo de npm (frontend) y poetry (backend). Finalmente, el proyecto se empaqueta usando docker.
+
+![build](docs/CI/build.png)
+### 2. Análisis estático
+
+![static](docs/CI/sonarqube.png)
+
+### 3. Pruebas unitarias
+
+![static](docs/CI/sonarqube.png)
+
+### 4. Pruebas funcionales
+
+![funcional](docs/CI/funcional.png)
+
+### 5. Pruebas de rendimiento
+
+![perfomance](docs/CI/perfomance.png)
+### 6. Pruebas de seguridad
+
+![safety](docs/CI/owasp.png)
+
+
 
 # Practicas de desarrollo de software
 
