@@ -408,9 +408,28 @@ El proyecto compila el frontend en Vue, mientras el backend se hace con python. 
 
 ![static](docs/CI/unit_test.png)
 
+```python
+def test_get_users(admin_service):
+    service, user_repo, _ = admin_service
+    user_repo.list_all.return_value = ["user"]
+
+    assert service.get_users() == ["user"]
+```
+
 #### 4. Pruebas funcionales
 
 ![funcional](docs/CI/funcional.png)
+
+Codigo
+```python
+def login(driver):
+    driver.get(f"{BASE_URL}/login")
+    driver.find_element(By.ID, "email").send_keys("admin@prueba.com")
+    driver.find_element(By.ID, "password").send_keys("admin")
+    driver.find_element(By.ID, "btn-login").click()
+
+    WebDriverWait(driver, 10).until(EC.url_contains("/dashboard"))
+```
 
 #### 5. Pruebas de rendimiento
 
@@ -418,6 +437,25 @@ El proyecto compila el frontend en Vue, mientras el backend se hace con python. 
 #### 6. Pruebas de seguridad
 
 ![safety](docs/CI/owasp.png)
+
+```
+PASS: SOAP Action Spoofing [90026]
+......
+PASS: Remote OS Command Injection (Time Based) [90037]
+PASS: NoSQL Injection - MongoDB (Time Based) [90039]
+WARN-NEW: X-Content-Type-Options Header Missing [10021] x 2 
+	http://localhost:5000/ (200 OK)
+	http://localhost:5000 (200 OK)
+WARN-NEW: Content Security Policy (CSP) Header Not Set [10038] x 2 
+	http://localhost:5000/robots.txt (404 NOT FOUND)
+	http://localhost:5000/sitemap.xml (404 NOT FOUND)
+WARN-NEW: Permissions Policy Header Not Set [10063] x 2 
+	http://localhost:5000/sitemap.xml (404 NOT FOUND)
+	http://localhost:5000/robots.txt (404 NOT FOUND)
+WARN-NEW: HTTP Only Site [10106] x 1 
+	http://localhost:5000/ (0)
+FAIL-NEW: 0	FAIL-INPROG: 0	WARN-NEW: 4	WARN-INPROG: 0	INFO: 0	IGNORE: 0	PASS: 137
+```
 
 # Practicas de desarrollo de software
 
