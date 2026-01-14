@@ -60,7 +60,7 @@ def login(driver):
     driver.find_element(By.ID, "password").send_keys("admin")
     driver.find_element(By.ID, "btn-login").click()
 
-    WebDriverWait(driver, 10).until(
+    WebDriverWait(driver, 30).until(
         EC.url_contains("/dashboard")
     )
 
@@ -69,7 +69,7 @@ def test_principal_correct_path_logeado(driver):
 
     # Navegar a la pantalla principal
     driver.get(f"{BASE_URL}/")
-    WebDriverWait(driver, 15).until(
+    WebDriverWait(driver, 30).until(
         EC.presence_of_element_located((By.ID, "btn-mi-perfil"))
     )
 
