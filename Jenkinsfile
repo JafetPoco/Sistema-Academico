@@ -288,7 +288,7 @@ pipeline {
         '''
       }
       post {
-        success {
+        always {
           archiveArtifacts artifacts: "${SECURITY_REPORT_DIR}/zap_report.html", allowEmptyArchive: true
         }
       }

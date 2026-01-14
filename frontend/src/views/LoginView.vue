@@ -9,6 +9,8 @@ const error = ref('')
 const loading = ref(false)
 const router = useRouter()
 
+const emitAuthChange = () => window.dispatchEvent(new Event('auth-changed'))
+
 async function submit() {
   error.value = ''
   loading.value = true
@@ -21,6 +23,7 @@ async function submit() {
       if (userPayload) localStorage.setItem('user', JSON.stringify(userPayload))
       // also accept role directly in response
       if (!userPayload && data.role) localStorage.setItem('user', JSON.stringify({ role: data.role, role_name: data.role_name, full_name: data.full_name }))
+      emitAuthChange()
       router.push('/dashboard')
       return
     }
