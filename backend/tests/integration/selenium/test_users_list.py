@@ -4,7 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 
-BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:5173")
+BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:4173")
 
 
 def go_to_users(driver):
@@ -35,7 +35,9 @@ def test_cambiar_rol(driver):
     )
 
     first_user_id = fila.find_elements(By.TAG_NAME, "td")[0].text.strip()
-    select_element = fila.find_element(By.TAG_NAME, "select")
+    select_element = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, "table tbody tr td select"))
+    )
     select = Select(select_element)
 
     select.select_by_value("2")
@@ -46,8 +48,9 @@ def test_cambiar_rol(driver):
     WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.CSS_SELECTOR, "table.table")))
 
     # Rebuscar la fila del mismo usuario para confirmar el rol
-    fila_actualizada = driver.find_element(
-        By.XPATH, f"//table/tbody/tr[td[1][normalize-space()='{first_user_id}']]"
+    row_xpath = f"//table/tbody/tr[td[1][normalize-space()='{first_user_id}'] and descendant::select]"
+    fila_actualizada = WebDriverWait(driver, 15).until(
+        EC.presence_of_element_located((By.XPATH, row_xpath))
     )
     select_actualizado = Select(
         fila_actualizada.find_element(By.TAG_NAME, "select")

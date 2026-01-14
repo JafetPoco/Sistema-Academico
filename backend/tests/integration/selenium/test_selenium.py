@@ -1,7 +1,6 @@
 import os
 
-BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:5173")
-
+BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:4173")
 
 def test_homepage(driver):
     driver.get(BASE_URL)
