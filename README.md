@@ -243,7 +243,7 @@ El proyecto compila el frontend en Vue, mientras el backend se hace con python. 
 
 #### 3. Pruebas unitarias
 
-![static](docs/CI/sonarqube.png)
+![static](docs/CI/unit_test.png)
 
 #### 4. Pruebas funcionales
 
