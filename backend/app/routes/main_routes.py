@@ -1,4 +1,5 @@
-from flask import Blueprint
+from flask import Blueprint, render_template, session
+from sqlalchemy import literal_column, select
 from app.infrastructure.database import db
 
 main_bp = Blueprint('main', __name__)
@@ -14,7 +15,7 @@ def index():
 def health():
     try:
         # Simple DB connectivity check
-        db.session.execute('SELECT 1')
+        db.session.execute(select(literal_column('1')))
         return {'status': 'ok'}, 200
     except Exception as exc:  # pragma: no cover - defensive path
         return {'status': 'error', 'message': str(exc)}, 500
