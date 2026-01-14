@@ -86,7 +86,6 @@ def test_principal_correct_path_logeado(driver):
     assert _normalized_path(btn_anuncios.get_attribute("href")) == "/anuncios"
     assert _normalized_path(btn_dashboard.get_attribute("href")) == "/dashboard"
     assert _normalized_path(btn_mi_perfil.get_attribute("href")) in ("/profile", "/user/profile")
-    # logout button triggers fetch + redirect, href may be javascript:void(0) so just ensure clickable
     assert btn_logout.is_enabled()
     
     #Cerrar sesión
