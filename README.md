@@ -14,10 +14,10 @@
       - [Principios aplicados](#principios-aplicados)
     - [Principales Entidades](#principales-entidades)
     - [Módulos](#módulos)
-
   - [DTOs](#dtos)
   - [Requisitos](#requisitos)
--[Módulos y principales servicios REST](#módulos-y-principales-servicios-rest)
+
+- [Módulos y principales servicios REST](#módulos-y-principales-servicios-rest)
 -[Gestion de Configuracion](#gestión-de-configuración)
   - [Gestion de cambios](#gestión-de-cambios)
   - [Pipeline CI/CD](#pipeline-cicd)
