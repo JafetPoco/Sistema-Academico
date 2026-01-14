@@ -23,8 +23,8 @@ paths:
             examples:
               demo:
                 value:
-                  email: "ana@example.com"
-                  password: "secreta"
+                  email: "admin@prueba.com"
+                  password: "admin"
       responses:
         '200':
           description: Login successful.
@@ -37,12 +37,12 @@ paths:
                   value:
                     status: "success"
                     user:
-                      user_id: 2
-                      email: "ana@example.com"
-                      full_name: "Ana Perez"
-                      role: 1
-                    role_display: "Profesor"
-                    permissions: ["courses:view", "grades:edit"]
+                      user_id: 1
+                      email: "admin@prueba.com"
+                      full_name: "Administrador Selenium"
+                      role: 2
+                    role_display: "Administrador"
+                    permissions: ["users:manage", "announcements:publish"]
         '400':
           description: Validation error or missing JSON body.
           content:
@@ -79,10 +79,10 @@ paths:
             examples:
               demo:
                 value:
-                  full_name: "Juan Lopez"
-                  email: "juan@example.com"
-                  password: "ClaveSegura123"
-                  confirm_password: "ClaveSegura123"
+                  full_name: "Estudiante de Prueba"
+                  email: "student@test.com"
+                  password: "student"
+                  confirm_password: "student"
       responses:
         '200':
           description: User registered.
@@ -96,9 +96,9 @@ paths:
                     status: "success"
                     message: "Usuario registrado satisfactoriamente. Su cuenta quedará pendiente de activación."
                     user:
-                      user_id: 10
-                      email: "juan@example.com"
-                      full_name: "Juan Lopez"
+                      user_id: 4
+                      email: "student@test.com"
+                      full_name: "Estudiante de Prueba"
                       role: 0
         '400':
           description: Validation error.
@@ -155,14 +155,22 @@ paths:
                   value:
                     data:
                       - id: 1
-                        full_name: "Ana Perez"
-                        email: "ana@example.com"
+                        full_name: "Administrador Selenium"
+                        email: "admin@prueba.com"
                         role: 2
                       - id: 2
-                        full_name: "Luis Torres"
-                        email: "luis@example.com"
+                        full_name: "Profesor Selenium"
+                        email: "professor@test.com"
                         role: 1
-                    count: 2
+                      - id: 3
+                        full_name: "Padre Selenium"
+                        email: "parent@test.com"
+                        role: 3
+                      - id: 4
+                        full_name: "Estudiante de Prueba"
+                        email: "student@test.com"
+                        role: 0
+                    count: 4
         '401':
           description: Unauthorized; authentication required.
           content:
@@ -269,20 +277,20 @@ paths:
                   summary: Sample grouped announcements
                   value:
                     public_announcements:
-                      - announcement_id: 10
-                        title: "Bienvenida"
-                        content: "Inicio del semestre."
+                      - announcement_id: 101
+                        title: "Bienvenida a Curso Selenium"
+                        content: "Administrador Selenium abrió el periodo del Curso Selenium."
                         is_private: false
-                        course_id: null
-                        user_id: 2
+                        course_id: 1
+                        user_id: 1
                         created_at: "2024-08-01T10:00:00Z"
                     private_announcements:
-                      - announcement_id: 11
-                        title: "Tarea 1"
-                        content: "Entrega en una semana."
+                      - announcement_id: 102
+                        title: "Recordatorio de calificación"
+                        content: "Profesor Selenium publicará la nota de Curso Selenium."
                         is_private: true
-                        course_id: 3
-                        user_id: 5
+                        course_id: 1
+                        user_id: 2
                         created_at: "2024-08-02T12:00:00Z"
                     role: 1
   /api/anuncios/admin:
@@ -336,20 +344,11 @@ paths:
                   value:
                     success: true
                     data:
-                      - id: 5
-                        name: "Juan Perez"
+                      - id: 4
+                        name: "Estudiante de Prueba"
                         grades:
-                          - course_name: "Matemáticas"
-                            score: 8.5
-                          - course_name: "Lenguaje"
-                            score: 9.2
-                      - id: 6
-                        name: "María Perez"
-                        grades:
-                          - course_name: "Matemáticas"
-                            score: 7.8
-                          - course_name: "Ciencias"
-                            score: 8.9
+                          - course_name: "Curso Selenium"
+                            score: 16
         '403':
           description: Forbidden; only parents with an active session can access this endpoint.
           content:
@@ -388,12 +387,9 @@ paths:
                   value:
                     data:
                       - id: 1
-                        name: "Matemáticas"
+                        name: "Curso Selenium"
                         professor_id: 2
-                      - id: 2
-                        name: "Lenguaje"
-                        professor_id: 3
-                    count: 2
+                    count: 1
         '403':
           description: Forbidden; only admins can access this endpoint.
           content:
@@ -440,7 +436,7 @@ paths:
               demo:
                 summary: Sample payload
                 value:
-                  name: "Matemáticas"
+                  name: "Curso Selenium"
                   professor_id: 2
       responses:
         '201':
@@ -480,13 +476,9 @@ paths:
                     success: true
                     courses:
                       - id: 1
-                        nombre: "Matemáticas"
-                        student_count: 25
-                        average_score: 8.7
-                      - id: 3
-                        nombre: "Física"
-                        student_count: 18
-                        average_score: 9.1
+                        nombre: "Curso Selenium"
+                        student_count: 1
+                        average_score: 16
         '403':
           description: Forbidden; only professors can access.
           content:
@@ -512,10 +504,7 @@ paths:
                     success: true
                     courses:
                       - id: 1
-                        name: "Matemáticas"
-                        professor_id: 2
-                      - id: 3
-                        name: "Física"
+                        name: "Curso Selenium"
                         professor_id: 2
         '403':
           description: Forbidden; only professors can access.
@@ -537,9 +526,9 @@ paths:
               demo:
                 summary: Sample grade payload
                 value:
-                  student_id: 15
-                  course_id: 3
-                  score: 18.5
+                  student_id: 4
+                  course_id: 1
+                  score: 16
           application/x-www-form-urlencoded:
             schema:
               $ref: '#/components/schemas/QualificationCreateRequest'
@@ -600,10 +589,8 @@ paths:
                   summary: Sample students for course
                   value:
                     students:
-                      - id: 21
-                        name: "Carlos Diaz"
-                      - id: 22
-                        name: "Lucia Vega"
+                      - id: 4
+                        name: "Estudiante de Prueba"
         '400':
           description: Missing course_id.
           content:
@@ -649,10 +636,7 @@ paths:
                     success: true
                     courses:
                       - id: 1
-                        name: "Matemáticas"
-                        professor_id: 2
-                      - id: 3
-                        name: "Física"
+                        name: "Curso Selenium"
                         professor_id: 2
         '400':
           description: Invalid session or user not found.
@@ -690,14 +674,11 @@ paths:
                   summary: Sample course report
                   value:
                     success: true
-                    course_name: "Matemáticas"
+                    course_name: "Curso Selenium"
                     grades:
-                      - student_name: "Juan Perez"
-                        student_id: 5
-                        score: 8.5
-                      - student_name: "María García"
-                        student_id: 6
-                        score: 9.2
+                      - student_name: "Estudiante de Prueba"
+                        student_id: 4
+                        score: 16
         '400':
           description: Invalid course_id or report generation failed.
           content:
@@ -727,8 +708,8 @@ paths:
                   summary: Sample session payload
                   value:
                     user_id: 2
-                    name: "Ana Perez"
-                    email: "ana@example.com"
+                    name: "Profesor Selenium"
+                    email: "professor@test.com"
                     role: 1
                     permissions: ["courses:view", "grades:edit"]
         '401':
