@@ -16,6 +16,15 @@
     - [Módulos](#módulos)
   - [DTOs](#dtos)
   - [Requisitos](#requisitos)
+-[Gestion de Configuracion](#gestión-de-configuración)
+  - [Gestion de cambios](#gestión-de-cambios)
+  - [Pipeline CI/CD](#pipeline-cicd)
+    - [1. Construccion Automatica](#1-construcción-automática)
+    - [2. Analisis Estatico](#2-análisis-estático)
+    - [3. Pruebas Unitarias](#3-pruebas-unitarias)
+    - [4. Pruebas Funcionales](#4-pruebas-funcionales)
+    - [5. Pruebasd de rendimiento](#5-pruebas-de-rendimiento)
+    - [6. Pruebas de Seguridad](#6-pruebas-de-seguridad)
 - [Practicas de desarrollo de software](#practicas-de-desarrollo-de-software)
   - [Reporte SonarLint](#reporte-sonarlint)
     - [1. Literales de Cadena Duplicadas](#1-literales-de-cadena-duplicadas)
@@ -216,38 +225,36 @@ Instalar dependencias:
 ```bash
 pip install -r requirements.txt
 ```
-# Gestión de Configuración
-## Gestión de cambios.
+## Gestión de Configuración
+### Gestión de cambios.
 Se utilizo Github Projects para manejar el desarrollo de issues y las prácticas asociadas al proyecto. Seguimos un modelo de branching **Gitflow**.
 
 ![management](docs/CI/issues_manage.png)
-## Pipeline CI/CD
+### Pipeline CI/CD
 
 ![pipeline](docs/CI/pipeline.png)
-### 1. Construcción Automática.
+#### 1. Construcción Automática.
 El proyecto compila el frontend en Vue, mientras el backend se hace con python. La gestión de las  dependencias del proyecto está a cargo de npm (frontend) y poetry (backend). Finalmente, el proyecto se empaqueta usando docker.
 
 ![build](docs/CI/build.png)
-### 2. Análisis estático
+#### 2. Análisis estático
 
 ![static](docs/CI/sonarqube.png)
 
-### 3. Pruebas unitarias
+#### 3. Pruebas unitarias
 
 ![static](docs/CI/sonarqube.png)
 
-### 4. Pruebas funcionales
+#### 4. Pruebas funcionales
 
 ![funcional](docs/CI/funcional.png)
 
-### 5. Pruebas de rendimiento
+#### 5. Pruebas de rendimiento
 
 ![perfomance](docs/CI/perfomance.png)
-### 6. Pruebas de seguridad
+#### 6. Pruebas de seguridad
 
 ![safety](docs/CI/owasp.png)
-
-
 
 # Practicas de desarrollo de software
 
