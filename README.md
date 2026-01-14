@@ -14,19 +14,26 @@
       - [Principios aplicados](#principios-aplicados)
     - [Principales Entidades](#principales-entidades)
     - [Módulos](#módulos)
+    - [Módulos y principales servicios REST](#módulos-y-principales-servicios-rest)
+      - [Auth (Autenticación)](#auth-autenticación)
+      - [Admin (Administración)](#admin-administración)
+      - [Announcements (Anuncios)](#announcements-anuncios)
+      - [Grades (Notas - Vista Padres)](#grades-notas---vista-padres)
+      - [Courses (Cursos)](#courses-cursos)
+      - [Qualifications (Calificaciones)](#qualifications-calificaciones)
+      - [Reports (Reportes)](#reports-reportes)
+      - [Users (Usuarios)](#users-usuarios)
   - [DTOs](#dtos)
   - [Requisitos](#requisitos)
-
-- [Módulos y principales servicios REST](#módulos-y-principales-servicios-rest)
-- [Gestion de Configuracion](#gestión-de-configuración)
-  - [Gestion de cambios](#gestión-de-cambios)
-  - [Pipeline CI/CD](#pipeline-cicd)
-    - [1. Construccion Automatica](#1-construcción-automática)
-    - [2. Analisis Estatico](#2-análisis-estático)
-    - [3. Pruebas Unitarias](#3-pruebas-unitarias)
-    - [4. Pruebas Funcionales](#4-pruebas-funcionales)
-    - [5. Pruebasd de rendimiento](#5-pruebas-de-rendimiento)
-    - [6. Pruebas de Seguridad](#6-pruebas-de-seguridad)
+  - [Gestión de Configuración](#gestión-de-configuración)
+    - [Gestión de cambios.](#gestión-de-cambios)
+    - [Pipeline CI/CD](#pipeline-cicd)
+      - [1. Construcción Automática.](#1-construcción-automática)
+      - [2. Análisis estático](#2-análisis-estático)
+      - [3. Pruebas unitarias](#3-pruebas-unitarias)
+      - [4. Pruebas funcionales](#4-pruebas-funcionales)
+      - [5. Pruebas de rendimiento](#5-pruebas-de-rendimiento)
+      - [6. Pruebas de seguridad](#6-pruebas-de-seguridad)
 - [Practicas de desarrollo de software](#practicas-de-desarrollo-de-software)
   - [Reporte SonarLint](#reporte-sonarlint)
     - [1. Literales de Cadena Duplicadas](#1-literales-de-cadena-duplicadas)
@@ -357,10 +364,30 @@ class UserRepository(BaseRepository):
 - dotenv
 - Base de datos relacional MySQL
 
-Instalar dependencias:
+Instalar dependencias de backend:
 ```bash
-pip install -r requirements.txt
+cd backend
+pip install poetry
+poetry lock
+poetry install
 ```
+Instalar dependencias de frontend:
+```bash
+cd frontend
+npm ci
+```
+
+Para ejecutar la aplicación localmente:
+```bash
+cd backend
+python run.py &
+cd -
+cd frontend
+npm run build
+npm run preview & 
+```
+Se puede acceder a la aplicación en `http://localhost:4173`
+
 ## Gestión de Configuración
 ### Gestión de cambios.
 Se utilizo Github Projects para manejar el desarrollo de issues y las prácticas asociadas al proyecto. Seguimos un modelo de branching **Gitflow**.
