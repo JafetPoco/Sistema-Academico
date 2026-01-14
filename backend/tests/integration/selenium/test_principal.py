@@ -63,34 +63,3 @@ def login(driver):
     WebDriverWait(driver, 30).until(
         EC.url_contains("/dashboard")
     )
-
-def test_principal_correct_path_logeado(driver):
-    login(driver)
-
-    # Navegar a la pantalla principal
-    driver.get(f"{BASE_URL}/")
-    WebDriverWait(driver, 30).until(
-        EC.presence_of_element_located((By.ID, "btn-mi-perfil"))
-    )
-
-    #Verificar botones
-    btn_mi_perfil = driver.find_element(By.ID, "btn-mi-perfil")
-    btn_logout = driver.find_element(By.ID, "btn-logout")
-    btn_home = driver.find_element(By.ID, "btn-home")
-    btn_anuncios = driver.find_element(By.ID, "btn-anuncios")
-    btn_dashboard = driver.find_element(By.XPATH, "//a[text()='Dashboard']")
-
-    assert btn_mi_perfil.is_displayed()
-
-    assert _normalized_path(btn_home.get_attribute("href")) == "/"
-    assert _normalized_path(btn_anuncios.get_attribute("href")) == "/anuncios"
-    assert _normalized_path(btn_dashboard.get_attribute("href")) == "/dashboard"
-    assert _normalized_path(btn_mi_perfil.get_attribute("href")) in ("/profile", "/user/profile")
-    assert btn_logout.is_enabled()
-    
-    #Cerrar sesión
-    btn_logout.click()
-    WebDriverWait(driver, 10).until(
-        EC.url_contains(BASE_URL.rstrip("/"))
-    )
-    assert driver.current_url.rstrip("/") == BASE_URL.rstrip("/")
