@@ -24,7 +24,7 @@ def create_app():
     )
     app.config.from_object(Config)
     # Enable CORS with credentials for SPA integration. Adjust origins for production.
-    CORS(app, supports_credentials=True, origins=["http://localhost:5173"]) 
+    CORS(app, supports_credentials=True, origins=["http://localhost:5173", "http://localhost:4173"]) 
 
     init_db(app)
     create_tables(app)

@@ -21,6 +21,7 @@ pipeline {
     APP_CONTAINER = "sistema-academico-app"
     FRONTEND_PREVIEW_CONTAINER = "frontend-preview"
     FRONTEND_PREVIEW_PORT = "4173"
+    FRONTEND_BASE_URL = "http://localhost:${FRONTEND_PREVIEW_PORT}"
 
     SELENIUM_REMOTE_URL = "http://localhost:4444/wd/hub"
     SELENIUM_CONTAINER_NAME = "selenium-chrome"
@@ -32,7 +33,6 @@ pipeline {
 
     /* ------------------------------------------------------------------ */
     stage('Checkout') {
-      agent any
       steps {
         checkout scm
       }
@@ -77,7 +77,9 @@ pipeline {
       steps {
         sh '''
           cd ${FRONTEND_DIR}
-          npm i --no-cache
+          mkdir -p ${WORKSPACE}/.npm-cache
+          export npm_config_cache=${WORKSPACE}/.npm-cache
+          npm install --no-audit --no-fund
         '''
       }
     }
@@ -112,9 +114,15 @@ pipeline {
         }
       }
     }
+    /* ------------------------------------------------------------------ */
 
     stage('Build Frontend') {
-      agent { docker { image 'node:24' } }
+      agent { 
+        docker { 
+          image 'node:24'
+          args '-u root'
+        } 
+      }
       steps {
         sh '''
           cd ${FRONTEND_DIR}
@@ -130,27 +138,9 @@ pipeline {
     }
     /* ------------------------------------------------------------------ */
     stage('Build Docker Image') {
+      agent any
       steps {
         sh 'docker build -t ${DOCKER_IMAGE} -f Dockerfile .'
-      }
-    }
-
-    /* ------------------------------------------------------------------ */
-    stage('Deploy Backend') {
-      steps {
-        sh 'docker rm -f ${APP_CONTAINER} || true'
-        sh '''
-          docker run --rm \
-            ${DOCKER_IMAGE} \
-            ls app
-        '''
-        sh '''
-          docker run -d --name ${APP_CONTAINER} -p 5000:5000 \
-            --env-file .env.example \
-            ${DOCKER_IMAGE} \
-            gunicorn --bind 0.0.0.0:5000 run:app
-        '''
-        sleep 5
       }
     }
 
@@ -159,28 +149,14 @@ pipeline {
       steps {
         sh '''
           docker rm -f ${SELENIUM_CONTAINER_NAME} || true
-          docker run -d --name ${SELENIUM_CONTAINER_NAME} -p 4444:4444 selenium/standalone-chrome:latest
+          docker run -d --name ${SELENIUM_CONTAINER_NAME} --network host selenium/standalone-chrome:latest
           for i in {1..20}; do
             if curl -fs ${SELENIUM_REMOTE_URL}/status >/dev/null 2>&1; then
+              echo "Selenium hub is up"
               break
             fi
             sleep 1
           done
-        '''
-      }
-    }
-
-    stage('Start Frontend Preview') {
-      steps {
-        sh '''
-          export BUILD_ID=dontKillMe 
-          docker rm -f ${FRONTEND_PREVIEW_CONTAINER} || true
-          docker run -d --name ${FRONTEND_PREVIEW_CONTAINER} \
-            -p ${FRONTEND_PREVIEW_PORT}:${FRONTEND_PREVIEW_PORT} \
-            -v ${WORKSPACE}/${FRONTEND_DIR}:/app \
-            -w /app \
-            node:24 \
-            sh -c "npm run preview"
         '''
       }
     }
@@ -194,30 +170,28 @@ pipeline {
         }
       }
       steps {
-        echo "Deplying frontend"
+        echo "Deploying frontend"
         sh '''
-          sudo apt-get install nodejs npm -y
+          apt-get update
+          apt-get install -y nodejs npm curl
           cd ${FRONTEND_DIR}
-          npm install
+          npm install --no-audit --no-fund
           npm run build
-          npm run preview &
-        '''
-        sleep 5
-        echo "Loading test data"
-        sh '''
+          npm run preview -- --host 0.0.0.0 --port ${FRONTEND_PREVIEW_PORT} &
+          cd -
+          echo "Loading test data"
           cd ${BACKEND_DIR}
           . venv/bin/activate
           PYTHONPATH=$PWD python scripts/test_data.py
-        '''
-        echo "Running unit tests with coverage and functional tests"
-        sh '''
-          cd ${BACKEND_DIR}
-          . venv/bin/activate
+          export FRONTEND_BASE_URL=${FRONTEND_BASE_URL}
+          python run.py &
+          sleep 5
+          echo "Running tests"
           pytest --junitxml=reports/tests/junit.xml --cov=app --cov-report=xml:reports/coverage/coverage.xml tests || true
         '''
       }
       post {
-        always {
+        success {
           junit allowEmptyResults: true, testResults: "${TEST_REPORT_DIR}/junit.xml"
           archiveArtifacts artifacts: "${TEST_REPORT_DIR}/**", fingerprint: true
         }
@@ -241,7 +215,7 @@ pipeline {
                 sonar-scanner \
                   -Dsonar.projectKey=sys:acad \
                   -Dsonar.projectName="Sistema Académico" \
-                  -Dsonar.sources=backend/app,frontend/src,frontend/package.json,Dockerfile,templates,static \
+                  -Dsonar.sources=backend/app,frontend/src,frontend/package.json,Dockerfile \
                   -Dsonar.python.version=3.12 \
                   -Dsonar.python.coverage.reportPaths=reports/coverage/coverage.xml \
                   -Dsonar.python.xunit.reportPath=reports/tests/junit.xml \
@@ -251,6 +225,25 @@ pipeline {
             '''
           }
         }
+      }
+    }
+
+    /* ------------------------------------------------------------------ */
+    stage('Deploy Backend') {
+      steps {
+        sh 'docker rm -f ${APP_CONTAINER} || true'
+        sh '''
+          docker run --rm \
+            ${DOCKER_IMAGE} \
+            ls app
+        '''
+        sh '''
+          docker run -d --name ${APP_CONTAINER} -p 5000:5000 \
+            --env-file .env.example \
+            ${DOCKER_IMAGE} \
+            gunicorn --bind 0.0.0.0:5000 run:app
+        '''
+        sleep 5
       }
     }
 
@@ -281,11 +274,8 @@ pipeline {
     stage('OWASP ZAP Security Scan') {
       steps {
         sh '''
-          # Crear el directorio para el reporte
           mkdir -p ${SECURITY_REPORT_DIR}
           
-          # Ejecutar el escaneo de seguridad
-          # -u 0: Ejecutamos como root temporalmente para que ZAP pueda escribir en el volumen montado
           docker run --rm \
             --network host \
             -u 0 \
@@ -310,6 +300,12 @@ pipeline {
   post {
     always {
       cleanWs()
+        script {
+          sh 'docker rm -f ${APP_CONTAINER} || true'
+          sh 'docker rm -f ${SELENIUM_CONTAINER_NAME} || true'
+          sh 'docker rm -f ${FRONTEND_PREVIEW_CONTAINER} || true'
+          sh 'pkill gunicorn || true'
+        }
     }
   }
 }

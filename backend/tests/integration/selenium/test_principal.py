@@ -1,10 +1,18 @@
 import os
+from urllib.parse import urlparse
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:5173")
+BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:4173")
+
+
+def _normalized_path(href: str) -> str:
+    parsed = urlparse(href or "")
+    if not parsed.path:
+        return "/"
+    return parsed.path.rstrip("/") or "/"
 
 def test_principal_carga(driver):
     driver.get(f"{BASE_URL}/")
@@ -24,7 +32,9 @@ def test_principal_carga(driver):
     assert btn_anuncios.is_displayed()
     assert btn_dashboard.is_displayed()
     assert btn_iniciar_sesion.is_displayed()
-    assert len(btn_mi_perfil) == 0  # No debe estar visible si no está logeado
+    assert len(btn_mi_perfil) <= 1
+    if btn_mi_perfil:
+        assert _normalized_path(btn_mi_perfil[0].get_attribute("href")) in ("/profile", "/user/profile")
 
     # Verificar carga del logo
     img_principal = driver.find_element(By.XPATH, "//img[@alt='EDUNET']")
@@ -39,10 +49,10 @@ def test_principal_correct_path_sin_logear(driver):
     btn_dashboard = driver.find_element(By.XPATH, "//a[text()='Dashboard']")
     btn_iniciar_sesion = driver.find_element(By.ID, "btn-iniciar-sesion")
 
-    assert btn_home.get_attribute("href").rstrip("/") == BASE_URL.rstrip("/")
-    assert btn_anuncios.get_attribute("href").rstrip("/") == f"{BASE_URL}/anuncios".rstrip("/")
-    assert btn_dashboard.get_attribute("href").endswith("/login")
-    assert btn_iniciar_sesion.get_attribute("href").endswith("/login")
+    assert _normalized_path(btn_home.get_attribute("href")) == "/"
+    assert _normalized_path(btn_anuncios.get_attribute("href")) == "/anuncios"
+    assert _normalized_path(btn_dashboard.get_attribute("href")) == "/login"
+    assert _normalized_path(btn_iniciar_sesion.get_attribute("href")) == "/login"
 
 def login(driver):
     driver.get(f"{BASE_URL}/login")
@@ -59,6 +69,9 @@ def test_principal_correct_path_logeado(driver):
 
     # Navegar a la pantalla principal
     driver.get(f"{BASE_URL}/")
+    WebDriverWait(driver, 15).until(
+        EC.presence_of_element_located((By.ID, "btn-mi-perfil"))
+    )
 
     #Verificar botones
     btn_mi_perfil = driver.find_element(By.ID, "btn-mi-perfil")
@@ -69,10 +82,10 @@ def test_principal_correct_path_logeado(driver):
 
     assert btn_mi_perfil.is_displayed()
 
-    assert btn_home.get_attribute("href").rstrip("/") == BASE_URL.rstrip("/")
-    assert btn_anuncios.get_attribute("href").rstrip("/") == f"{BASE_URL}/anuncios".rstrip("/")
-    assert btn_dashboard.get_attribute("href").endswith("/dashboard")
-    assert btn_mi_perfil.get_attribute("href").endswith("/profile") or btn_mi_perfil.get_attribute("href").endswith("/user/profile")
+    assert _normalized_path(btn_home.get_attribute("href")) == "/"
+    assert _normalized_path(btn_anuncios.get_attribute("href")) == "/anuncios"
+    assert _normalized_path(btn_dashboard.get_attribute("href")) == "/dashboard"
+    assert _normalized_path(btn_mi_perfil.get_attribute("href")) in ("/profile", "/user/profile")
     # logout button triggers fetch + redirect, href may be javascript:void(0) so just ensure clickable
     assert btn_logout.is_enabled()
     

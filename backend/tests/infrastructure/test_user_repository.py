@@ -7,8 +7,8 @@ def test_user_repository_create_and_retrieve(app_context):
     with app_context.app_context():
         user = User(
             user_id=None,
-            full_name="Juan Perez",
-            email="juan@example.com",
+            full_name="Nombre",
+            email="nombre@example.com",
             password_hash="hash",
             role=1,
         )
@@ -18,9 +18,9 @@ def test_user_repository_create_and_retrieve(app_context):
         assert error is None
         assert saved_user.user_id is not None
 
-        fetched = repo.find_by_email("juan@example.com")
+        fetched = repo.find_by_email("nombre@example.com")
         assert fetched is not None
-        assert fetched.email == "juan@example.com"
+        assert fetched.email == "nombre@example.com"
 
 
 def test_user_repository_list_by_role(app_context):

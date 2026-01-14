@@ -1,10 +1,18 @@
 import os
+from urllib.parse import urlparse
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:5173")
+BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:4173")
+
+
+def _normalized_path(href: str) -> str:
+    parsed = urlparse(href or "")
+    if not parsed.path:
+        return "/"
+    return parsed.path.rstrip("/") or "/"
 
 
 def login(driver):
@@ -56,7 +64,7 @@ def test_dashboard_routes(driver):
     assert btn_perfil.is_displayed()
     assert btn_cursos.is_displayed()
 
-    assert btn_usuarios.get_attribute("href").endswith("/admin/users")
-    assert btn_anuncios.get_attribute("href").endswith("/anuncios")
-    assert btn_perfil.get_attribute("href").endswith("/user/profile")
-    assert btn_cursos.get_attribute("href").endswith("/admin/courses")
+    assert _normalized_path(btn_usuarios.get_attribute("href")) == "/admin/users"
+    assert _normalized_path(btn_anuncios.get_attribute("href")) == "/anuncios"
+    assert _normalized_path(btn_perfil.get_attribute("href")) == "/profile"
+    assert _normalized_path(btn_cursos.get_attribute("href")) == "/admin/courses"

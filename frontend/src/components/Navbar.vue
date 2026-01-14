@@ -1,33 +1,22 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000'
+const API_BASE = (import.meta.env.VITE_API_BASE || 'http://localhost:5000').replace(/\/+$/, '')
 
 const isAuthenticated = ref(false)
 const user = ref(null)
 
 async function checkAuth() {
     try {
-        const res = await axios.get(`${API_BASE}/dashboard/`, { withCredentials: true })
-        const data = res.data || {}
-        if (data.status === 'success') {
-            user.value = data
+        const res = await fetch(`${API_BASE}/api/auth/me`, { credentials: 'include' })
+        if (res.ok) {
+            user.value = await res.json()
             isAuthenticated.value = true
-            return
+        } else {
+            isAuthenticated.value = false
         }
-        isAuthenticated.value = false
     } catch (e) {
-        // fallback to localStorage when API not reachable
-        const stored = localStorage.getItem('user')
-        if (stored) {
-            try {
-                user.value = JSON.parse(stored)
-                isAuthenticated.value = true
-                return
-            } catch (_) {}
-        }
         isAuthenticated.value = false
     }
 }
@@ -39,16 +28,21 @@ function navigate(href) {
 
 async function logout() {
     try {
-        await axios.post(`${API_BASE}/api/auth/logout`, {}, { withCredentials: true })
+        await fetch(`${API_BASE}/api/auth/logout`, { method: 'POST', credentials: 'include' })
     } catch (e) {
         // ignore
     }
-    localStorage.removeItem('user')
+    window.dispatchEvent(new Event('auth-changed'))
     window.location.href = '/'
 }
 
 onMounted(() => {
     checkAuth()
+    window.addEventListener('auth-changed', checkAuth)
+})
+
+onUnmounted(() => {
+    window.removeEventListener('auth-changed', checkAuth)
 })
 </script>
 
