@@ -14,6 +14,7 @@
       - [Principios aplicados](#principios-aplicados)
     - [Principales Entidades](#principales-entidades)
     - [Módulos](#módulos)
+    - [Módulos y principales servicios REST](#módulos-y-principales-servicios-rest)
   - [DTOs](#dtos)
   - [Requisitos](#requisitos)
 -[Gestion de Configuracion](#gestión-de-configuración)
@@ -166,6 +167,140 @@ app/
 - `routes`: Endpoints web.
 - `templates`: Plantillas HTML para la GUI.
 - `config`: Configuración de la aplicación.
+
+### Módulos y principales servicios REST
+
+#### Auth (Autenticación)
+**Propósito:** Gestionar la autenticación de usuarios, incluyendo el inicio de sesión (creación de sesión), registro de nuevas cuentas y cierre de sesión.
+
+**Operaciones disponibles:**
+- `POST /api/auth/login`: Autentica a un usuario mediante credenciales e inicia una sesión basada en cookies.
+- `POST /api/auth/register`: Crea una nueva cuenta de usuario (requiere activación posterior o flujo separado).
+- `POST /api/auth/logout`: Limpia la sesión actual del usuario.
+
+**Parámetros clave:**
+- Login (Body): `email` y `password` son obligatorios.
+- Register (Body): `full_name`, `email`, `password` y `confirm_password` son obligatorios.
+
+**Modelos Clave:**
+- `AuthLoginRequest`: Esquema para el envío de credenciales de inicio de sesión.
+- `AuthUser`: Representación del usuario autenticado devuelto tras un login o registro exitoso (incluye rol e ID).
+
+---
+
+#### Admin (Administración)
+**Propósito:** Proveer herramientas para que los administradores gestionen usuarios y sus roles dentro del sistema.
+
+**Operaciones disponibles:**
+- `GET /admin/users`: Retorna la lista completa de usuarios para los paneles de administración.
+- `POST /admin/users/{user_id}`: Actualiza el rol de un usuario específico.
+
+**Parámetros clave:**
+- Update Role (Path): `user_id` (Entero, ID del usuario a modificar).
+- Update Role (Body): `role` (Entero, código del nuevo rol a asignar).
+
+**Modelos Clave:**
+- `User`: Objeto completo de usuario incluyendo ID, nombre, correo y código de rol.
+- `UpdateUserRoleRequest`: Cuerpo de la petición para cambiar el rol de un usuario.
+
+---
+
+#### Announcements (Anuncios)
+**Propósito:** Manejar la publicación y visualización de anuncios, separando los públicos de los privados según la sesión del usuario.
+
+**Operaciones disponibles:**
+- `GET /api/anuncios`: Obtiene anuncios públicos (para todos) y privados (filtrados por usuario autenticado).
+- `POST /api/anuncios/admin`: Permite a un administrador crear un anuncio nuevo.
+
+**Parámetros clave:**
+- Create (Body): `title` y `content` son obligatorios. Opcionales: `is_private` y `course_id`.
+
+**Modelos Clave:**
+- `Announcement`: Estructura del anuncio que incluye título, contenido, visibilidad y fecha de creación.
+- `AnnouncementCreateRequest`: Datos requeridos para dar de alta un anuncio.
+
+---
+
+#### Grades (Notas - Vista Padres)
+**Propósito:** Permitir a los usuarios con rol de "Padre" consultar las calificaciones de sus hijos asociados.
+
+**Operaciones disponibles:**
+- `GET /parent_query_grades`: Retorna las notas de todos los hijos del usuario autenticado (requiere rol de padre).
+
+**Parámetros clave:**
+- No requiere parámetros de entrada explícitos (depende de la sesión del usuario).
+
+**Modelos Clave:**
+- `ParentGradesResponse`: Respuesta que agrupa la lista de estudiantes (hijos) con sus respectivas calificaciones.
+- `StudentWithGrades`: Objeto que vincula el nombre de un estudiante con su lista de materias y notas.
+
+---
+
+#### Courses (Cursos)
+**Propósito:** Gestión administrativa de cursos (creación y listado) y visualización de métricas de cursos para profesores.
+
+**Operaciones disponibles:**
+- `GET /admin/courses`: Lista todos los cursos existentes (sólo admin).
+- `GET /admin/courses/create`: Lista los profesores disponibles para asignar a un nuevo curso.
+- `POST /admin/courses/create`: Crea un nuevo curso y le asigna un profesor.
+- `GET /cursos`: Retorna los cursos asignados al profesor autenticado con métricas (promedios, conteo de alumnos).
+
+**Parámetros clave:**
+- Create (Body): `name` (Nombre del curso) y `professor_id` (ID del docente) son obligatorios.
+
+**Modelos Clave:**
+- `Course`: Representación básica de un curso (ID, nombre, ID del profesor).
+- `CourseMetrics`: Datos del curso enriquecidos para el dashboard del profesor (incluye `average_score` y `student_count`).
+
+---
+
+#### Qualifications (Calificaciones)
+**Propósito:** Facilitar al profesor el proceso de calificar a los estudiantes, listar alumnos por curso y registrar notas.
+
+**Operaciones disponibles:**
+- `GET /calificar`: Obtiene la lista de cursos asignados al profesor para proceder a calificar.
+- `POST /calificar`: Registra una nota para un estudiante en un curso específico.
+- `GET /api/students-by-course`: Lista los estudiantes inscritos en un curso específico.
+
+**Parámetros clave:**
+- Create Qualification (Body): `student_id`, `course_id` y `score` son obligatorios.
+- List Students (Query): `course_id` es obligatorio para filtrar los alumnos.
+
+**Modelos Clave:**
+- `QualificationCreateRequest`: Payload necesario para enviar una nota.
+- `StudentBasic`: Información mínima del estudiante (ID y nombre) para listados de selección.
+
+---
+
+#### Reports (Reportes)
+**Propósito:** Generación de reportes detallados de calificaciones por curso para los profesores.
+
+**Operaciones disponibles:**
+- `GET /reporte/formulario`: Obtiene los cursos del profesor disponibles para generar reportes.
+- `GET /reporte/curso`: Genera el reporte de notas detallado para un curso específico.
+
+**Parámetros clave:**
+- Get Report (Query): `course_id` es obligatorio para identificar el curso a reportar.
+
+**Modelos Clave:**
+- `CourseReportResponse`: Respuesta que contiene el nombre del curso y la lista de notas de los estudiantes.
+- `StudentGrade`: Detalle de la nota de un estudiante específico dentro del reporte.
+
+---
+
+#### Users (Usuarios)
+**Propósito:** Proporcionar acceso a la información del perfil del usuario actualmente autenticado.
+
+**Operaciones disponibles:**
+- `GET /user/profile`: Retorna los datos básicos de sesión del usuario.
+
+**Parámetros clave:**
+- No requiere parámetros (usa la sesión activa).
+
+**Modelos Clave:**
+- `UserProfileResponse`: Datos del perfil incluyendo nombre, email, rol y permisos.
+
+---
 
 ## DTOs 
 ```python
